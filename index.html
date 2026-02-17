@@ -3,22 +3,34 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fooz Portfolio Navigation</title>
+<!-- 
+  项目名称: Folio Portfolio Navigation
+  版本号: v1.2
+  描述: 进一步增强小白维护区，增加移动端 Logo 文字内容与字号的独立配置。
+-->
+<title>Folio v1.2 - Portfolio Navigation</title>
 <style>
   /* ==============================================
      【小白自定义配置区 - 修改这里即可】
      ==============================================
   */
   :root {
-    /* 1. Logo 设置 */
+    /* --- 1. 桌面端设置 --- */
     --logo-video-webm: "https://folio.neuepoor.com/head_chrome.webm"; 
     --logo-video-mp4: "https://folio.neuepoor.com/head_safari.mp4";   
     --logo-height: 48px;          
     --logo-text: "Fooz";          
     --logo-font-size: 32px;       
-    --logo-link-url: "/";         
+    --logo-link-url: "home";         
 
-    /* 2. 导航菜单链接文字与地址 */
+    /* --- 2. 移动端专项设置 (Folio v1.2 增强) --- */
+    --mobile-logo-text: "F.";     /* 移动端显示的 Logo 文字 */
+    --mobile-logo-font-size: 18px; /* 移动端 Logo 文字大小 */
+    --mobile-logo-height: 18px;   /* 移动端 Logo 视频/容器高度 */
+    --mobile-nav-height: 18px;    /* 移动端导航容器核心高度 */
+    --mobile-hamburger-size: 18px; /* 汉堡包图标宽度 */
+
+    /* --- 3. 导航菜单链接 --- */
     --nav-link-1-text: "Works";   
     --nav-link-1-url: "#work";    
     --nav-link-2-text: "(Play)";  
@@ -26,20 +38,17 @@
     --nav-link-3-text: "Me";      
     --nav-link-3-url: "#me";      
 
-    /* 3. 视觉样式设置 */
-    --nav-font-size: 32px;        /* 桌面端导航文字大小 */
-    --nav-gap: 40px;              /* 桌面端导航项间距 */
-    --mobile-menu-bg: #BABABA;    /* 移动端全屏菜单背景色 */
-    --mobile-nav-font-size: 48px; /* 移动端菜单文字大小 */
+    /* --- 4. 视觉样式设置 --- */
+    --nav-font-size: 32px;        
+    --nav-gap: 40px;              
+    --mobile-menu-bg: #BABABA;    
+    --mobile-nav-font-size: 48px; 
     
-    /* 4. 布局与边距设置 */
-    --nav-height: 32px;           
-    --side-padding: 8px;          /* 恢复较小的边距，保持精致感 */
+    /* --- 5. 布局与边距设置 --- */
+    --side-padding: 8px;          
     --vertical-padding: 8px;      
     
     --font-family: "Arial", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-    
-    /* 5. 动画效果 */
     --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);  
   }
 
@@ -55,7 +64,6 @@
     background: transparent;
   }
 
-  /* 导航栏主容器 */
   .custom-nav {
     position: fixed;
     top: 0;
@@ -69,11 +77,11 @@
     background: transparent;
     box-sizing: border-box;
     z-index: 2000;
-    pointer-events: none; /* 允许点击下方内容 */
+    pointer-events: none; 
   }
 
   .logo-container, .nav-links, .menu-toggle {
-    pointer-events: auto; /* 恢复导航元素的交互 */
+    pointer-events: auto; 
   }
 
   .logo-container {
@@ -116,22 +124,21 @@
     line-height: 1;
   }
 
-  /* 响应式汉堡包按钮 */
   .menu-toggle {
     display: none; 
     background: none;
     border: none;
     cursor: pointer;
-    padding: 10px;
-    width: 44px;
-    height: 44px;
+    padding: 5px; 
+    width: auto;
+    height: auto;
     position: relative;
     z-index: 2100;
   }
 
   .hamburger-box {
-    width: 24px;
-    height: 18px;
+    width: var(--mobile-hamburger-size);
+    height: 12px; 
     display: inline-block;
     position: relative;
   }
@@ -139,9 +146,9 @@
   .hamburger-inner {
     display: block;
     top: 50%;
-    margin-top: -1px;
-    width: 24px;
-    height: 2px;
+    margin-top: -0.5px; 
+    width: 100%;
+    height: 1px; 
     background-color: #000;
     position: absolute;
     transition: var(--transition);
@@ -150,30 +157,20 @@
   .hamburger-inner::before, .hamburger-inner::after {
     content: "";
     display: block;
-    width: 24px;
-    height: 2px;
+    width: 100%;
+    height: 1px;
     background-color: #000;
     position: absolute;
     transition: var(--transition);
   }
 
-  .hamburger-inner::before { top: -8px; }
-  .hamburger-inner::after { bottom: -8px; }
+  .hamburger-inner::before { top: -5px; } 
+  .hamburger-inner::after { bottom: -5px; }
 
-  /* 汉堡包动画状态 */
-  .is-open .hamburger-inner {
-    transform: rotate(45deg);
-  }
-  .is-open .hamburger-inner::before {
-    top: 0;
-    opacity: 0;
-  }
-  .is-open .hamburger-inner::after {
-    bottom: 0;
-    transform: rotate(-90deg);
-  }
+  .is-open .hamburger-inner { transform: rotate(45deg); }
+  .is-open .hamburger-inner::before { top: 0; opacity: 0; }
+  .is-open .hamburger-inner::after { bottom: 0; transform: rotate(-90deg); }
 
-  /* 移动端菜单层 */
   .mobile-menu-overlay {
     position: fixed;
     top: 0;
@@ -183,7 +180,7 @@
     background-color: var(--mobile-menu-bg);
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify(content: center;
     align-items: flex-start; 
     padding: 60px 40px;
     box-sizing: border-box;
@@ -209,26 +206,22 @@
 
   /* 响应式断点 */
   @media (max-width: 768px) {
-    .nav-links { display: none; }
-    .menu-toggle {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
     :root {
-      --logo-font-size: 24px;
+      --vertical-padding: 6px; 
+    }
+    .nav-links { display: none; }
+    .menu-toggle { display: flex; align-items: center; justify-content: center; }
+    
+    .logo-container {
+      height: var(--mobile-logo-height);
+    }
+    .logo-fallback {
+      font-size: var(--mobile-logo-font-size);
+    }
+    .custom-nav {
+      min-height: calc(var(--mobile-nav-height) + (var(--vertical-padding) * 2));
     }
   }
-
-  /* 预览内容占位 */
-  .preview-hero {
-    height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #e5e5e5;
-  }
-
 </style>
 </head>
 <body>
@@ -271,13 +264,6 @@
     <a href="#me" id="mobNav3" onclick="toggleMenu()">Me</a>
   </div>
 
-  <section class="preview-hero">
-    <div style="text-align: center;">
-      <h1>响应式导航已恢复</h1>
-      <p>尝试缩小窗口宽度以查看移动端汉堡包菜单。</p>
-    </div>
-  </section>
-
   <script>
     let isMenuOpen = false;
 
@@ -289,7 +275,7 @@
       if (isMenuOpen) {
         menu.classList.add('is-active');
         btn.classList.add('is-open');
-        document.body.style.overflow = 'hidden'; // 开启菜单时禁止页面滚动
+        document.body.style.overflow = 'hidden'; 
       } else {
         menu.classList.remove('is-active');
         btn.classList.remove('is-open');
@@ -301,12 +287,19 @@
       const root = document.documentElement;
       const getVar = (name) => getComputedStyle(root).getPropertyValue(name).replace(/"/g, '').trim();
       
-      // 动态同步配置区的链接和文字
       const logoLink = document.getElementById('logoLink');
       const linkUrl = getVar('--logo-link-url');
       if (linkUrl) logoLink.href = linkUrl;
 
-      document.getElementById('fallbackText').textContent = getVar('--logo-text');
+      // 根据屏幕宽度决定 Logo 文字内容
+      const updateLogoText = () => {
+        const isMobile = window.innerWidth <= 768;
+        const text = isMobile ? getVar('--mobile-logo-text') : getVar('--logo-text');
+        document.getElementById('fallbackText').textContent = text;
+      };
+      
+      updateLogoText();
+      window.addEventListener('resize', updateLogoText);
       
       const navItems = [
         {id: 'nav1', mobId: 'mobNav1', textVar: '--nav-link-1-text', urlVar: '--nav-link-1-url'},
@@ -323,7 +316,6 @@
         if (mobEl) { mobEl.textContent = text; mobEl.href = url; }
       });
 
-      // 视频加载与 Fallback 逻辑
       const video = document.getElementById('logoVid');
       const fallback = document.getElementById('fallbackText');
       const webmSrc = getVar('--logo-video-webm');
@@ -346,14 +338,9 @@
       }
     }
 
-    // 页面载入初始化
     document.addEventListener('DOMContentLoaded', initNav);
-
-    // 窗口尺寸变化处理
     window.addEventListener('resize', () => {
-      if (window.innerWidth > 768 && isMenuOpen) {
-        toggleMenu(); // 切换回桌面端时自动关闭移动菜单
-      }
+      if (window.innerWidth > 768 && isMenuOpen) toggleMenu();
     });
   </script>
 </body>
