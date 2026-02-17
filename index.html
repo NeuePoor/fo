@@ -5,17 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <!-- 
   项目名称: Folio Portfolio Navigation
-  版本号: v1.3
-  描述: 修复 v1.2 移动端断点失效及汉堡包消失问题，恢复导航链接样式。
+  版本号: v1.4
+  描述: 增加底部固定导航（Footer），支持左侧多链接自定义及右侧版权链接，兼容移动端菜单显示。
 -->
-<title>Folio v1.3 - Portfolio Navigation</title>
+<title>Folio v1.4 - Portfolio Navigation</title>
 <style>
   /* ==============================================
      【小白自定义配置区 - 修改这里即可】
      ==============================================
   */
   :root {
-    /* --- 1. 桌面端设置 --- */
+    /* --- 1. 桌面端顶部导航 --- */
     --logo-video-webm: "https://folio.neuepoor.com/head_chrome.webm"; 
     --logo-video-mp4: "https://folio.neuepoor.com/head_safari.mp4";   
     --logo-height: 48px;          
@@ -23,14 +23,14 @@
     --logo-font-size: 32px;       
     --logo-link-url: "home";         
 
-    /* --- 2. 移动端专项设置 (Folio v1.3) --- */
-    --mobile-logo-text: "F.";     
+    /* --- 2. 移动端专项设置 --- */
+    --mobile-logo-text: "Fooz.";     
     --mobile-logo-font-size: 18px; 
-    --mobile-logo-height: 18px;   /* 对应你要求的 18px 高度 */
+    --mobile-logo-height: 18px;   
     --mobile-nav-height: 18px;    
     --mobile-hamburger-size: 20px; 
 
-    /* --- 3. 导航菜单链接 --- */
+    /* --- 3. 顶部链接内容 --- */
     --nav-link-1-text: "Works";   
     --nav-link-1-url: "#work";    
     --nav-link-2-text: "(Play)";  
@@ -38,19 +38,29 @@
     --nav-link-3-text: "Me";      
     --nav-link-3-url: "#me";      
 
-    /* --- 4. 视觉样式设置 --- */
-    --nav-font-size: 32px;        
-    --nav-gap: 40px;              
+    /* --- 4. 底部导航设置 (Folio v1.4 新增) --- */
+    --footer-font-size: 10px;     /* 底部文字大小 */
+    --footer-font-weight: bold;   /* 底部文字粗细 */
+    --footer-padding: 10px 8px;   /* 底部边距 (上下 左右) */
+    
+    /* 右侧单链接文字与地址 */
+    --footer-right-text: "©2024 Folio Archive.";
+    --footer-right-url: "#";
+
+    /* --- 5. 通用全局样式 --- */
     --mobile-menu-bg: #BABABA;    
     --mobile-nav-font-size: 48px; 
-    
-    /* --- 5. 布局与边距设置 --- */
     --side-padding: 8px;          
     --vertical-padding: 8px;      
     
-    --font-family: "Arial", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+    /* 默认 Arial，自动匹配系统字体 */
+    --font-family: "Arial", "Helvetica", "Microsoft YaHei", sans-serif; 
     --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);  
   }
+
+  /* 【底部左侧链接配置】
+     修改 script 标签内的 footerLinks 数组即可增减或排序
+  */
 
   /* ==============================================
      【核心渲染区】
@@ -62,9 +72,10 @@
     padding: 0;
     font-family: var(--font-family);
     background: transparent;
+    height: 100%;
   }
 
-  /* 导航栏容器 */
+  /* 顶部导航 */
   .custom-nav {
     position: fixed;
     top: 0;
@@ -91,7 +102,6 @@
     text-decoration: none;
     color: inherit;
     height: var(--logo-height);
-    transition: var(--transition);
   }
 
   .logo-video {
@@ -101,7 +111,6 @@
     outline: none;
     background: transparent;
     object-fit: contain;
-    -webkit-mask-image: -webkit-radial-gradient(white, black);
   }
 
   .logo-fallback {
@@ -111,12 +120,7 @@
     line-height: 1;
   }
 
-  /* 桌面端链接样式 */
-  .nav-links {
-    display: flex;
-    gap: var(--nav-gap);
-  }
-
+  .nav-links { display: flex; gap: var(--nav-gap); }
   .nav-links a {
     text-decoration: none;
     color: inherit;
@@ -125,141 +129,100 @@
     transition: var(--transition);
     line-height: 1;
   }
+  .nav-links a:hover { opacity: 0.5; }
 
-  .nav-links a:hover {
-    opacity: 0.5;
-  }
-
-  /* 汉堡包按钮样式修复 */
+  /* 汉堡包 */
   .menu-toggle {
-    display: none; /* 默认隐藏，在 media query 中开启 */
+    display: none;
     background: none;
     border: none;
     cursor: pointer;
     padding: 10px;
-    margin-right: -10px; /* 抵消内边距使图标靠边 */
+    margin-right: -10px;
     z-index: 2100;
-    outline: none;
   }
-
-  .hamburger-box {
-    width: var(--mobile-hamburger-size);
-    height: 14px;
-    position: relative;
-    display: block;
-  }
-
+  .hamburger-box { width: var(--mobile-hamburger-size); height: 14px; position: relative; display: block; }
   .hamburger-inner {
-    display: block;
-    top: 50%;
-    margin-top: -1px;
-    width: 100%;
-    height: 2px;
-    background-color: #000;
-    position: absolute;
-    transition: var(--transition);
+    display: block; top: 50%; width: 100%; height: 2px; background-color: #000; position: absolute; transition: var(--transition);
   }
-
-  .hamburger-inner::before, .hamburger-inner::after {
-    content: "";
-    display: block;
-    width: 100%;
-    height: 2px;
-    background-color: #000;
-    position: absolute;
-    transition: var(--transition);
-  }
-
+  .hamburger-inner::before, .hamburger-inner::after { content: ""; display: block; width: 100%; height: 2px; background-color: #000; position: absolute; transition: var(--transition); }
   .hamburger-inner::before { top: -6px; } 
   .hamburger-inner::after { bottom: -6px; }
-
-  /* 汉堡包展开状态动画 */
   .is-open .hamburger-inner { transform: rotate(45deg); }
   .is-open .hamburger-inner::before { top: 0; opacity: 0; }
   .is-open .hamburger-inner::after { bottom: 0; transform: rotate(-90deg); }
 
-  /* 移动端菜单层样式修复 */
+  /* 移动端菜单层 */
   .mobile-menu-overlay {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%; 
-    height: 100vh; 
+    width: 100%; height: 100vh; 
     background-color: var(--mobile-menu-bg);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-start; 
-    padding: 0 40px;
-    box-sizing: border-box;
-    transition: var(--transition);
-    z-index: 1900; 
-    transform: translateY(-100%);
-    visibility: hidden;
-    pointer-events: auto;
+    display: flex; flex-direction: column; justify-content: center; align-items: flex-start; 
+    padding: 0 40px; box-sizing: border-box; transition: var(--transition);
+    z-index: 1900; transform: translateY(-100%); visibility: hidden;
   }
-
-  .mobile-menu-overlay.is-active {
-    transform: translateY(0);
-    visibility: visible;
-  }
-
+  .mobile-menu-overlay.is-active { transform: translateY(0); visibility: visible; }
   .mobile-menu-overlay a {
-    text-decoration: none;
+    text-decoration: none; color: #000; font-size: var(--mobile-nav-font-size); font-weight: bold; margin-bottom: 24px;
+  }
+
+  /* 底部导航 (v1.4 新增) */
+  .custom-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: var(--footer-padding);
+    box-sizing: border-box;
+    z-index: 2200; /* 高于移动端菜单层 */
+    pointer-events: none;
+  }
+
+  .footer-left, .footer-right {
+    pointer-events: auto;
+    font-size: var(--footer-font-size);
+    font-weight: var(--footer-font-weight);
+    font-family: var(--font-family);
     color: #000;
-    font-size: var(--mobile-nav-font-size);
-    font-weight: bold;
-    margin-bottom: 24px;
-    line-height: 1.2;
+  }
+
+  .footer-left {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+
+  .footer-left a, .footer-right a {
+    text-decoration: none;
+    color: inherit;
     transition: opacity 0.3s;
   }
 
-  .mobile-menu-overlay a:active {
+  .footer-left a:hover, .footer-right a:hover {
     opacity: 0.5;
   }
 
-  /* ==============================================
-     【响应式断点】
-     ==============================================
-  */
+  /* 响应式断点 */
   @media (max-width: 768px) {
     .nav-links { display: none; }
-    
-    .menu-toggle { 
-      display: flex; 
-    }
-    
-    .logo-container {
-      height: var(--mobile-logo-height);
-    }
-    
-    .logo-fallback {
-      font-size: var(--mobile-logo-font-size);
-    }
-
-    .custom-nav {
-      /* 确保容器高度正确 */
-      min-height: calc(var(--mobile-nav-height) + (var(--vertical-padding) * 2));
-      padding: var(--vertical-padding) var(--side-padding);
-    }
+    .menu-toggle { display: flex; }
+    .logo-container { height: var(--mobile-logo-height); }
+    .logo-fallback { font-size: var(--mobile-logo-font-size); }
+    .custom-nav { min-height: calc(var(--mobile-nav-height) + (var(--vertical-padding) * 2)); }
   }
 </style>
 </head>
 <body>
 
+  <!-- 顶部导航 -->
   <nav class="custom-nav" id="mainNav">
     <a href="/" class="logo-container" id="logoLink">
-      <video 
-        class="logo-video" 
-        id="logoVid" 
-        autoplay 
-        loop 
-        muted 
-        playsinline 
-        webkit-playsinline
-        disablePictureInPicture 
-        preload="auto"
-      >
+      <video class="logo-video" id="logoVid" autoplay loop muted playsinline webkit-playsinline disablePictureInPicture preload="auto">
         <source id="srcMp4" type='video/mp4; codecs="hvc1"'> 
         <source id="srcWebm" type="video/webm">
       </video>
@@ -273,27 +236,46 @@
     </div>
 
     <button class="menu-toggle" id="menuBtn" onclick="toggleMenu()" aria-label="Menu">
-      <span class="hamburger-box">
-        <span class="hamburger-inner"></span>
-      </span>
+      <span class="hamburger-box"><span class="hamburger-inner"></span></span>
     </button>
   </nav>
 
+  <!-- 移动端菜单层 -->
   <div class="mobile-menu-overlay" id="mobileMenu">
     <a href="#work" id="mobNav1" onclick="toggleMenu()">Works</a>
-    <a href="#play" id="mobNav2" onclick="toggleMenu()">(Play)</a>
+    <a href="#play" id="mobNav2" onclick="toggleMenu()"> (Play)</a>
     <a href="#me" id="mobNav3" onclick="toggleMenu()">Me</a>
   </div>
 
+  <!-- 底部页脚 (v1.4) -->
+  <footer class="custom-footer">
+    <div class="footer-left" id="footerLeft">
+      <!-- 链接将通过 JS 动态生成 -->
+    </div>
+    <div class="footer-right">
+      <a href="#" id="footerRightLink">©2024 Folio Archive.</a>
+    </div>
+  </footer>
+
   <script>
+    /* ==============================================
+       【底部左侧链接 - 小白在此修改】
+       可以根据需要增加 {} 块，或者调整顺序
+       ==============================================
+    */
+    const footerLinks = [
+      { text: "Email", url: "mailto:hello@example.com" },
+      { text: "/Ins", url: "https://instagram.com" },
+      { text: "/Wechat", url: "#" },
+      { text: "/Redbook", url: "#" }
+    ];
+
     let isMenuOpen = false;
 
-    // 菜单开关逻辑
     function toggleMenu() {
       const menu = document.getElementById('mobileMenu');
       const btn = document.getElementById('menuBtn');
       isMenuOpen = !isMenuOpen;
-      
       if (isMenuOpen) {
         menu.classList.add('is-active');
         btn.classList.add('is-open');
@@ -305,72 +287,63 @@
       }
     }
 
-    // 初始化内容与配置联动
     function initNav() {
       const root = document.documentElement;
       const getVar = (name) => getComputedStyle(root).getPropertyValue(name).replace(/"/g, '').trim();
       
+      // 1. 顶部 Logo 与链接
       const logoLink = document.getElementById('logoLink');
-      const linkUrl = getVar('--logo-link-url');
-      if (linkUrl) logoLink.href = linkUrl;
+      logoLink.href = getVar('--logo-link-url');
 
-      // 实时切换移动端/桌面端文字
       const updateLogoText = () => {
         const isMobile = window.innerWidth <= 768;
-        const text = isMobile ? getVar('--mobile-logo-text') : getVar('--logo-text');
-        document.getElementById('fallbackText').textContent = text;
+        document.getElementById('fallbackText').textContent = isMobile ? getVar('--mobile-logo-text') : getVar('--logo-text');
       };
-      
       updateLogoText();
       window.addEventListener('resize', updateLogoText);
       
-      // 同步链接文字与地址
       const navItems = [
         {id: 'nav1', mobId: 'mobNav1', textVar: '--nav-link-1-text', urlVar: '--nav-link-1-url'},
         {id: 'nav2', mobId: 'mobNav2', textVar: '--nav-link-2-text', urlVar: '--nav-link-2-url'},
         {id: 'nav3', mobId: 'mobNav3', textVar: '--nav-link-3-text', urlVar: '--nav-link-3-url'}
       ];
-
       navItems.forEach(item => {
         const text = getVar(item.textVar);
         const url = getVar(item.urlVar);
-        const el = document.getElementById(item.id);
-        const mobEl = document.getElementById(item.mobId);
-        if (el) { el.textContent = text; el.href = url; }
-        if (mobEl) { mobEl.textContent = text; mobEl.href = url; }
+        if (document.getElementById(item.id)) { document.getElementById(item.id).textContent = text; document.getElementById(item.id).href = url; }
+        if (document.getElementById(item.mobId)) { document.getElementById(item.mobId).textContent = text; document.getElementById(item.mobId).href = url; }
       });
 
-      // 视频加载与回退逻辑
+      // 2. 底部页脚渲染 (v1.4)
+      const footerLeft = document.getElementById('footerLeft');
+      footerLeft.innerHTML = ""; // 清空
+      footerLinks.forEach(link => {
+        const a = document.createElement('a');
+        a.href = link.url;
+        a.textContent = link.text;
+        footerLeft.appendChild(a);
+      });
+
+      const rightLink = document.getElementById('footerRightLink');
+      rightLink.textContent = getVar('--footer-right-text');
+      rightLink.href = getVar('--footer-right-url');
+
+      // 3. 视频逻辑
       const video = document.getElementById('logoVid');
       const fallback = document.getElementById('fallbackText');
       const webmSrc = getVar('--logo-video-webm');
       const mp4Src = getVar('--logo-video-mp4');
-
       if (webmSrc || mp4Src) {
         document.getElementById('srcMp4').src = mp4Src;
         document.getElementById('srcWebm').src = webmSrc;
         video.load();
-        
-        video.oncanplay = () => {
-          video.style.display = 'block';
-          fallback.style.display = 'none';
-        };
-
-        video.onerror = () => {
-          video.style.display = 'none';
-          fallback.style.display = 'block';
-        };
+        video.oncanplay = () => { video.style.display = 'block'; fallback.style.display = 'none'; };
+        video.onerror = () => { video.style.display = 'none'; fallback.style.display = 'block'; };
       }
     }
 
     document.addEventListener('DOMContentLoaded', initNav);
-
-    // 窗口调整防护
-    window.addEventListener('resize', () => {
-      if (window.innerWidth > 768 && isMenuOpen) {
-        toggleMenu();
-      }
-    });
+    window.addEventListener('resize', () => { if (window.innerWidth > 768 && isMenuOpen) toggleMenu(); });
   </script>
 </body>
 </html>
