@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <!-- 
   项目名称: Folio Portfolio Navigation
-  版本号: v2.0
-  描述: 优化移动端折叠菜单层级，确保菜单背景盖住全屏背景视频。
+  版本号: v2.1
+  描述: 优化移动端折叠菜单层级，并新增宽屏模式导航悬停中心文字展示功能。
 -->
-<title>Folio v2.0 - Portfolio Navigation</title>
+<title>Folio v2.1 - Portfolio Navigation</title>
 <style>
   /* ==============================================
      【小白自定义配置区 - 修改这里即可】
@@ -61,6 +61,14 @@
     --vertical-padding: 8px;      
     --font-family: "Arial", "Helvetica", sans-serif; 
     --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);  
+
+    /* --- 7. 悬停中心文字配置 --- */
+    --center-text-font-size: 32px; /* 与导航栏文字大小保持一致 */
+    --center-text-font-weight: bold;
+    --center-text-color: #000;
+    --center-text-1: "I work 4 brand.";
+    --center-text-2: "I (Play) Sth.";
+    --center-text-3: "Hi, I'm Fo.";
   }
 
   /* ==============================================
@@ -71,7 +79,7 @@
   body, html {
     margin: 0; padding: 0;
     font-family: var(--font-family);
-    background: #fff; /* 设置一个底色 */
+    background: #fff; 
     height: 100%; overflow-x: hidden;
   }
 
@@ -104,7 +112,7 @@
     display: flex; justify-content: space-between; align-items: center; 
     padding: var(--vertical-padding) var(--side-padding); 
     box-sizing: border-box;
-    z-index: 3000; /* 最高层级，确保 logo 和汉堡包始终在最前 */
+    z-index: 3000; 
     pointer-events: none; 
   }
 
@@ -136,7 +144,28 @@
     font-weight: bold; transition: var(--transition); line-height: 1;
   }
 
-  .nav-links a:hover { opacity: 0.5; }
+  .nav-links a:hover { opacity: 0.3; }
+
+  /* 中心文字展示区 */
+  .center-text-overlay {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 500; /* 位于背景之上，导航之下 */
+    pointer-events: none; /* 不影响点击 */
+    text-align: center;
+    width: 100%;
+    font-size: var(--center-text-font-size);
+    font-weight: var(--center-text-font-weight);
+    color: var(--center-text-color);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .center-text-overlay.show {
+    opacity: 1;
+  }
 
   /* 汉堡包按钮 */
   .menu-toggle {
@@ -153,7 +182,7 @@
   .is-open .hamburger-inner::before { top: 0; opacity: 0; }
   .is-open .hamburger-inner::after { bottom: 0; transform: rotate(-90deg); }
 
-  /* 移动端全屏菜单 - 层级为 2000 (位于视频之上，导航之下) */
+  /* 移动端全屏菜单 */
   .mobile-menu-overlay {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100vh; 
@@ -172,7 +201,7 @@
     text-decoration: none; color: #000; font-size: var(--mobile-nav-font-size); font-weight: bold; margin-bottom: 24px;
   }
 
-  /* 底部导航 - 始终在最前 */
+  /* 底部导航 */
   .custom-footer {
     position: fixed;
     bottom: 0; left: 0; width: 100%;
@@ -196,14 +225,14 @@
   /* 响应式适配 */
   @media (max-width: 768px) {
     .nav-links { display: none !important; }
+    .center-text-overlay { display: none !important; } /* 移动端隐藏中心文字动画 */
     .menu-toggle { display: flex; }
     .logo-container { height: var(--mobile-logo-height); }
     .logo-fallback { font-size: var(--mobile-logo-font-size); }
     
-    /* 移动端背景视频默认可见 */
     .bg-video-container { 
       opacity: var(--bg-video-opacity); 
-      z-index: 1; /* 确保在菜单层 2000 之下 */
+      z-index: 1; 
     }
   }
 </style>
@@ -218,7 +247,10 @@
     </video>
   </div>
 
-  <!-- 层级 3000: 顶部导航 (确保汉堡包不被盖住) -->
+  <!-- 中心文字展示层 -->
+  <div class="center-text-overlay" id="centerTextOverlay"></div>
+
+  <!-- 层级 3000: 顶部导航 -->
   <nav class="custom-nav">
     <a href="/" class="logo-container" id="logoLink">
       <video class="logo-video" id="logoVid" autoplay loop muted playsinline webkit-playsinline preload="auto">
@@ -239,7 +271,7 @@
     </button>
   </nav>
 
-  <!-- 层级 2000: 移动端菜单层 (盖住视频) -->
+  <!-- 层级 2000: 移动端菜单层 -->
   <div class="mobile-menu-overlay" id="mobileMenu">
     <a href="#" id="mobNav1" onclick="toggleMenu()"></a>
     <a href="#" id="mobNav2" onclick="toggleMenu()"></a>
@@ -286,6 +318,7 @@
       const bgVideo = document.getElementById('bgVid');
       const bgWrapper = document.getElementById('bgVideoWrapper');
       const logoLink = document.getElementById('logoLink');
+      const centerOverlay = document.getElementById('centerTextOverlay');
       
       document.getElementById('bgSrcMp4').src = getVar('--bg-video-mp4');
       document.getElementById('bgSrcWebm').src = getVar('--bg-video-webm');
@@ -322,15 +355,38 @@
       updateLogoText();
       
       const navItems = [
-        {id: 'nav1', mobId: 'mobNav1', textVar: '--nav-link-1-text', urlVar: '--nav-link-1-url'},
-        {id: 'nav2', mobId: 'mobNav2', textVar: '--nav-link-2-text', urlVar: '--nav-link-2-url'},
-        {id: 'nav3', mobId: 'mobNav3', textVar: '--nav-link-3-text', urlVar: '--nav-link-3-url'}
+        {id: 'nav1', mobId: 'mobNav1', textVar: '--nav-link-1-text', urlVar: '--nav-link-1-url', centerVar: '--center-text-1'},
+        {id: 'nav2', mobId: 'mobNav2', textVar: '--nav-link-2-text', urlVar: '--nav-link-2-url', centerVar: '--center-text-2'},
+        {id: 'nav3', mobId: 'mobNav3', textVar: '--nav-link-3-text', urlVar: '--nav-link-3-url', centerVar: '--center-text-3'}
       ];
+
       navItems.forEach(item => {
         const text = getVar(item.textVar);
         const url = getVar(item.urlVar);
-        if (document.getElementById(item.id)) { document.getElementById(item.id).textContent = text; document.getElementById(item.id).href = url; }
-        if (document.getElementById(item.mobId)) { document.getElementById(item.mobId).textContent = text; document.getElementById(item.mobId).href = url; }
+        const centerMsg = getVar(item.centerVar);
+        
+        const el = document.getElementById(item.id);
+        const mobEl = document.getElementById(item.mobId);
+
+        if (el) { 
+          el.textContent = text; 
+          el.href = url; 
+          
+          // 增加宽屏悬停逻辑
+          el.addEventListener('mouseenter', () => {
+            if(window.innerWidth > 768) {
+              centerOverlay.textContent = centerMsg;
+              centerOverlay.classList.add('show');
+            }
+          });
+          el.addEventListener('mouseleave', () => {
+            centerOverlay.classList.remove('show');
+          });
+        }
+        if (mobEl) { 
+          mobEl.textContent = text; 
+          mobEl.href = url; 
+        }
       });
 
       const footerLeft = document.getElementById('footerLeft');
