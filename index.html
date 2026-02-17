@@ -1,1 +1,376 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  /* ==============================================
+     【小白自定义配置区 - 修改这里即可】
+     ==============================================
+  */
+  :root {
+    /* 1. Logo 设置 */
+    --logo-video-webm: "https://folio.neuepoor.com/head_chrome.webm"; /* Chrome/Edge 兼容格式 */
+    --logo-video-mp4: "https://folio.neuepoor.com/head_safari.mp4";   /* Safari/iOS 兼容格式 (确保是带 Alpha 通道的 HEVC) */
+    --logo-height: 48px;          /* Logo 高度（视频或图片） */
+    --logo-text: "Fooz";          /* 备用文字 Logo (当视频加载失败时显示) */
+    --logo-font-size: 32px;       /* Logo 文字大小 */
+    --logo-link-url: "/";         /* 点击 Logo 跳转的链接 */
 
+    /* 2. 导航菜单链接文字与地址 */
+    --nav-link-1-text: "Works";   
+    --nav-link-1-url: "#work";    
+    --nav-link-2-text: "(Play)";  
+    --nav-link-2-url: "#play";    
+    --nav-link-3-text: "Me";      
+    --nav-link-3-url: "#me";      
+
+    /* 3. 视觉样式设置 */
+    --nav-font-size: 32px;        /* 桌面端导航文字大小 */
+    --nav-gap: 40px;              /* 桌面端导航项之间的间距 */
+    --mobile-menu-bg: #BABABA;    /* 移动端菜单展开后的全屏背景色 */
+    --mobile-nav-font-size: 48px; /* 移动端菜单展开后的文字大小 */
+    
+    /* 4. 布局与边距设置 */
+    --nav-height: 32px;           
+    --side-padding: 4px;          /* 左右边距 4px (Logo与汉堡包按钮贴边距离) */
+    --vertical-padding: 8px;      /* 导航栏上下留白 */
+    
+    --font-family: "Arial", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+    
+    /* 5. 动画效果 */
+    --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);  
+  }
+
+  /* ==============================================
+     【核心渲染区 - 如无特殊需求请勿修改】
+     ==============================================
+  */
+
+  body, html {
+    margin: 0;
+    padding: 0;
+    background: transparent !important;
+    overflow: visible !important;
+  }
+
+  /* 基础导航栏容器 */
+  .custom-nav {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important; 
+    height: auto; 
+    min-height: var(--nav-height);
+    display: flex;
+    justify-content: space-between;
+    align-items: center; 
+    padding: var(--vertical-padding) var(--side-padding); 
+    color: #000000 !important; 
+    background: transparent !important;
+    box-sizing: border-box;
+    font-family: var(--font-family);
+    z-index: 2147483647 !important; 
+    pointer-events: none; 
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .logo-container {
+    pointer-events: auto !important; 
+    text-decoration: none;
+    color: inherit !important;
+    display: flex;
+    align-items: center;
+    position: relative;
+    z-index: 2147483647 !important;
+    height: var(--logo-height);
+  }
+
+  .logo-video {
+    height: 100%;
+    width: auto;
+    display: none; 
+    outline: none;
+    /* 确保视频背景透明 */
+    background: transparent !important;
+    object-fit: contain;
+    /* 针对 iOS/Safari 的渲染修正 */
+    -webkit-mask-image: -webkit-radial-gradient(white, black);
+  }
+
+  .logo-fallback {
+    font-weight: bold;
+    font-size: var(--logo-font-size);
+    letter-spacing: -0.05em;
+    line-height: 1;
+    display: block; 
+  }
+
+  .nav-links {
+    display: flex;
+    gap: var(--nav-gap);
+    align-items: center;
+    pointer-events: auto !important;
+  }
+
+  .nav-links a {
+    text-decoration: none;
+    color: inherit !important;
+    font-size: var(--nav-font-size); 
+    font-weight: bold;
+    transition: var(--transition);
+    line-height: 1;
+  }
+
+  .menu-toggle {
+    display: none; 
+    pointer-events: auto !important;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    width: 44px;
+    height: 44px;
+    position: relative;
+    outline: none;
+    z-index: 2147483647 !important;
+  }
+
+  .hamburger-box {
+    width: 24px;
+    height: 18px;
+    display: inline-block;
+    position: relative;
+  }
+
+  .hamburger-inner {
+    display: block;
+    top: 50%;
+    margin-top: -1px;
+    width: 24px;
+    height: 2px;
+    background-color: #000;
+    position: absolute;
+    transition: var(--transition);
+  }
+
+  .hamburger-inner::before, .hamburger-inner::after {
+    content: "";
+    display: block;
+    width: 24px;
+    height: 2px;
+    background-color: #000;
+    position: absolute;
+    transition: var(--transition);
+  }
+
+  .hamburger-inner::before { top: -8px; }
+  .hamburger-inner::after { bottom: -8px; }
+
+  .is-open .hamburger-inner {
+    transform: rotate(45deg);
+  }
+  .is-open .hamburger-inner::before {
+    top: 0;
+    opacity: 0;
+  }
+  .is-open .hamburger-inner::after {
+    bottom: 0;
+    transform: rotate(-90deg);
+  }
+
+  /* 移动端菜单遮罩层 */
+  .mobile-menu-overlay {
+    position: fixed !important;
+    top: 0 !important;
+    left: 50% !important;
+    transform: translate(-50%, -100%);
+    width: 100vw !important; 
+    height: 100vh !important; 
+    background-color: var(--mobile-menu-bg) !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start; 
+    padding: 60px 40px;
+    box-sizing: border-box;
+    transition: var(--transition);
+    z-index: 2147483640 !important; 
+    pointer-events: auto !important;
+    visibility: hidden;
+  }
+
+  .mobile-menu-overlay.is-active {
+    transform: translate(-50%, 0);
+    visibility: visible;
+  }
+
+  .mobile-menu-overlay a {
+    text-decoration: none;
+    color: #000 !important;
+    font-size: var(--mobile-nav-font-size);
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+
+  @media (max-width: 768px) {
+    .nav-links { display: none; }
+    .menu-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    :root { --logo-font-size: 24px; }
+  }
+
+</style>
+</head>
+<body>
+
+  <nav class="custom-nav" id="mainNav">
+    <a href="/" class="logo-container" id="logoLink">
+      <!-- 针对 iPhone/Safari 透明视频的核心配置 -->
+      <video 
+        class="logo-video" 
+        id="logoVid" 
+        autoplay 
+        loop 
+        muted 
+        playsinline 
+        webkit-playsinline
+        disablePictureInPicture 
+        preload="auto"
+        style="background-color: transparent !important;"
+      >
+        <!-- 必须优先提供带 hvc1 codecs 声明的 mp4 供 iOS 识别 -->
+        <source id="srcMp4" type='video/mp4; codecs="hvc1"'> 
+        <source id="srcWebm" type="video/webm">
+      </video>
+      <span class="logo-fallback" id="fallbackText">Fooz</span>
+    </a>
+    
+    <div class="nav-links">
+      <a href="#work" id="nav1">Works</a>
+      <a href="#play" id="nav2">(Play)</a>
+      <a href="#me" id="nav3">Me</a>
+    </div>
+
+    <button class="menu-toggle" id="menuBtn" onclick="toggleMenu()">
+      <span class="hamburger-box">
+        <span class="hamburger-inner"></span>
+      </span>
+    </button>
+  </nav>
+
+  <div class="mobile-menu-overlay" id="mobileMenu">
+    <a href="#work" id="mobNav1" onclick="toggleMenu()">Works</a>
+    <a href="#play" id="mobNav2" onclick="toggleMenu()">(Play)</a>
+    <a href="#me" id="mobNav3" onclick="toggleMenu()">Me</a>
+  </div>
+
+  <script>
+    let isMenuOpen = false;
+    let videoInitialized = false;
+
+    function toggleMenu() {
+      const menu = document.getElementById('mobileMenu');
+      const btn = document.getElementById('menuBtn');
+      isMenuOpen = !isMenuOpen;
+      
+      if (isMenuOpen) {
+        menu.classList.add('is-active');
+        btn.classList.add('is-open');
+        document.body.style.overflow = 'hidden';
+      } else {
+        menu.classList.remove('is-active');
+        btn.classList.remove('is-open');
+        document.body.style.overflow = ''; 
+      }
+    }
+
+    function initNav() {
+      const root = document.documentElement;
+      const getVar = (name) => getComputedStyle(root).getPropertyValue(name).replace(/"/g, '').trim();
+      
+      const logoLink = document.getElementById('logoLink');
+      const linkUrl = getVar('--logo-link-url');
+      if (linkUrl) logoLink.href = linkUrl;
+
+      document.getElementById('fallbackText').textContent = getVar('--logo-text');
+      
+      const navItems = [
+        {id: 'nav1', mobId: 'mobNav1', textVar: '--nav-link-1-text', urlVar: '--nav-link-1-url'},
+        {id: 'nav2', mobId: 'mobNav2', textVar: '--nav-link-2-text', urlVar: '--nav-link-2-url'},
+        {id: 'nav3', mobId: 'mobNav3', textVar: '--nav-link-3-text', urlVar: '--nav-link-3-url'}
+      ];
+
+      navItems.forEach(item => {
+        const text = getVar(item.textVar);
+        const url = getVar(item.urlVar);
+        const el = document.getElementById(item.id);
+        const mobEl = document.getElementById(item.mobId);
+        if (el) { el.textContent = text; el.href = url; }
+        if (mobEl) { mobEl.textContent = text; mobEl.href = url; }
+      });
+
+      const video = document.getElementById('logoVid');
+      const fallback = document.getElementById('fallbackText');
+      const webmSrc = getVar('--logo-video-webm');
+      const mp4Src = getVar('--logo-video-mp4');
+
+      if (!videoInitialized && (webmSrc || mp4Src)) {
+        // 关键：针对 iPhone 环境，确保 mp4 能够正确加载且触发透明渲染
+        document.getElementById('srcMp4').src = mp4Src;
+        document.getElementById('srcWebm').src = webmSrc;
+        video.load();
+        
+        // 自动播放处理
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {
+            video.muted = true;
+            video.play();
+          });
+        }
+        
+        video.oncanplay = () => {
+          video.style.display = 'block';
+          fallback.style.display = 'none';
+        };
+
+        video.onerror = () => {
+          video.style.display = 'none';
+          fallback.style.display = 'block';
+        };
+        videoInitialized = true;
+      }
+
+      // Readymag 框架兼容性补丁
+      try {
+        let current = window.frameElement;
+        while (current) {
+          current.style.setProperty('background-color', 'transparent', 'important');
+          current.style.setProperty('overflow', 'visible', 'important');
+          current.style.setProperty('clip', 'auto', 'important');
+          current.style.setProperty('clip-path', 'none', 'important');
+          
+          if (current.classList && (current.classList.contains('p-widget') || current.getAttribute('data-id'))) {
+             current.style.setProperty('z-index', '2147483647', 'important');
+             current.style.setProperty('pointer-events', 'none', 'important');
+          }
+          current = current.parentElement || current.parentNode;
+        }
+      } catch (e) {}
+    }
+
+    window.addEventListener('load', initNav);
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 768 && isMenuOpen) toggleMenu();
+      initNav();
+    });
+    
+    // 定时检查以应对动态加载
+    setInterval(initNav, 1000);
+  </script>
+</body>
+</html>
