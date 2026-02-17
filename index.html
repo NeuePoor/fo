@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <!-- 
   项目名称: Folio Portfolio Navigation
-  版本号: v1.6
-  描述: 深度修复宽屏模式下导航字体变小及间距丢失的问题。
+  版本号: v2.0
+  描述: 优化移动端折叠菜单层级，确保菜单背景盖住全屏背景视频。
 -->
-<title>Folio v1.6 - Portfolio Navigation</title>
+<title>Folio v2.0 - Portfolio Navigation</title>
 <style>
   /* ==============================================
      【小白自定义配置区 - 修改这里即可】
@@ -23,18 +23,23 @@
     --logo-font-size: 32px;       
     --logo-link-url: "home";      
     
-    --nav-font-size: 32px;        /* 顶部导航文字大小 (宽屏) */
-    --nav-gap: 40px;              /* 链接之间的空格间距 */
+    --nav-font-size: 32px;        
+    --nav-gap: 40px;              
 
-    /* --- 2. 移动端专项设置 --- */
+    /* --- 2. 背景视频配置 --- */
+    --bg-video-webm: "https://folio.neuepoor.com/fo_chrome.webm";
+    --bg-video-mp4: "https://folio.neuepoor.com/fo_safari.mp4";
+    --bg-video-opacity: 0.8;      
+
+    /* --- 3. 移动端专项设置 --- */
     --mobile-logo-text: "Fooz.";     
     --mobile-logo-font-size: 18px; 
     --mobile-logo-height: 18px;   
     --mobile-nav-height: 18px;    
     --mobile-hamburger-size: 20px; 
-    --mobile-nav-font-size: 48px; /* 菜单展开后的超大字 */
+    --mobile-nav-font-size: 48px; 
 
-    /* --- 3. 顶部链接内容 --- */
+    /* --- 4. 顶部链接内容 --- */
     --nav-link-1-text: "Works";   
     --nav-link-1-url: "#work";    
     --nav-link-2-text: "(Play)";  
@@ -42,14 +47,15 @@
     --nav-link-3-text: "Me";      
     --nav-link-3-url: "#me";      
 
-    /* --- 4. 底部导航设置 (Footer) --- */
+    /* --- 5. 底部导航设置 (Footer) --- */
     --footer-font-size: 10px;     
     --footer-font-weight: bold;   
     --footer-padding: 10px 8px;   
+    --footer-link-gap: 12px;      
     --footer-right-text: "©2024 Folio Archive.";
     --footer-right-url: "#";
 
-    /* --- 5. 通用全局样式 --- */
+    /* --- 6. 通用全局样式 --- */
     --mobile-menu-bg: #BABABA;    
     --side-padding: 8px;          
     --vertical-padding: 8px;      
@@ -63,82 +69,78 @@
   */
 
   body, html {
-    margin: 0;
-    padding: 0;
+    margin: 0; padding: 0;
     font-family: var(--font-family);
-    background: transparent;
-    height: 100%;
+    background: #fff; /* 设置一个底色 */
+    height: 100%; overflow-x: hidden;
   }
 
-  /* 顶部导航容器 */
+  /* 全屏背景视频层 - 层级为 1 */
+  .bg-video-container {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    z-index: 1; 
+    pointer-events: none;
+    opacity: 0; 
+    transition: opacity 0.6s ease;
+    overflow: hidden;
+  }
+
+  .bg-video-container video {
+    width: 100%; height: 100%;
+    object-fit: cover; 
+    background: transparent;
+  }
+
+  .bg-active {
+    opacity: var(--bg-video-opacity);
+  }
+
+  /* 顶部导航 - 层级高于视频和菜单层 */
   .custom-nav {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%; 
-    display: flex;
-    justify-content: space-between;
-    align-items: center; 
+    top: 0; left: 0; width: 100%; 
+    display: flex; justify-content: space-between; align-items: center; 
     padding: var(--vertical-padding) var(--side-padding); 
     box-sizing: border-box;
-    z-index: 2000;
+    z-index: 3000; /* 最高层级，确保 logo 和汉堡包始终在最前 */
     pointer-events: none; 
   }
 
   .logo-container, .nav-links, .menu-toggle {
     pointer-events: auto; 
-    display: flex;
-    align-items: center;
+    display: flex; align-items: center;
   }
 
   .logo-container {
-    text-decoration: none;
-    color: #000;
-    height: var(--logo-height);
+    text-decoration: none; color: #000; height: var(--logo-height);
+    cursor: pointer;
   }
 
   .logo-video {
-    height: 100%;
-    width: auto;
-    display: none; 
-    background: transparent;
-    object-fit: contain;
+    height: 100%; width: auto; display: none; background: transparent; object-fit: contain;
   }
 
   .logo-fallback {
-    font-weight: bold;
-    font-size: var(--logo-font-size);
-    letter-spacing: -0.05em;
-    line-height: 1;
+    font-weight: bold; font-size: var(--logo-font-size); letter-spacing: -0.05em; line-height: 1; display: inline-block;
   }
 
-  /* 宽屏导航样式回归 */
   .nav-links { 
     display: flex; 
-    gap: var(--nav-gap) !important; /* 强制间距 */
+    gap: var(--nav-gap) !important; 
   }
 
   .nav-links a {
-    text-decoration: none;
-    color: #000;
-    font-size: var(--nav-font-size) !important; /* 强制 32px */
-    font-weight: bold;
-    transition: var(--transition);
-    line-height: 1;
+    text-decoration: none; color: #000; font-size: var(--nav-font-size) !important; 
+    font-weight: bold; transition: var(--transition); line-height: 1;
   }
 
-  .nav-links a:hover { 
-    opacity: 0.5; 
-  }
+  .nav-links a:hover { opacity: 0.5; }
 
   /* 汉堡包按钮 */
   .menu-toggle {
-    display: none;
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 10px;
-    z-index: 2100;
+    display: none; background: none; border: none; cursor: pointer; padding: 10px; z-index: 3100;
   }
   .hamburger-box { width: var(--mobile-hamburger-size); height: 14px; position: relative; }
   .hamburger-inner {
@@ -151,28 +153,33 @@
   .is-open .hamburger-inner::before { top: 0; opacity: 0; }
   .is-open .hamburger-inner::after { bottom: 0; transform: rotate(-90deg); }
 
-  /* 移动端全屏菜单 */
+  /* 移动端全屏菜单 - 层级为 2000 (位于视频之上，导航之下) */
   .mobile-menu-overlay {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100vh; 
     background-color: var(--mobile-menu-bg);
     display: flex; flex-direction: column; justify-content: center; align-items: flex-start; 
     padding: 0 40px; box-sizing: border-box; transition: var(--transition);
-    z-index: 1900; transform: translateY(-100%); visibility: hidden;
+    z-index: 2000; 
+    transform: translateY(-100%); 
+    visibility: hidden;
   }
-  .mobile-menu-overlay.is-active { transform: translateY(0); visibility: visible; }
+  .mobile-menu-overlay.is-active { 
+    transform: translateY(0); 
+    visibility: visible; 
+  }
   .mobile-menu-overlay a {
     text-decoration: none; color: #000; font-size: var(--mobile-nav-font-size); font-weight: bold; margin-bottom: 24px;
   }
 
-  /* 底部导航 */
+  /* 底部导航 - 始终在最前 */
   .custom-footer {
     position: fixed;
     bottom: 0; left: 0; width: 100%;
     display: flex; justify-content: space-between; align-items: flex-end;
     padding: var(--footer-padding);
     box-sizing: border-box;
-    z-index: 2200; /* 确保在菜单层之上 */
+    z-index: 3000; 
     pointer-events: none;
   }
 
@@ -182,36 +189,49 @@
     font-weight: var(--footer-font-weight);
     color: #000;
   }
-
-  .footer-left { display: flex; gap: 4px; flex-wrap: wrap; }
+  .footer-left { display: flex; gap: var(--footer-link-gap); flex-wrap: wrap; }
   .footer-left a, .footer-right a { text-decoration: none; color: inherit; transition: opacity 0.3s; }
   .footer-left a:hover, .footer-right a:hover { opacity: 0.5; }
 
-  /* 移动端布局切换 */
+  /* 响应式适配 */
   @media (max-width: 768px) {
     .nav-links { display: none !important; }
     .menu-toggle { display: flex; }
     .logo-container { height: var(--mobile-logo-height); }
     .logo-fallback { font-size: var(--mobile-logo-font-size); }
-    .custom-nav { min-height: calc(var(--mobile-nav-height) + (var(--vertical-padding) * 2)); }
+    
+    /* 移动端背景视频默认可见 */
+    .bg-video-container { 
+      opacity: var(--bg-video-opacity); 
+      z-index: 1; /* 确保在菜单层 2000 之下 */
+    }
   }
 </style>
 </head>
 <body>
 
+  <!-- 层级 1: 全屏背景视频层 -->
+  <div class="bg-video-container" id="bgVideoWrapper">
+    <video id="bgVid" loop muted playsinline webkit-playsinline disablePictureInPicture preload="auto">
+      <source id="bgSrcMp4" type='video/mp4; codecs="hvc1"'> 
+      <source id="bgSrcWebm" type="video/webm">
+    </video>
+  </div>
+
+  <!-- 层级 3000: 顶部导航 (确保汉堡包不被盖住) -->
   <nav class="custom-nav">
     <a href="/" class="logo-container" id="logoLink">
       <video class="logo-video" id="logoVid" autoplay loop muted playsinline webkit-playsinline preload="auto">
         <source id="srcMp4" type='video/mp4; codecs="hvc1"'> 
         <source id="srcWebm" type="video/webm">
       </video>
-      <span class="logo-fallback" id="fallbackText">Fooz</span>
+      <span class="logo-fallback" id="fallbackText"></span>
     </a>
     
     <div class="nav-links">
-      <a href="#work" id="nav1">Works</a>
-      <a href="#play" id="nav2">(Play)</a>
-      <a href="#me" id="nav3">Me</a>
+      <a href="#" id="nav1"></a>
+      <a href="#" id="nav2"></a>
+      <a href="#" id="nav3"></a>
     </div>
 
     <button class="menu-toggle" id="menuBtn" onclick="toggleMenu()">
@@ -219,25 +239,27 @@
     </button>
   </nav>
 
+  <!-- 层级 2000: 移动端菜单层 (盖住视频) -->
   <div class="mobile-menu-overlay" id="mobileMenu">
-    <a href="#work" id="mobNav1" onclick="toggleMenu()">Works</a>
-    <a href="#play" id="mobNav2" onclick="toggleMenu()">(Play)</a>
-    <a href="#me" id="mobNav3" onclick="toggleMenu()">Me</a>
+    <a href="#" id="mobNav1" onclick="toggleMenu()"></a>
+    <a href="#" id="mobNav2" onclick="toggleMenu()"></a>
+    <a href="#" id="mobNav3" onclick="toggleMenu()"></a>
   </div>
 
+  <!-- 层级 3000: 底部页脚 -->
   <footer class="custom-footer">
     <div class="footer-left" id="footerLeft"></div>
     <div class="footer-right">
-      <a href="#" id="footerRightLink">©2024 Folio Archive.</a>
+      <a href="#" id="footerRightLink"></a>
     </div>
   </footer>
 
   <script>
     const footerLinks = [
       { text: "Email", url: "mailto:hello@example.com" },
-      { text: "/Ins", url: "https://instagram.com" },
-      { text: "/Wechat", url: "#" },
-      { text: "/Redbook", url: "#" }
+      { text: "Ins", url: "https://instagram.com" },
+      { text: "Wechat", url: "#wechat-qr" },
+      { text: "Redbook", url: "https://xiaohongshu.com" }
     ];
 
     let isMenuOpen = false;
@@ -259,16 +281,45 @@
 
     function init() {
       const root = document.documentElement;
-      const getVar = (name) => getComputedStyle(root).getPropertyValue(name).replace(/"/g, '').trim();
+      const getVar = (name) => getComputedStyle(root).getPropertyValue(name).trim().replace(/^"(.*)"$/, '$1');
       
-      document.getElementById('logoLink').href = getVar('--logo-link-url');
+      const bgVideo = document.getElementById('bgVid');
+      const bgWrapper = document.getElementById('bgVideoWrapper');
+      const logoLink = document.getElementById('logoLink');
+      
+      document.getElementById('bgSrcMp4').src = getVar('--bg-video-mp4');
+      document.getElementById('bgSrcWebm').src = getVar('--bg-video-webm');
+      bgVideo.load();
 
-      const updateLogo = () => {
-        const isMobile = window.innerWidth <= 768;
-        document.getElementById('fallbackText').textContent = isMobile ? getVar('--mobile-logo-text') : getVar('--logo-text');
+      const handleBgVideo = () => {
+        if (window.innerWidth > 768) {
+          logoLink.onmouseenter = () => { bgWrapper.classList.add('bg-active'); bgVideo.play().catch(()=>{}); };
+          logoLink.onmouseleave = () => { 
+            bgWrapper.classList.remove('bg-active'); 
+            setTimeout(() => { if(!bgWrapper.classList.contains('bg-active')) bgVideo.pause(); }, 600);
+          };
+        } else {
+          bgWrapper.classList.add('bg-active');
+          bgVideo.play().catch(()=>{});
+        }
       };
-      updateLogo();
-      window.addEventListener('resize', updateLogo);
+      handleBgVideo();
+      window.addEventListener('resize', handleBgVideo);
+
+      const video = document.getElementById('logoVid');
+      const fallback = document.getElementById('fallbackText');
+      document.getElementById('logoLink').href = getVar('--logo-link-url');
+      document.getElementById('srcMp4').src = getVar('--logo-video-mp4');
+      document.getElementById('srcWebm').src = getVar('--logo-video-webm');
+      video.load();
+      video.oncanplay = () => { video.style.display = 'block'; fallback.style.display = 'none'; };
+      video.onerror = () => { video.style.display = 'none'; fallback.style.display = 'block'; };
+
+      const updateLogoText = () => {
+        const isMobile = window.innerWidth <= 768;
+        fallback.textContent = isMobile ? getVar('--mobile-logo-text') : getVar('--logo-text');
+      };
+      updateLogoText();
       
       const navItems = [
         {id: 'nav1', mobId: 'mobNav1', textVar: '--nav-link-1-text', urlVar: '--nav-link-1-url'},
@@ -283,22 +334,15 @@
       });
 
       const footerLeft = document.getElementById('footerLeft');
+      footerLeft.innerHTML = "";
       footerLinks.forEach(link => {
         const a = document.createElement('a');
         a.href = link.url; a.textContent = link.text;
         footerLeft.appendChild(a);
       });
-
-      document.getElementById('footerRightLink').textContent = getVar('--footer-right-text');
-      document.getElementById('footerRightLink').href = getVar('--footer-right-url');
-
-      const video = document.getElementById('logoVid');
-      const fallback = document.getElementById('fallbackText');
-      document.getElementById('srcMp4').src = getVar('--logo-video-mp4');
-      document.getElementById('srcWebm').src = getVar('--logo-video-webm');
-      video.load();
-      video.oncanplay = () => { video.style.display = 'block'; fallback.style.display = 'none'; };
-      video.onerror = () => { video.style.display = 'none'; fallback.style.display = 'block'; };
+      const rightLink = document.getElementById('footerRightLink');
+      rightLink.textContent = getVar('--footer-right-text');
+      rightLink.href = getVar('--footer-right-url');
     }
 
     document.addEventListener('DOMContentLoaded', init);
