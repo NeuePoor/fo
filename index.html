@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <!-- 
   项目名称: Folio Portfolio Navigation
-  版本号: v2.8
-  描述: 修复 Safari 移动端菜单背景残留 Bug，优化滚动触发灵敏度。
+  版本号: v3.0
+  描述: 优化深色模式适配，排除 Logo 视频的反色效果，保持品牌标识原样。
 -->
 <title>Loading...</title>
 <link id="dynamicFavicon" rel="icon" type="image/webp" href="">
@@ -17,10 +17,17 @@
   */
   :root {
     /* --- 0. 站点基础配置 --- */
-    --site-title: "Folio v2.8 - Portfolio Archive";
+    --site-title: "Fo";
     --site-favicon: "https://folio.neuepoor.com/Favicon.webp";
 
-    /* --- 1. 桌面端顶部导航 --- */
+    /* --- 1. 颜色体系 (浅色模式) --- */
+    --bg-color: #ffffff;
+    --text-color: #000000;
+    --mobile-menu-bg: #BABABA;
+    --video-overlay-color: #ffffff;
+    --nav-hover-opacity: 0.3;
+
+    /* --- 2. 桌面端顶部导航 --- */
     --logo-video-webm: "https://folio.neuepoor.com/head_chrome.webm"; 
     --logo-video-mp4: "https://folio.neuepoor.com/head_safari.mp4";   
     --logo-height: 48px;          
@@ -31,12 +38,12 @@
     --nav-font-size: 32px;        
     --nav-gap: 40px;              
 
-    /* --- 2. 背景视频配置 --- */
+    /* --- 3. 背景视频配置 --- */
     --bg-video-webm: "https://folio.neuepoor.com/fo_chrome.webm";
     --bg-video-mp4: "https://folio.neuepoor.com/fo_safari.mp4";
     --bg-video-opacity: 0.8;      
 
-    /* --- 3. 移动端专项设置 --- */
+    /* --- 4. 移动端专项设置 --- */
     --mobile-logo-text: "Fooz.";     
     --mobile-logo-font-size: 18px; 
     --mobile-logo-height: 18px;   
@@ -44,7 +51,7 @@
     --mobile-hamburger-size: 20px; 
     --mobile-nav-font-size: 48px; 
 
-    /* --- 4. 顶部链接内容 --- */
+    /* --- 5. 顶部链接内容 --- */
     --nav-link-1-text: "Works";   
     --nav-link-1-url: "#work";    
     --nav-link-2-text: "(Play)";  
@@ -52,34 +59,45 @@
     --nav-link-3-text: "Me";      
     --nav-link-3-url: "#me";      
 
-    /* --- 5. 底部导航设置 (Footer) --- */
+    /* --- 6. 底部导航设置 (Footer) --- */
     --footer-font-size: 10px;     
     --footer-font-weight: bold;   
     --footer-padding: 10px 8px;   
     --footer-link-gap: 12px;      
     --footer-right-text: "©2024 Folio Archive.";
-    --footer-right-url: "#";
+    --footer-right-url: "fo.neuepoor.com";
 
-    /* --- 6. 通用全局样式 --- */
-    --mobile-menu-bg: #BABABA;    
+    /* --- 7. 通用全局样式 --- */
     --side-padding: 8px;          
     --vertical-padding: 8px;      
     --font-family: "Arial", sans-serif; 
     --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);  
 
-    /* --- 7. 悬停中心文字配置 (PC) --- */
+    /* --- 8. 悬停中心文字配置 (PC) --- */
     --center-text-font-size: 32px; 
     --center-text-font-weight: bold;
-    --center-text-color: #000;
-    --center-text-1: "I work 4 brand.";
+    --center-text-1: "I Work 4 brand.";
     --center-text-2: "I (Play) Sth.";
     --center-text-3: "Hi, I'm Fo.";
 
-    /* --- 8. 移动端滚动文字配置 --- */
+    /* --- 9. 移动端滚动文字配置 --- */
     --mobile-scroll-text-1: "Hi, I'm Fo.";
-    --mobile-scroll-text-2: "I work 4 brand.";
+    --mobile-scroll-text-2: "I Work 4 brand.";
     --mobile-scroll-text-3: "I (Play) Sth.";
-    --mobile-scroll-text-4: "Contact Me";
+    --mobile-scroll-text-4: "Contact Me.";
+  }
+
+  /* --- 10. 颜色体系 (深色模式自动适配) --- */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg-color: #000000;
+      --text-color: #ffffff;
+      --mobile-menu-bg: #1a1a1a;
+      --video-overlay-color: #000000;
+      --nav-hover-opacity: 0.4;
+      --bg-video-opacity: 0.6; 
+    }
+    /* 已移除针对 .logo-video 的 filter 规则，保持其原始颜色 */
   }
 
   /* ==============================================
@@ -87,16 +105,16 @@
      ==============================================
   */
 
-  /* 方案三重点：同步 html/body 背景色，防止 Safari 渲染层空洞 */
   html, body {
     margin: 0; padding: 0;
     font-family: var(--font-family);
-    background-color: #ffffff; 
+    background-color: var(--bg-color); 
+    color: var(--text-color);
     height: 100%; 
     -webkit-font-smoothing: antialiased;
+    transition: background-color 0.5s ease, color 0.5s ease;
   }
 
-  /* 设置滚动高度 */
   @media (max-width: 768px) {
     body { height: 200vh; } 
   }
@@ -108,9 +126,9 @@
     z-index: 1; 
     pointer-events: none;
     opacity: 0; 
-    transition: opacity 0.6s ease;
+    transition: opacity 0.6s ease, background-color 0.5s ease;
     overflow: hidden;
-    background-color: #ffffff;
+    background-color: var(--bg-color);
   }
 
   .bg-video-container video {
@@ -129,9 +147,8 @@
     display: flex; justify-content: space-between; align-items: center; 
     padding: var(--vertical-padding) var(--side-padding); 
     box-sizing: border-box;
-    z-index: 4000; /* 调高 z-index 确保始终在 overlay 之上 */
+    z-index: 4000;
     pointer-events: none; 
-    /* 强制开启硬件加速 */
     -webkit-transform: translateZ(0);
     transform: translateZ(0);
   }
@@ -142,13 +159,17 @@
   }
 
   .logo-container {
-    text-decoration: none; color: #000; height: var(--logo-height);
+    text-decoration: none; 
+    color: var(--text-color); 
+    height: var(--logo-height);
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
+    transition: color 0.5s ease;
   }
 
   .logo-video {
     height: 100%; width: auto; display: none; background: transparent; object-fit: contain;
+    /* 不设置 filter，保持原样 */
   }
 
   .logo-fallback {
@@ -161,13 +182,16 @@
   }
 
   .nav-links a {
-    text-decoration: none; color: #000; font-size: var(--nav-font-size); 
-    font-weight: bold; transition: var(--transition); line-height: 1;
+    text-decoration: none; 
+    color: var(--text-color); 
+    font-size: var(--nav-font-size); 
+    font-weight: bold; 
+    transition: var(--transition), color 0.5s ease; 
+    line-height: 1;
   }
 
-  .nav-links a:hover { opacity: 0.3; }
+  .nav-links a:hover { opacity: var(--nav-hover-opacity); }
 
-  /* PC 端中心文字 */
   .center-text-overlay {
     position: fixed;
     top: 50%;
@@ -179,16 +203,15 @@
     width: 100%;
     font-size: var(--center-text-font-size);
     font-weight: var(--center-text-font-weight);
-    color: var(--center-text-color);
+    color: var(--text-color);
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.3s ease, color 0.5s ease;
   }
 
   .center-text-overlay.show {
     opacity: 1;
   }
 
-  /* 移动端滚动切换文字容器 */
   .mobile-scroll-text-container {
     display: none; 
     position: fixed;
@@ -205,10 +228,10 @@
     font-size: var(--mobile-nav-font-size);
     font-family: Arial, sans-serif;
     font-weight: bold;
-    color: #000;
+    color: var(--text-color);
     opacity: 0;
     filter: blur(12px); 
-    transition: opacity 0.35s ease, filter 0.35s ease;
+    transition: opacity 0.35s ease, filter 0.35s ease, color 0.5s ease;
     position: absolute;
     width: 100%;
     left: 0;
@@ -226,16 +249,15 @@
   }
   .hamburger-box { width: var(--mobile-hamburger-size); height: 14px; position: relative; }
   .hamburger-inner {
-    display: block; top: 50%; width: 100%; height: 2px; background-color: #000; position: absolute; transition: var(--transition);
+    display: block; top: 50%; width: 100%; height: 2px; background-color: var(--text-color); position: absolute; transition: var(--transition), background-color 0.5s ease;
   }
-  .hamburger-inner::before, .hamburger-inner::after { content: ""; display: block; width: 100%; height: 2px; background-color: #000; position: absolute; transition: var(--transition); }
+  .hamburger-inner::before, .hamburger-inner::after { content: ""; display: block; width: 100%; height: 2px; background-color: var(--text-color); position: absolute; transition: var(--transition), background-color 0.5s ease; }
   .hamburger-inner::before { top: -6px; } 
   .hamburger-inner::after { bottom: -6px; }
   .is-open .hamburger-inner { transform: rotate(45deg); }
   .is-open .hamburger-inner::before { top: 0; opacity: 0; }
   .is-open .hamburger-inner::after { bottom: 0; transform: rotate(-90deg); }
 
-  /* 方案三重点：优化移动端遮罩层渲染 */
   .mobile-menu-overlay {
     position: fixed;
     top: 0; left: 0; 
@@ -253,7 +275,6 @@
     transform: translateY(-100%); 
     visibility: hidden;
     overflow: hidden;
-    /* 强制开启硬件加速，防止 Safari 灰色残留 */
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
     will-change: transform;
@@ -266,6 +287,7 @@
     background-color: var(--mobile-menu-bg);
     z-index: -1;
     transform: translateZ(0);
+    transition: background-color 0.5s ease;
   }
 
   .mobile-menu-overlay.is-active { 
@@ -275,11 +297,12 @@
 
   .mobile-menu-overlay a {
     text-decoration: none; 
-    color: #000; 
+    color: var(--text-color); 
     font-size: var(--mobile-nav-font-size); 
     font-weight: bold; 
     margin-bottom: 24px;
     line-height: 1;
+    transition: color 0.5s ease;
   }
 
   .custom-footer {
@@ -297,10 +320,11 @@
     pointer-events: auto;
     font-size: var(--footer-font-size);
     font-weight: var(--footer-font-weight);
-    color: #000;
+    color: var(--text-color);
+    transition: color 0.5s ease;
   }
   .footer-left { display: flex; gap: var(--footer-link-gap); flex-wrap: wrap; }
-  .footer-left a, .footer-right a { text-decoration: none; color: inherit; transition: opacity 0.3s; }
+  .footer-left a, .footer-right a { text-decoration: none; color: inherit; transition: opacity 0.3s, color 0.5s ease; }
   .footer-left a:hover, .footer-right a:hover { opacity: 0.5; }
 
   @media (max-width: 768px) {
@@ -389,7 +413,6 @@
         btn.classList.remove('is-open');
         document.body.style.overflow = ''; 
         
-        // 方案三 JS 兜底：动画结束后重置滚动到顶部，防止 Safari 底部残留
         setTimeout(() => {
           if (!isMenuOpen) window.dispatchEvent(new Event('scroll'));
         }, 400);
@@ -460,7 +483,6 @@
         const maxScroll = document.body.scrollHeight - window.innerHeight;
         const currentScroll = window.scrollY;
         
-        // 灵敏度配置：0.02 进度即触发切换
         let progress = (currentScroll / maxScroll) * 1.4; 
         let index = Math.floor(progress * scrollTexts.length);
         
