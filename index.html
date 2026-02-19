@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <!-- 
   项目名称: Folio Portfolio Navigation
-  版本号: v3.1
-  描述: 将 Footer 内容完全提取至自定义配置区，方便修改 Email, Ins, Wechat, Redbook 等链接。
+  版本号: v3.1.2
+  描述: 基于 v3.1 差值模式，通过给 Logo 视频添加反色滤镜（负负得正）解决浅色模式下的显示问题。
 -->
 <title>Loading...</title>
 <link id="dynamicFavicon" rel="icon" type="image/webp" href="">
@@ -20,9 +20,9 @@
     --site-title: "Fo";
     --site-favicon: "https://folio.neuepoor.com/Favicon.webp";
 
-    /* --- 1. 颜色体系 (浅色模式) --- */
+    /* --- 1. 颜色体系 (浅色模式已修改为白色以配合差值效果) --- */
     --bg-color: #ffffff;
-    --text-color: #000000;
+    --text-color: #ffffff;         /* 修改为白色，利用差值效果在白底显示黑色 */
     --mobile-menu-bg: #BABABA;
     --video-overlay-color: #ffffff;
     --nav-hover-opacity: 0.3;
@@ -31,7 +31,7 @@
     --logo-video-webm: "https://folio.neuepoor.com/head_chrome.webm"; 
     --logo-video-mp4: "https://folio.neuepoor.com/head_safari.mp4";   
     --logo-height: 48px;          
-    --logo-text: "Fo";          
+    --logo-text: "Fooz";          
     --logo-font-size: 32px;       
     --logo-link-url: "home";      
     
@@ -44,7 +44,7 @@
     --bg-video-opacity: 0.8;      
 
     /* --- 4. 移动端专项设置 --- */
-    --mobile-logo-text: "Fo";     
+    --mobile-logo-text: "Fooz.";     
     --mobile-logo-font-size: 18px; 
     --mobile-logo-height: 18px;   
     --mobile-nav-height: 18px;    
@@ -62,20 +62,17 @@
     /* --- 6. 底部导航设置 (Footer) --- */
     /* 样式控制 */
     --footer-font-size: 10px;     
-    --footer-font-weight: bold;   /* 可选: normal 或 bold */
+    --footer-font-weight: bold;   
     --footer-padding: 10px 8px;   
     --footer-link-gap: 12px;      
 
-    /* 左侧链接 1: Email */
+    /* 左侧链接链接内容 */
     --footer-link-1-text: "Email";
     --footer-link-1-url: "mailto:hello@example.com";
-    /* 左侧链接 2: Instagram */
     --footer-link-2-text: "Ins";
     --footer-link-2-url: "https://instagram.com";
-    /* 左侧链接 3: WeChat */
     --footer-link-3-text: "Wechat";
     --footer-link-3-url: "#wechat-qr";
-    /* 左侧链接 4: Redbook */
     --footer-link-4-text: "Redbook";
     --footer-link-4-url: "https://xiaohongshu.com";
 
@@ -103,7 +100,7 @@
     --mobile-scroll-text-4: "Contact Me.";
   }
 
-  /* --- 10. 颜色体系 (深色模式自动适配) --- */
+  /* --- 10. 颜色体系 (深色模式保持白色文字) --- */
   @media (prefers-color-scheme: dark) {
     :root {
       --bg-color: #000000;
@@ -134,6 +131,27 @@
     body { height: 200vh; } 
   }
 
+  /* 差值效果核心样式 */
+  .custom-nav, .custom-footer, .center-text-overlay, .mobile-scroll-text-container {
+    mix-blend-mode: difference; 
+  }
+
+  /* 【核心修改】：给 Logo 视频增加反色滤镜
+     由于父级 custom-nav 是 difference 模式且背景为白，
+     视频会被反色。我们预先将其反色一遍，即可“负负得正”。
+  */
+  .logo-video {
+    filter: invert(1); /* 浅色模式下预先反色 */
+    transition: filter 0.5s ease;
+  }
+
+  /* 深色模式下背景本身就是黑的，difference 模式不会导致视频反色，所以不需要滤镜 */
+  @media (prefers-color-scheme: dark) {
+    .logo-video {
+      filter: invert(0); 
+    }
+  }
+
   .bg-video-container {
     position: fixed;
     top: 0; left: 0;
@@ -141,9 +159,8 @@
     z-index: 1; 
     pointer-events: none;
     opacity: 0; 
-    transition: opacity 0.6s ease, background-color 0.5s ease;
+    transition: opacity 0.6s ease;
     overflow: hidden;
-    background-color: var(--bg-color);
   }
 
   .bg-video-container video {
@@ -292,6 +309,7 @@
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
     will-change: transform;
+    mix-blend-mode: normal; 
   }
 
   .mobile-menu-overlay::before {
@@ -397,9 +415,7 @@
   </div>
 
   <footer class="custom-footer">
-    <div class="footer-left" id="footerLeft">
-      <!-- 链接将通过 JS 动态生成 -->
-    </div>
+    <div class="footer-left" id="footerLeft"></div>
     <div class="footer-right">
       <a href="#" id="footerRightLink"></a>
     </div>
@@ -421,10 +437,7 @@
         menu.classList.remove('is-active');
         btn.classList.remove('is-open');
         document.body.style.overflow = ''; 
-        
-        setTimeout(() => {
-          if (!isMenuOpen) window.dispatchEvent(new Event('scroll'));
-        }, 400);
+        setTimeout(() => { if (!isMenuOpen) window.dispatchEvent(new Event('scroll')); }, 400);
       }
     }
 
@@ -432,7 +445,6 @@
       const root = document.documentElement;
       const getVar = (name) => getComputedStyle(root).getPropertyValue(name).trim().replace(/^"(.*)"$/, '$1');
       
-      // 站点基础
       document.title = getVar('--site-title');
       const favicon = document.getElementById('dynamicFavicon') || document.createElement('link');
       favicon.id = 'dynamicFavicon';
@@ -440,7 +452,6 @@
       favicon.href = getVar('--site-favicon');
       if (!document.getElementById('dynamicFavicon')) document.head.appendChild(favicon);
 
-      // 背景视频初始化
       const bgVideo = document.getElementById('bgVid');
       const bgWrapper = document.getElementById('bgVideoWrapper');
       const logoLink = document.getElementById('logoLink');
@@ -479,37 +490,27 @@
 
       handleLogoInteraction();
 
-      // 移动端滚动文字
       const scrollTexts = [
         document.getElementById('scrollText1'),
         document.getElementById('scrollText2'),
         document.getElementById('scrollText3'),
         document.getElementById('scrollText4')
       ];
-
-      scrollTexts[0].textContent = getVar('--mobile-scroll-text-1');
-      scrollTexts[1].textContent = getVar('--mobile-scroll-text-2');
-      scrollTexts[2].textContent = getVar('--mobile-scroll-text-3');
-      scrollTexts[3].textContent = getVar('--mobile-scroll-text-4');
+      scrollTexts.forEach((st, i) => st.textContent = getVar(`--mobile-scroll-text-${i+1}`));
 
       const handleScroll = () => {
         if (window.innerWidth > 768) return;
         const maxScroll = document.body.scrollHeight - window.innerHeight;
         const currentScroll = window.scrollY;
         let progress = (currentScroll / maxScroll) * 1.4; 
-        let index = Math.floor(progress * scrollTexts.length);
+        let index = Math.max(0, Math.min(Math.floor(progress * scrollTexts.length), scrollTexts.length - 1));
         if (currentScroll < 5) index = 0; 
-        index = Math.max(0, Math.min(index, scrollTexts.length - 1));
-        scrollTexts.forEach((txt, i) => {
-          if (i === index) txt.classList.add('active');
-          else txt.classList.remove('active');
-        });
+        scrollTexts.forEach((txt, i) => i === index ? txt.classList.add('active') : txt.classList.remove('active'));
       };
 
       window.addEventListener('scroll', handleScroll, { passive: true });
       handleScroll(); 
 
-      // Logo 视频初始化
       const video = document.getElementById('logoVid');
       const fallback = document.getElementById('fallbackText');
       document.getElementById('srcMp4').src = getVar('--logo-video-mp4');
@@ -524,7 +525,6 @@
       };
       updateLogoText();
       
-      // 顶部导航链接渲染
       const navItems = [
         {id: 'nav1', mobId: 'mobNav1', textVar: '--nav-link-1-text', urlVar: '--nav-link-1-url', centerVar: '--center-text-1'},
         {id: 'nav2', mobId: 'mobNav2', textVar: '--nav-link-2-text', urlVar: '--nav-link-2-url', centerVar: '--center-text-2'},
@@ -551,24 +551,14 @@
         if (mobEl) { mobEl.textContent = text; mobEl.href = url; }
       });
 
-      // --- 底部 Footer 动态渲染 ---
       const footerLeft = document.getElementById('footerLeft');
       footerLeft.innerHTML = "";
-      
-      // 这里的链接现在全部从 CSS 变量读取
-      const footerLinkConfig = [
-        { textVar: '--footer-link-1-text', urlVar: '--footer-link-1-url' },
-        { textVar: '--footer-link-2-text', urlVar: '--footer-link-2-url' },
-        { textVar: '--footer-link-3-text', urlVar: '--footer-link-3-url' },
-        { textVar: '--footer-link-4-text', urlVar: '--footer-link-4-url' }
-      ];
-
-      footerLinkConfig.forEach(cfg => {
-        const text = getVar(cfg.textVar);
-        const url = getVar(cfg.urlVar);
-        if (text) { // 只有配置了文字才生成
+      const footerLinks = ['--footer-link-1-text', '--footer-link-2-text', '--footer-link-3-text', '--footer-link-4-text'];
+      footerLinks.forEach((v, i) => {
+        const text = getVar(v);
+        if (text) {
           const a = document.createElement('a');
-          a.href = url; 
+          a.href = getVar(`--footer-link-${i+1}-url`);
           a.textContent = text;
           footerLeft.appendChild(a);
         }
@@ -578,11 +568,7 @@
       rightLink.textContent = getVar('--footer-right-text');
       rightLink.href = getVar('--footer-right-url');
 
-      window.addEventListener('resize', () => {
-        handleLogoInteraction();
-        handleScroll();
-        updateLogoText();
-      });
+      window.addEventListener('resize', () => { handleLogoInteraction(); handleScroll(); updateLogoText(); });
     }
 
     document.addEventListener('DOMContentLoaded', init);
