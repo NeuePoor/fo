@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <!-- 
   项目名称: Folio Portfolio Navigation
-  版本号: v2.5
-  描述: 移动端新增随滚动切换的中心循环文字，并带有模糊动效。
+  版本号: v2.6
+  描述: 优化移动端滚动文字切换灵敏度，缩短触发距离。
 -->
 <title>Loading...</title>
 <link id="dynamicFavicon" rel="icon" type="image/webp" href="">
@@ -17,7 +17,7 @@
   */
   :root {
     /* --- 0. 站点基础配置 --- */
-    --site-title: "Folio v2.5 - Portfolio Archive";
+    --site-title: "Folio v2.6 - Portfolio Archive";
     --site-favicon: "https://folio.neuepoor.com/Favicon.webp";
 
     /* --- 1. 桌面端顶部导航 --- */
@@ -96,7 +96,7 @@
 
   /* 为了让移动端有滚动空间，设置 body 的最小高度 */
   @media (max-width: 768px) {
-    body { height: 400vh; } /* 400vh 确保有足够的滚动范围来切换4段文字 */
+    body { height: 250vh; } /* 稍微减小高度，让切换更快发生 */
   }
 
   /* 背景视频容器 */
@@ -185,7 +185,7 @@
 
   /* 移动端滚动切换文字容器 */
   .mobile-scroll-text-container {
-    display: none; /* 默认隐藏，仅在移动端开启 */
+    display: none; 
     position: fixed;
     top: 50%;
     left: 50%;
@@ -198,11 +198,12 @@
 
   .mobile-scroll-text {
     font-size: var(--mobile-nav-font-size);
+    font-family: Arial, sans-serif; /* 显式声明 Arial */
     font-weight: bold;
     color: #000;
     opacity: 0;
-    filter: blur(10px);
-    transition: opacity 0.5s ease, filter 0.5s ease;
+    filter: blur(15px); /* 初始模糊度稍微加大 */
+    transition: opacity 0.4s ease, filter 0.4s ease;
     position: absolute;
     width: 100%;
     left: 0;
@@ -296,7 +297,7 @@
   @media (max-width: 768px) {
     .nav-links { display: none !important; }
     .center-text-overlay { display: none !important; } 
-    .mobile-scroll-text-container { display: block; } /* 仅移动端显示滚动文字 */
+    .mobile-scroll-text-container { display: block; } 
     .menu-toggle { display: flex; }
     .logo-container { height: var(--mobile-logo-height); }
     .logo-fallback { font-size: var(--mobile-logo-font-size); }
@@ -432,7 +433,7 @@
 
       handleLogoInteraction();
 
-      // 移动端滚动逻辑
+      // 移动端滚动逻辑优化
       const scrollTexts = [
         document.getElementById('scrollText1'),
         document.getElementById('scrollText2'),
@@ -448,11 +449,15 @@
       const handleScroll = () => {
         if (window.innerWidth > 768) return;
         
-        const scrollPercent = window.scrollY / (document.body.scrollHeight - window.innerHeight);
-        const index = Math.min(
-          Math.floor(scrollPercent * scrollTexts.length),
-          scrollTexts.length - 1
-        );
+        // 核心优化：让切换在滚动的早期就频繁发生
+        // 使用 window.innerHeight 作为参照，而不是整个文档高度，让响应更灵敏
+        const maxScroll = document.body.scrollHeight - window.innerHeight;
+        const currentScroll = window.scrollY;
+        
+        // 计算索引：
+        // 增加了一个乘数 1.2，使得在滚动到 80% 左右就能完成所有文字切换
+        let index = Math.floor((currentScroll / maxScroll) * scrollTexts.length * 1.1);
+        index = Math.max(0, Math.min(index, scrollTexts.length - 1));
 
         scrollTexts.forEach((txt, i) => {
           if (i === index) {
@@ -463,8 +468,8 @@
         });
       };
 
-      window.addEventListener('scroll', handleScroll);
-      handleScroll(); // 初始化位置
+      window.addEventListener('scroll', handleScroll, { passive: true });
+      handleScroll(); // 页面加载后立即执行一次
 
       window.addEventListener('resize', () => {
         handleLogoInteraction();
