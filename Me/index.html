@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- 
+  项目名称: Folio Portfolio Navigation
+  版本号: v3.1.6
+  更新说明: 
+  1. Logo 文本统一为 "Fo"。
+  2. 移除了 Logo 的跳转链接。
+  3. 全局应用 Arial 优先，系统字体回退原则。
+  4. 扩展小白配置区，增加字体大小和粗细的自定义选项。
+-->
+<title>Loading...</title>
+<link id="dynamicFavicon" rel="icon" type="image/webp" href="">
+<style>
+  /* ==============================================
+     【小白自定义配置区 - 修改这里即可】
+     ==============================================
+  */
+  :root {
+    /* --- 0. 站点基础配置 --- */
+    --site-title: "Fo";
+    --site-favicon: "https://folio.neuepoor.com/Favicon.webp";
+
+    /* --- 1. 颜色体系 --- */
+    --bg-color: #ffffff;
+    --text-color: #ffffff;         /* PC端白色，利用差值在白底显黑 */
+    --mobile-menu-bg: #BABABA;     /* 移动端菜单灰色背景 */
+    --nav-hover-opacity: 0.3;
+
+    /* --- 2. 字体样式自定义 (新增强项) --- */
+    --font-family: "Arial", sans-serif; /* 优先使用Arial，失败则回退系统无衬线 */
+    
+    /* Logo 字体 */
+    --logo-font-size: 32px;
+    --logo-font-weight: bold;
+    --mobile-logo-font-size: 18px;
+
+    /* 导航字体 (Nav Items) */
+    --nav-font-size: 32px;
+    --nav-font-weight: bold;
+    --mobile-nav-font-size: 48px;
+
+    /* 中间悬停文字/滚动文字 */
+    --center-text-font-size: 32px;
+    --center-text-font-weight: bold;
+
+    /* 页脚字体 (Footer) */
+    --footer-font-size: 10px;
+    --footer-font-weight: bold;
+
+    /* --- 3. Logo 内容配置 --- */
+    --logo-video-webm: "https://folio.neuepoor.com/head_chrome.webm"; 
+    --logo-video-mp4: "https://folio.neuepoor.com/head_safari.mp4";   
+    --logo-height: 48px;          
+    --logo-text: "Fo";             /* 已修改为 Fo */
+    --mobile-logo-text: "Fo";      /* 已修改为 Fo */
+    --mobile-logo-height: 18px;   
+
+    /* --- 4. 背景视频配置 --- */
+    --bg-video-webm: "https://folio.neuepoor.com/fo_chrome.webm";
+    --bg-video-mp4: "https://folio.neuepoor.com/fo_safari.mp4";
+    --bg-video-opacity: 0.8;      
+
+    /* --- 5. 顶部链接内容 --- */
+    --nav-link-1-text: "Works";   
+    --nav-link-1-url: "#work";    
+    --nav-link-2-text: "(Play)";  
+    --nav-link-2-url: "#play";    
+    --nav-link-3-text: "Me";      
+    --nav-link-3-url: "/me";      
+
+    /* --- 6. 页脚链接与文案 --- */
+    --footer-link-1-text: "Email";
+    --footer-link-1-url: "mailto:hello@example.com";
+    --footer-link-2-text: "Ins";
+    --footer-link-2-url: "https://instagram.com";
+    --footer-link-3-text: "Wechat";
+    --footer-link-3-url: "#wechat-qr";
+    --footer-link-4-text: "Redbook";
+    --footer-link-4-url: "https://xiaohongshu.com";
+
+    --footer-right-text: "©2024 Folio Archive.";
+    --footer-right-url: "fo.neuepoor.com";
+
+    /* --- 7. 布局间距与通用变量 --- */
+    --side-padding: 8px;          
+    --vertical-padding: 8px;      
+    --nav-gap: 40px;              
+    --footer-link-gap: 12px;      
+    --footer-padding: 10px 8px;   
+    --mobile-hamburger-size: 20px;
+    --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);  
+
+    /* --- 8. 悬停/滚动消息内容 --- */
+    --center-text-1: "I Work 4 brand.";
+    --center-text-2: "I (Play) Sth.";
+    --center-text-3: "Hi, I'm Fo.";
+
+    --mobile-scroll-text-1: "Hi, I'm Fo.";
+    --mobile-scroll-text-2: "I Work 4 brand.";
+    --mobile-scroll-text-3: "I (Play) Sth.";
+    --mobile-scroll-text-4: "Contact Me.";
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg-color: #000000;
+      --text-color: #ffffff;
+      --mobile-menu-bg: #1a1a1a;
+      --bg-video-opacity: 0.6; 
+    }
+  }
+
+  /* ==============================================
+     【核心渲染区】
+     ==============================================
+  */
+
+  html, body {
+    margin: 0; padding: 0;
+    font-family: var(--font-family);
+    background-color: var(--bg-color); 
+    color: var(--text-color);
+    height: 100%; 
+    -webkit-font-smoothing: antialiased;
+    transition: background-color 0.5s ease, color 0.5s ease;
+  }
+
+  @media (max-width: 768px) {
+    body { height: 200vh; } 
+  }
+
+  /* 差值效果层 */
+  .custom-nav, .custom-footer, .center-text-overlay, .mobile-scroll-text-container {
+    mix-blend-mode: difference; 
+  }
+
+  /* 移动端菜单打开时的文字显色修复 (v3.1.5 逻辑) */
+  body.menu-open .mobile-menu-overlay a {
+    color: #000000 !important;
+  }
+  body.menu-open .hamburger-inner,
+  body.menu-open .hamburger-inner::before,
+  body.menu-open .hamburger-inner::after {
+    background-color: #000000 !important;
+  }
+  @media (prefers-color-scheme: dark) {
+    body.menu-open .mobile-menu-overlay a { color: #ffffff !important; }
+    body.menu-open .hamburger-inner,
+    body.menu-open .hamburger-inner::before,
+    body.menu-open .hamburger-inner::after { background-color: #ffffff !important; }
+  }
+
+  .logo-video {
+    filter: invert(1); 
+    transition: filter 0.5s ease;
+  }
+  @media (prefers-color-scheme: dark) {
+    .logo-video { filter: invert(0); }
+  }
+
+  .bg-video-container {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    z-index: 1; 
+    pointer-events: none;
+    opacity: 0; 
+    transition: opacity 0.6s ease;
+    overflow: hidden;
+  }
+  .bg-video-container video { width: 100%; height: 100%; object-fit: cover; background: transparent; }
+  .bg-active { opacity: var(--bg-video-opacity); }
+
+  .custom-nav {
+    position: fixed;
+    top: 0; left: 0; width: 100%; 
+    display: flex; justify-content: space-between; align-items: center; 
+    padding: var(--vertical-padding) var(--side-padding); 
+    box-sizing: border-box;
+    z-index: 4000;
+    pointer-events: none; 
+  }
+
+  .logo-container, .nav-links, .menu-toggle {
+    pointer-events: auto; 
+    display: flex; align-items: center;
+  }
+
+  .logo-container {
+    /* 移除链接属性 */
+    text-decoration: none; 
+    color: var(--text-color); 
+    height: var(--logo-height);
+    cursor: default; /* 改为默认箭头，表示不可点击 */
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .logo-video { height: 100%; width: auto; display: none; background: transparent; object-fit: contain; }
+  .logo-fallback {
+    font-weight: var(--logo-font-weight); 
+    font-size: var(--logo-font-size); 
+    letter-spacing: -0.05em; line-height: 1; 
+    display: inline-block;
+  }
+
+  .nav-links { display: flex; gap: var(--nav-gap); }
+  .nav-links a {
+    text-decoration: none; 
+    color: var(--text-color); 
+    font-size: var(--nav-font-size); 
+    font-weight: var(--nav-font-weight); 
+    transition: var(--transition); 
+    line-height: 1;
+  }
+  .nav-links a:hover { opacity: var(--nav-hover-opacity); }
+
+  .center-text-overlay {
+    position: fixed;
+    top: 50%; left: 50%; transform: translate(-50%, -50%);
+    z-index: 500; pointer-events: none; text-align: center; width: 100%;
+    font-size: var(--center-text-font-size);
+    font-weight: var(--center-text-font-weight);
+    color: var(--text-color);
+    opacity: 0; transition: opacity 0.3s ease;
+  }
+  .center-text-overlay.show { opacity: 1; }
+
+  .mobile-scroll-text-container {
+    display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    z-index: 500; text-align: center; width: 100%; pointer-events: none;
+  }
+  .mobile-scroll-text {
+    font-size: var(--mobile-nav-font-size);
+    font-weight: var(--center-text-font-weight);
+    color: var(--text-color);
+    opacity: 0; filter: blur(12px); 
+    transition: opacity 0.35s ease, filter 0.35s ease;
+    position: absolute; width: 100%; left: 0; top: 50%; transform: translateY(-50%);
+  }
+  .mobile-scroll-text.active { opacity: 1; filter: blur(0px); }
+
+  .menu-toggle { display: none; background: none; border: none; cursor: pointer; padding: 10px; z-index: 4100; }
+  .hamburger-box { width: var(--mobile-hamburger-size); height: 14px; position: relative; }
+  .hamburger-inner {
+    display: block; top: 50%; width: 100%; height: 2px; background-color: var(--text-color); position: absolute; transition: var(--transition);
+  }
+  .hamburger-inner::before, .hamburger-inner::after { content: ""; display: block; width: 100%; height: 2px; background-color: var(--text-color); position: absolute; transition: var(--transition); }
+  .hamburger-inner::before { top: -6px; } 
+  .hamburger-inner::after { bottom: -6px; }
+  .is-open .hamburger-inner { transform: rotate(45deg); }
+  .is-open .hamburger-inner::before { top: 0; opacity: 0; }
+  .is-open .hamburger-inner::after { bottom: 0; transform: rotate(-90deg); }
+
+  .mobile-menu-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+    display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start; 
+    padding-top: calc(var(--vertical-padding) + var(--mobile-logo-height) + 90px); 
+    padding-left: var(--side-padding); box-sizing: border-box; 
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.4s;
+    z-index: 2000; transform: translateY(-100%); visibility: hidden;
+    overflow: hidden; mix-blend-mode: normal !important; 
+  }
+  .mobile-menu-overlay::before {
+    content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background-color: var(--mobile-menu-bg); z-index: -1;
+  }
+  .mobile-menu-overlay.is-active { transform: translateY(0); visibility: visible; }
+  .mobile-menu-overlay a {
+    text-decoration: none; color: var(--text-color); 
+    font-size: var(--mobile-nav-font-size); 
+    font-weight: var(--nav-font-weight); 
+    margin-bottom: 24px; line-height: 1;
+  }
+
+  .custom-footer {
+    position: fixed; bottom: 0; left: 0; width: 100%;
+    display: flex; justify-content: space-between; align-items: flex-end;
+    padding: var(--footer-padding); box-sizing: border-box;
+    z-index: 3000; pointer-events: none;
+  }
+  .footer-left, .footer-right {
+    pointer-events: auto;
+    font-size: var(--footer-font-size);
+    font-weight: var(--footer-font-weight);
+    color: var(--text-color);
+  }
+  .footer-left { display: flex; gap: var(--footer-link-gap); flex-wrap: wrap; }
+  .footer-left a, .footer-right a { text-decoration: none; color: inherit; transition: opacity 0.3s; }
+  .footer-left a:hover, .footer-right a:hover { opacity: 0.5; }
+
+  @media (max-width: 768px) {
+    .nav-links { display: none !important; }
+    .center-text-overlay { display: none !important; } 
+    .mobile-scroll-text-container { display: block; } 
+    .menu-toggle { display: flex; }
+    .logo-container { height: var(--mobile-logo-height); }
+    .logo-fallback { font-size: var(--mobile-logo-font-size); }
+  }
+</style>
+</head>
+<body>
+
+  <div class="bg-video-container" id="bgVideoWrapper">
+    <video id="bgVid" loop muted playsinline webkit-playsinline disablePictureInPicture preload="auto">
+      <source id="bgSrcMp4" type='video/mp4; codecs="hvc1"'> 
+      <source id="bgSrcWebm" type="video/webm">
+    </video>
+  </div>
+
+  <div class="center-text-overlay" id="centerTextOverlay"></div>
+
+  <div class="mobile-scroll-text-container" id="mobileScrollTextContainer">
+    <div class="mobile-scroll-text" id="scrollText1"></div>
+    <div class="mobile-scroll-text" id="scrollText2"></div>
+    <div class="mobile-scroll-text" id="scrollText3"></div>
+    <div class="mobile-scroll-text" id="scrollText4"></div>
+  </div>
+
+  <nav class="custom-nav">
+    <!-- Logo 容器现在只是普通 div 结构 -->
+    <div class="logo-container" id="logoLink">
+      <video class="logo-video" id="logoVid" autoplay loop muted playsinline webkit-playsinline preload="auto">
+        <source id="srcMp4" type='video/mp4; codecs="hvc1"'> 
+        <source id="srcWebm" type="video/webm">
+      </video>
+      <span class="logo-fallback" id="fallbackText"></span>
+    </div>
+    
+    <div class="nav-links">
+      <a href="#" id="nav1"></a>
+      <a href="#" id="nav2"></a>
+      <a href="#" id="nav3"></a>
+    </div>
+
+    <button class="menu-toggle" id="menuBtn" onclick="toggleMenu()">
+      <span class="hamburger-box"><span class="hamburger-inner"></span></span>
+    </button>
+  </nav>
+
+  <div class="mobile-menu-overlay" id="mobileMenu">
+    <a href="#" id="mobNav1" onclick="toggleMenu()"></a>
+    <a href="#" id="mobNav2" onclick="toggleMenu()"></a>
+    <a href="#" id="mobNav3" onclick="toggleMenu()"></a>
+  </div>
+
+  <footer class="custom-footer">
+    <div class="footer-left" id="footerLeft"></div>
+    <div class="footer-right">
+      <a href="#" id="footerRightLink"></a>
+    </div>
+  </footer>
+
+  <script>
+    let isMenuOpen = false;
+    let isBgPlaying = false; 
+
+    function toggleMenu() {
+      const menu = document.getElementById('mobileMenu');
+      const btn = document.getElementById('menuBtn');
+      const body = document.body;
+      isMenuOpen = !isMenuOpen;
+      if (isMenuOpen) {
+        menu.classList.add('is-active');
+        btn.classList.add('is-open');
+        body.classList.add('menu-open');
+        body.style.overflow = 'hidden'; 
+      } else {
+        menu.classList.remove('is-active');
+        btn.classList.remove('is-open');
+        body.classList.remove('menu-open');
+        body.style.overflow = ''; 
+        setTimeout(() => { if (!isMenuOpen) window.dispatchEvent(new Event('scroll')); }, 400);
+      }
+    }
+
+    function init() {
+      const root = document.documentElement;
+      const getVar = (name) => getComputedStyle(root).getPropertyValue(name).trim().replace(/^"(.*)"$/, '$1');
+      
+      document.title = getVar('--site-title');
+      const favicon = document.getElementById('dynamicFavicon') || document.createElement('link');
+      favicon.id = 'dynamicFavicon'; favicon.rel = 'icon';
+      favicon.href = getVar('--site-favicon');
+      if (!document.getElementById('dynamicFavicon')) document.head.appendChild(favicon);
+
+      const bgVideo = document.getElementById('bgVid');
+      const bgWrapper = document.getElementById('bgVideoWrapper');
+      const logoLink = document.getElementById('logoLink');
+      const centerOverlay = document.getElementById('centerTextOverlay');
+      
+      document.getElementById('bgSrcMp4').src = getVar('--bg-video-mp4');
+      document.getElementById('bgSrcWebm').src = getVar('--bg-video-webm');
+      bgVideo.load();
+
+      // 修改交互逻辑：移除跳转链接逻辑
+      const handleLogoInteraction = () => {
+        if (window.innerWidth > 768) {
+          logoLink.onmouseenter = () => { 
+            bgWrapper.classList.add('bg-active'); 
+            bgVideo.play().catch(()=>{}); 
+          };
+          logoLink.onmouseleave = () => { 
+            bgWrapper.classList.remove('bg-active'); 
+            setTimeout(() => { if(!bgWrapper.classList.contains('bg-active')) bgVideo.pause(); }, 600);
+          };
+          // 移除跳转
+          logoLink.onclick = null; 
+        } else {
+          logoLink.onclick = (e) => {
+            e.preventDefault();
+            isBgPlaying = !isBgPlaying;
+            if (isBgPlaying) {
+              bgWrapper.classList.add('bg-active');
+              bgVideo.play().catch(()=>{});
+            } else {
+              bgWrapper.classList.remove('bg-active');
+              setTimeout(() => { if(!isBgPlaying) bgVideo.pause(); }, 600);
+            }
+          };
+        }
+      };
+      handleLogoInteraction();
+
+      const scrollTexts = [
+        document.getElementById('scrollText1'),
+        document.getElementById('scrollText2'),
+        document.getElementById('scrollText3'),
+        document.getElementById('scrollText4')
+      ];
+      scrollTexts.forEach((st, i) => st.textContent = getVar(`--mobile-scroll-text-${i+1}`));
+
+      const handleScroll = () => {
+        if (window.innerWidth > 768) return;
+        const maxScroll = document.body.scrollHeight - window.innerHeight;
+        const currentScroll = window.scrollY;
+        let progress = (currentScroll / maxScroll) * 1.4; 
+        let index = Math.max(0, Math.min(Math.floor(progress * scrollTexts.length), scrollTexts.length - 1));
+        if (currentScroll < 5) index = 0; 
+        scrollTexts.forEach((txt, i) => i === index ? txt.classList.add('active') : txt.classList.remove('active'));
+      };
+
+      window.addEventListener('scroll', handleScroll, { passive: true });
+      handleScroll(); 
+
+      const video = document.getElementById('logoVid');
+      const fallback = document.getElementById('fallbackText');
+      document.getElementById('srcMp4').src = getVar('--logo-video-mp4');
+      document.getElementById('srcWebm').src = getVar('--logo-video-webm');
+      video.load();
+      video.oncanplay = () => { video.style.display = 'block'; fallback.style.display = 'none'; };
+      video.onerror = () => { video.style.display = 'none'; fallback.style.display = 'block'; };
+
+      const updateLogoText = () => {
+        const isMobile = window.innerWidth <= 768;
+        fallback.textContent = isMobile ? getVar('--mobile-logo-text') : getVar('--logo-text');
+      };
+      updateLogoText();
+      
+      const navItems = [
+        {id: 'nav1', mobId: 'mobNav1', textVar: '--nav-link-1-text', urlVar: '--nav-link-1-url', centerVar: '--center-text-1'},
+        {id: 'nav2', mobId: 'mobNav2', textVar: '--nav-link-2-text', urlVar: '--nav-link-2-url', centerVar: '--center-text-2'},
+        {id: 'nav3', mobId: 'mobNav3', textVar: '--nav-link-3-text', urlVar: '--nav-link-3-url', centerVar: '--center-text-3'}
+      ];
+
+      navItems.forEach(item => {
+        const text = getVar(item.textVar);
+        const url = getVar(item.urlVar);
+        const centerMsg = getVar(item.centerVar);
+        const el = document.getElementById(item.id);
+        const mobEl = document.getElementById(item.mobId);
+        if (el) { 
+          el.textContent = text; el.href = url; 
+          el.onmouseenter = () => {
+            if(window.innerWidth > 768) {
+              centerOverlay.textContent = centerMsg;
+              centerOverlay.classList.add('show');
+            }
+          };
+          el.onmouseleave = () => centerOverlay.classList.remove('show');
+        }
+        if (mobEl) { mobEl.textContent = text; mobEl.href = url; }
+      });
+
+      const footerLeft = document.getElementById('footerLeft');
+      footerLeft.innerHTML = "";
+      const footerLinks = ['--footer-link-1-text', '--footer-link-2-text', '--footer-link-3-text', '--footer-link-4-text'];
+      footerLinks.forEach((v, i) => {
+        const text = getVar(v);
+        if (text) {
+          const a = document.createElement('a');
+          a.href = getVar(`--footer-link-${i+1}-url`);
+          a.textContent = text;
+          footerLeft.appendChild(a);
+        }
+      });
+
+      const rightLink = document.getElementById('footerRightLink');
+      rightLink.textContent = getVar('--footer-right-text');
+      rightLink.href = getVar('--footer-right-url');
+
+      window.addEventListener('resize', () => { handleLogoInteraction(); handleScroll(); updateLogoText(); });
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+    window.addEventListener('resize', () => { if (window.innerWidth > 768 && isMenuOpen) toggleMenu(); });
+  </script>
+</body>
+</html>
