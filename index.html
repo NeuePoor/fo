@@ -5,8 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <!-- 
   项目名称: Folio Portfolio Navigation
-  版本号: v3.1.2
-  描述: 基于 v3.1 差值模式，通过给 Logo 视频添加反色滤镜（负负得正）解决浅色模式下的显示问题。
+  版本号: v3.1.6
+  更新说明: 
+  1. Logo 文本统一为 "Fo"。
+  2. 移除了 Logo 的跳转链接。
+  3. 全局应用 Arial 优先，系统字体回退原则。
+  4. 扩展小白配置区，增加字体大小和粗细的自定义选项。
 -->
 <title>Loading...</title>
 <link id="dynamicFavicon" rel="icon" type="image/webp" href="">
@@ -20,36 +24,45 @@
     --site-title: "Fo";
     --site-favicon: "https://folio.neuepoor.com/Favicon.webp";
 
-    /* --- 1. 颜色体系 (浅色模式已修改为白色以配合差值效果) --- */
+    /* --- 1. 颜色体系 --- */
     --bg-color: #ffffff;
-    --text-color: #ffffff;         /* 修改为白色，利用差值效果在白底显示黑色 */
-    --mobile-menu-bg: #BABABA;
-    --video-overlay-color: #ffffff;
+    --text-color: #ffffff;         /* PC端白色，利用差值在白底显黑 */
+    --mobile-menu-bg: #BABABA;     /* 移动端菜单灰色背景 */
     --nav-hover-opacity: 0.3;
 
-    /* --- 2. 桌面端顶部导航 --- */
+    /* --- 2. 字体样式自定义 (新增强项) --- */
+    --font-family: "Arial", sans-serif; /* 优先使用Arial，失败则回退系统无衬线 */
+    
+    /* Logo 字体 */
+    --logo-font-size: 32px;
+    --logo-font-weight: bold;
+    --mobile-logo-font-size: 18px;
+
+    /* 导航字体 (Nav Items) */
+    --nav-font-size: 32px;
+    --nav-font-weight: bold;
+    --mobile-nav-font-size: 48px;
+
+    /* 中间悬停文字/滚动文字 */
+    --center-text-font-size: 32px;
+    --center-text-font-weight: bold;
+
+    /* 页脚字体 (Footer) */
+    --footer-font-size: 10px;
+    --footer-font-weight: bold;
+
+    /* --- 3. Logo 内容配置 --- */
     --logo-video-webm: "https://folio.neuepoor.com/head_chrome.webm"; 
     --logo-video-mp4: "https://folio.neuepoor.com/head_safari.mp4";   
     --logo-height: 48px;          
-    --logo-text: "Fooz";          
-    --logo-font-size: 32px;       
-    --logo-link-url: "home";      
-    
-    --nav-font-size: 32px;        
-    --nav-gap: 40px;              
+    --logo-text: "Fo";             /* 已修改为 Fo */
+    --mobile-logo-text: "Fo";      /* 已修改为 Fo */
+    --mobile-logo-height: 18px;   
 
-    /* --- 3. 背景视频配置 --- */
+    /* --- 4. 背景视频配置 --- */
     --bg-video-webm: "https://folio.neuepoor.com/fo_chrome.webm";
     --bg-video-mp4: "https://folio.neuepoor.com/fo_safari.mp4";
     --bg-video-opacity: 0.8;      
-
-    /* --- 4. 移动端专项设置 --- */
-    --mobile-logo-text: "Fooz.";     
-    --mobile-logo-font-size: 18px; 
-    --mobile-logo-height: 18px;   
-    --mobile-nav-height: 18px;    
-    --mobile-hamburger-size: 20px; 
-    --mobile-nav-font-size: 48px; 
 
     /* --- 5. 顶部链接内容 --- */
     --nav-link-1-text: "Works";   
@@ -59,14 +72,7 @@
     --nav-link-3-text: "Me";      
     --nav-link-3-url: "/me";      
 
-    /* --- 6. 底部导航设置 (Footer) --- */
-    /* 样式控制 */
-    --footer-font-size: 10px;     
-    --footer-font-weight: bold;   
-    --footer-padding: 10px 8px;   
-    --footer-link-gap: 12px;      
-
-    /* 左侧链接链接内容 */
+    /* --- 6. 页脚链接与文案 --- */
     --footer-link-1-text: "Email";
     --footer-link-1-url: "mailto:hello@example.com";
     --footer-link-2-text: "Ins";
@@ -76,38 +82,34 @@
     --footer-link-4-text: "Redbook";
     --footer-link-4-url: "https://xiaohongshu.com";
 
-    /* 右侧版权信息 */
     --footer-right-text: "©2024 Folio Archive.";
     --footer-right-url: "fo.neuepoor.com";
 
-    /* --- 7. 通用全局样式 --- */
+    /* --- 7. 布局间距与通用变量 --- */
     --side-padding: 8px;          
     --vertical-padding: 8px;      
-    --font-family: "Arial", sans-serif; 
+    --nav-gap: 40px;              
+    --footer-link-gap: 12px;      
+    --footer-padding: 10px 8px;   
+    --mobile-hamburger-size: 20px;
     --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);  
 
-    /* --- 8. 悬停中心文字配置 (PC) --- */
-    --center-text-font-size: 32px; 
-    --center-text-font-weight: bold;
+    /* --- 8. 悬停/滚动消息内容 --- */
     --center-text-1: "I Work 4 brand.";
     --center-text-2: "I (Play) Sth.";
     --center-text-3: "Hi, I'm Fo.";
 
-    /* --- 9. 移动端滚动文字配置 --- */
     --mobile-scroll-text-1: "Hi, I'm Fo.";
     --mobile-scroll-text-2: "I Work 4 brand.";
     --mobile-scroll-text-3: "I (Play) Sth.";
     --mobile-scroll-text-4: "Contact Me.";
   }
 
-  /* --- 10. 颜色体系 (深色模式保持白色文字) --- */
   @media (prefers-color-scheme: dark) {
     :root {
       --bg-color: #000000;
       --text-color: #ffffff;
       --mobile-menu-bg: #1a1a1a;
-      --video-overlay-color: #000000;
-      --nav-hover-opacity: 0.4;
       --bg-video-opacity: 0.6; 
     }
   }
@@ -131,25 +133,33 @@
     body { height: 200vh; } 
   }
 
-  /* 差值效果核心样式 */
+  /* 差值效果层 */
   .custom-nav, .custom-footer, .center-text-overlay, .mobile-scroll-text-container {
     mix-blend-mode: difference; 
   }
 
-  /* 【核心修改】：给 Logo 视频增加反色滤镜
-     由于父级 custom-nav 是 difference 模式且背景为白，
-     视频会被反色。我们预先将其反色一遍，即可“负负得正”。
-  */
-  .logo-video {
-    filter: invert(1); /* 浅色模式下预先反色 */
-    transition: filter 0.5s ease;
+  /* 移动端菜单打开时的文字显色修复 (v3.1.5 逻辑) */
+  body.menu-open .mobile-menu-overlay a {
+    color: #000000 !important;
+  }
+  body.menu-open .hamburger-inner,
+  body.menu-open .hamburger-inner::before,
+  body.menu-open .hamburger-inner::after {
+    background-color: #000000 !important;
+  }
+  @media (prefers-color-scheme: dark) {
+    body.menu-open .mobile-menu-overlay a { color: #ffffff !important; }
+    body.menu-open .hamburger-inner,
+    body.menu-open .hamburger-inner::before,
+    body.menu-open .hamburger-inner::after { background-color: #ffffff !important; }
   }
 
-  /* 深色模式下背景本身就是黑的，difference 模式不会导致视频反色，所以不需要滤镜 */
+  .logo-video {
+    filter: invert(1); 
+    transition: filter 0.5s ease;
+  }
   @media (prefers-color-scheme: dark) {
-    .logo-video {
-      filter: invert(0); 
-    }
+    .logo-video { filter: invert(0); }
   }
 
   .bg-video-container {
@@ -162,16 +172,8 @@
     transition: opacity 0.6s ease;
     overflow: hidden;
   }
-
-  .bg-video-container video {
-    width: 100%; height: 100%;
-    object-fit: cover; 
-    background: transparent;
-  }
-
-  .bg-active {
-    opacity: var(--bg-video-opacity);
-  }
+  .bg-video-container video { width: 100%; height: 100%; object-fit: cover; background: transparent; }
+  .bg-active { opacity: var(--bg-video-opacity); }
 
   .custom-nav {
     position: fixed;
@@ -181,8 +183,6 @@
     box-sizing: border-box;
     z-index: 4000;
     pointer-events: none; 
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
   }
 
   .logo-container, .nav-links, .menu-toggle {
@@ -191,98 +191,65 @@
   }
 
   .logo-container {
+    /* 移除链接属性 */
     text-decoration: none; 
     color: var(--text-color); 
     height: var(--logo-height);
-    cursor: pointer;
+    cursor: default; /* 改为默认箭头，表示不可点击 */
+    user-select: none;
     -webkit-tap-highlight-color: transparent;
-    transition: color 0.5s ease;
   }
 
-  .logo-video {
-    height: 100%; width: auto; display: none; background: transparent; object-fit: contain;
-  }
-
+  .logo-video { height: 100%; width: auto; display: none; background: transparent; object-fit: contain; }
   .logo-fallback {
-    font-weight: bold; font-size: var(--logo-font-size); letter-spacing: -0.05em; line-height: 1; display: inline-block;
+    font-weight: var(--logo-font-weight); 
+    font-size: var(--logo-font-size); 
+    letter-spacing: -0.05em; line-height: 1; 
+    display: inline-block;
   }
 
-  .nav-links { 
-    display: flex; 
-    gap: var(--nav-gap); 
-  }
-
+  .nav-links { display: flex; gap: var(--nav-gap); }
   .nav-links a {
     text-decoration: none; 
     color: var(--text-color); 
     font-size: var(--nav-font-size); 
-    font-weight: bold; 
-    transition: var(--transition), color 0.5s ease; 
+    font-weight: var(--nav-font-weight); 
+    transition: var(--transition); 
     line-height: 1;
   }
-
   .nav-links a:hover { opacity: var(--nav-hover-opacity); }
 
   .center-text-overlay {
     position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 500; 
-    pointer-events: none; 
-    text-align: center;
-    width: 100%;
+    top: 50%; left: 50%; transform: translate(-50%, -50%);
+    z-index: 500; pointer-events: none; text-align: center; width: 100%;
     font-size: var(--center-text-font-size);
     font-weight: var(--center-text-font-weight);
     color: var(--text-color);
-    opacity: 0;
-    transition: opacity 0.3s ease, color 0.5s ease;
+    opacity: 0; transition: opacity 0.3s ease;
   }
-
-  .center-text-overlay.show {
-    opacity: 1;
-  }
+  .center-text-overlay.show { opacity: 1; }
 
   .mobile-scroll-text-container {
-    display: none; 
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 500;
-    text-align: center;
-    width: 100%;
-    pointer-events: none;
+    display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    z-index: 500; text-align: center; width: 100%; pointer-events: none;
   }
-
   .mobile-scroll-text {
     font-size: var(--mobile-nav-font-size);
-    font-family: Arial, sans-serif;
-    font-weight: bold;
+    font-weight: var(--center-text-font-weight);
     color: var(--text-color);
-    opacity: 0;
-    filter: blur(12px); 
-    transition: opacity 0.35s ease, filter 0.35s ease, color 0.5s ease;
-    position: absolute;
-    width: 100%;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
+    opacity: 0; filter: blur(12px); 
+    transition: opacity 0.35s ease, filter 0.35s ease;
+    position: absolute; width: 100%; left: 0; top: 50%; transform: translateY(-50%);
   }
+  .mobile-scroll-text.active { opacity: 1; filter: blur(0px); }
 
-  .mobile-scroll-text.active {
-    opacity: 1;
-    filter: blur(0px);
-  }
-
-  .menu-toggle {
-    display: none; background: none; border: none; cursor: pointer; padding: 10px; z-index: 4100;
-  }
+  .menu-toggle { display: none; background: none; border: none; cursor: pointer; padding: 10px; z-index: 4100; }
   .hamburger-box { width: var(--mobile-hamburger-size); height: 14px; position: relative; }
   .hamburger-inner {
-    display: block; top: 50%; width: 100%; height: 2px; background-color: var(--text-color); position: absolute; transition: var(--transition), background-color 0.5s ease;
+    display: block; top: 50%; width: 100%; height: 2px; background-color: var(--text-color); position: absolute; transition: var(--transition);
   }
-  .hamburger-inner::before, .hamburger-inner::after { content: ""; display: block; width: 100%; height: 2px; background-color: var(--text-color); position: absolute; transition: var(--transition), background-color 0.5s ease; }
+  .hamburger-inner::before, .hamburger-inner::after { content: ""; display: block; width: 100%; height: 2px; background-color: var(--text-color); position: absolute; transition: var(--transition); }
   .hamburger-inner::before { top: -6px; } 
   .hamburger-inner::after { bottom: -6px; }
   .is-open .hamburger-inner { transform: rotate(45deg); }
@@ -290,73 +257,40 @@
   .is-open .hamburger-inner::after { bottom: 0; transform: rotate(-90deg); }
 
   .mobile-menu-overlay {
-    position: fixed;
-    top: 0; left: 0; 
-    width: 100%; 
-    height: 100%; 
-    display: flex; 
-    flex-direction: column; 
-    justify-content: flex-start;
-    align-items: flex-start; 
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+    display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start; 
     padding-top: calc(var(--vertical-padding) + var(--mobile-logo-height) + 90px); 
-    padding-left: var(--side-padding); 
-    box-sizing: border-box; 
+    padding-left: var(--side-padding); box-sizing: border-box; 
     transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.4s;
-    z-index: 2000; 
-    transform: translateY(-100%); 
-    visibility: hidden;
-    overflow: hidden;
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    will-change: transform;
-    mix-blend-mode: normal; 
+    z-index: 2000; transform: translateY(-100%); visibility: hidden;
+    overflow: hidden; mix-blend-mode: normal !important; 
   }
-
   .mobile-menu-overlay::before {
-    content: "";
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background-color: var(--mobile-menu-bg);
-    z-index: -1;
-    transform: translateZ(0);
-    transition: background-color 0.5s ease;
+    content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background-color: var(--mobile-menu-bg); z-index: -1;
   }
-
-  .mobile-menu-overlay.is-active { 
-    transform: translateY(0); 
-    visibility: visible; 
-  }
-
+  .mobile-menu-overlay.is-active { transform: translateY(0); visibility: visible; }
   .mobile-menu-overlay a {
-    text-decoration: none; 
-    color: var(--text-color); 
+    text-decoration: none; color: var(--text-color); 
     font-size: var(--mobile-nav-font-size); 
-    font-weight: bold; 
-    margin-bottom: 24px;
-    line-height: 1;
-    transition: color 0.5s ease;
+    font-weight: var(--nav-font-weight); 
+    margin-bottom: 24px; line-height: 1;
   }
 
   .custom-footer {
-    position: fixed;
-    bottom: 0; left: 0; width: 100%;
+    position: fixed; bottom: 0; left: 0; width: 100%;
     display: flex; justify-content: space-between; align-items: flex-end;
-    padding: var(--footer-padding);
-    box-sizing: border-box;
-    z-index: 3000; 
-    pointer-events: none;
-    -webkit-transform: translateZ(0);
+    padding: var(--footer-padding); box-sizing: border-box;
+    z-index: 3000; pointer-events: none;
   }
-
   .footer-left, .footer-right {
     pointer-events: auto;
     font-size: var(--footer-font-size);
     font-weight: var(--footer-font-weight);
     color: var(--text-color);
-    transition: color 0.5s ease;
   }
   .footer-left { display: flex; gap: var(--footer-link-gap); flex-wrap: wrap; }
-  .footer-left a, .footer-right a { text-decoration: none; color: inherit; transition: opacity 0.3s, color 0.5s ease; }
+  .footer-left a, .footer-right a { text-decoration: none; color: inherit; transition: opacity 0.3s; }
   .footer-left a:hover, .footer-right a:hover { opacity: 0.5; }
 
   @media (max-width: 768px) {
@@ -366,7 +300,6 @@
     .menu-toggle { display: flex; }
     .logo-container { height: var(--mobile-logo-height); }
     .logo-fallback { font-size: var(--mobile-logo-font-size); }
-    .bg-video-container { z-index: 1; }
   }
 </style>
 </head>
@@ -389,6 +322,7 @@
   </div>
 
   <nav class="custom-nav">
+    <!-- Logo 容器现在只是普通 div 结构 -->
     <div class="logo-container" id="logoLink">
       <video class="logo-video" id="logoVid" autoplay loop muted playsinline webkit-playsinline preload="auto">
         <source id="srcMp4" type='video/mp4; codecs="hvc1"'> 
@@ -428,15 +362,18 @@
     function toggleMenu() {
       const menu = document.getElementById('mobileMenu');
       const btn = document.getElementById('menuBtn');
+      const body = document.body;
       isMenuOpen = !isMenuOpen;
       if (isMenuOpen) {
         menu.classList.add('is-active');
         btn.classList.add('is-open');
-        document.body.style.overflow = 'hidden'; 
+        body.classList.add('menu-open');
+        body.style.overflow = 'hidden'; 
       } else {
         menu.classList.remove('is-active');
         btn.classList.remove('is-open');
-        document.body.style.overflow = ''; 
+        body.classList.remove('menu-open');
+        body.style.overflow = ''; 
         setTimeout(() => { if (!isMenuOpen) window.dispatchEvent(new Event('scroll')); }, 400);
       }
     }
@@ -447,8 +384,7 @@
       
       document.title = getVar('--site-title');
       const favicon = document.getElementById('dynamicFavicon') || document.createElement('link');
-      favicon.id = 'dynamicFavicon';
-      favicon.rel = 'icon';
+      favicon.id = 'dynamicFavicon'; favicon.rel = 'icon';
       favicon.href = getVar('--site-favicon');
       if (!document.getElementById('dynamicFavicon')) document.head.appendChild(favicon);
 
@@ -461,8 +397,8 @@
       document.getElementById('bgSrcWebm').src = getVar('--bg-video-webm');
       bgVideo.load();
 
+      // 修改交互逻辑：移除跳转链接逻辑
       const handleLogoInteraction = () => {
-        logoLink.onclick = null;
         if (window.innerWidth > 768) {
           logoLink.onmouseenter = () => { 
             bgWrapper.classList.add('bg-active'); 
@@ -472,7 +408,8 @@
             bgWrapper.classList.remove('bg-active'); 
             setTimeout(() => { if(!bgWrapper.classList.contains('bg-active')) bgVideo.pause(); }, 600);
           };
-          logoLink.onclick = () => { window.location.href = getVar('--logo-link-url'); };
+          // 移除跳转
+          logoLink.onclick = null; 
         } else {
           logoLink.onclick = (e) => {
             e.preventDefault();
@@ -487,7 +424,6 @@
           };
         }
       };
-
       handleLogoInteraction();
 
       const scrollTexts = [
@@ -538,8 +474,7 @@
         const el = document.getElementById(item.id);
         const mobEl = document.getElementById(item.mobId);
         if (el) { 
-          el.textContent = text; 
-          el.href = url; 
+          el.textContent = text; el.href = url; 
           el.onmouseenter = () => {
             if(window.innerWidth > 768) {
               centerOverlay.textContent = centerMsg;
