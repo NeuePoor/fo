@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <!-- 
   项目名称: Folio Portfolio Navigation
-  版本号: v2.6
-  描述: 优化移动端滚动文字切换灵敏度，缩短触发距离。
+  版本号: v2.8
+  描述: 修复 Safari 移动端菜单背景残留 Bug，优化滚动触发灵敏度。
 -->
 <title>Loading...</title>
 <link id="dynamicFavicon" rel="icon" type="image/webp" href="">
@@ -17,7 +17,7 @@
   */
   :root {
     /* --- 0. 站点基础配置 --- */
-    --site-title: "Folio v2.6 - Portfolio Archive";
+    --site-title: "Folio v2.8 - Portfolio Archive";
     --site-favicon: "https://folio.neuepoor.com/Favicon.webp";
 
     /* --- 1. 桌面端顶部导航 --- */
@@ -87,19 +87,20 @@
      ==============================================
   */
 
-  body, html {
+  /* 方案三重点：同步 html/body 背景色，防止 Safari 渲染层空洞 */
+  html, body {
     margin: 0; padding: 0;
     font-family: var(--font-family);
-    background: #fff; 
+    background-color: #ffffff; 
     height: 100%; 
+    -webkit-font-smoothing: antialiased;
   }
 
-  /* 为了让移动端有滚动空间，设置 body 的最小高度 */
+  /* 设置滚动高度 */
   @media (max-width: 768px) {
-    body { height: 250vh; } /* 稍微减小高度，让切换更快发生 */
+    body { height: 200vh; } 
   }
 
-  /* 背景视频容器 */
   .bg-video-container {
     position: fixed;
     top: 0; left: 0;
@@ -109,6 +110,7 @@
     opacity: 0; 
     transition: opacity 0.6s ease;
     overflow: hidden;
+    background-color: #ffffff;
   }
 
   .bg-video-container video {
@@ -127,8 +129,11 @@
     display: flex; justify-content: space-between; align-items: center; 
     padding: var(--vertical-padding) var(--side-padding); 
     box-sizing: border-box;
-    z-index: 3000; 
+    z-index: 4000; /* 调高 z-index 确保始终在 overlay 之上 */
     pointer-events: none; 
+    /* 强制开启硬件加速 */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
   }
 
   .logo-container, .nav-links, .menu-toggle {
@@ -152,11 +157,11 @@
 
   .nav-links { 
     display: flex; 
-    gap: var(--nav-gap) !important; 
+    gap: var(--nav-gap); 
   }
 
   .nav-links a {
-    text-decoration: none; color: #000; font-size: var(--nav-font-size) !important; 
+    text-decoration: none; color: #000; font-size: var(--nav-font-size); 
     font-weight: bold; transition: var(--transition); line-height: 1;
   }
 
@@ -198,12 +203,12 @@
 
   .mobile-scroll-text {
     font-size: var(--mobile-nav-font-size);
-    font-family: Arial, sans-serif; /* 显式声明 Arial */
+    font-family: Arial, sans-serif;
     font-weight: bold;
     color: #000;
     opacity: 0;
-    filter: blur(15px); /* 初始模糊度稍微加大 */
-    transition: opacity 0.4s ease, filter 0.4s ease;
+    filter: blur(12px); 
+    transition: opacity 0.35s ease, filter 0.35s ease;
     position: absolute;
     width: 100%;
     left: 0;
@@ -217,7 +222,7 @@
   }
 
   .menu-toggle {
-    display: none; background: none; border: none; cursor: pointer; padding: 10px; z-index: 3100;
+    display: none; background: none; border: none; cursor: pointer; padding: 10px; z-index: 4100;
   }
   .hamburger-box { width: var(--mobile-hamburger-size); height: 14px; position: relative; }
   .hamburger-inner {
@@ -230,6 +235,7 @@
   .is-open .hamburger-inner::before { top: 0; opacity: 0; }
   .is-open .hamburger-inner::after { bottom: 0; transform: rotate(-90deg); }
 
+  /* 方案三重点：优化移动端遮罩层渲染 */
   .mobile-menu-overlay {
     position: fixed;
     top: 0; left: 0; 
@@ -247,8 +253,10 @@
     transform: translateY(-100%); 
     visibility: hidden;
     overflow: hidden;
+    /* 强制开启硬件加速，防止 Safari 灰色残留 */
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
+    will-change: transform;
   }
 
   .mobile-menu-overlay::before {
@@ -282,6 +290,7 @@
     box-sizing: border-box;
     z-index: 3000; 
     pointer-events: none;
+    -webkit-transform: translateZ(0);
   }
 
   .footer-left, .footer-right {
@@ -314,10 +323,8 @@
     </video>
   </div>
 
-  <!-- PC端中心显示 -->
   <div class="center-text-overlay" id="centerTextOverlay"></div>
 
-  <!-- 移动端滚动切换 -->
   <div class="mobile-scroll-text-container" id="mobileScrollTextContainer">
     <div class="mobile-scroll-text" id="scrollText1"></div>
     <div class="mobile-scroll-text" id="scrollText2"></div>
@@ -381,6 +388,11 @@
         menu.classList.remove('is-active');
         btn.classList.remove('is-open');
         document.body.style.overflow = ''; 
+        
+        // 方案三 JS 兜底：动画结束后重置滚动到顶部，防止 Safari 底部残留
+        setTimeout(() => {
+          if (!isMenuOpen) window.dispatchEvent(new Event('scroll'));
+        }, 400);
       }
     }
 
@@ -402,10 +414,7 @@
       bgVideo.load();
 
       const handleLogoInteraction = () => {
-        logoLink.onmouseenter = null;
-        logoLink.onmouseleave = null;
         logoLink.onclick = null;
-
         if (window.innerWidth > 768) {
           logoLink.onmouseenter = () => { 
             bgWrapper.classList.add('bg-active'); 
@@ -433,7 +442,6 @@
 
       handleLogoInteraction();
 
-      // 移动端滚动逻辑优化
       const scrollTexts = [
         document.getElementById('scrollText1'),
         document.getElementById('scrollText2'),
@@ -449,14 +457,14 @@
       const handleScroll = () => {
         if (window.innerWidth > 768) return;
         
-        // 核心优化：让切换在滚动的早期就频繁发生
-        // 使用 window.innerHeight 作为参照，而不是整个文档高度，让响应更灵敏
         const maxScroll = document.body.scrollHeight - window.innerHeight;
         const currentScroll = window.scrollY;
         
-        // 计算索引：
-        // 增加了一个乘数 1.2，使得在滚动到 80% 左右就能完成所有文字切换
-        let index = Math.floor((currentScroll / maxScroll) * scrollTexts.length * 1.1);
+        // 灵敏度配置：0.02 进度即触发切换
+        let progress = (currentScroll / maxScroll) * 1.4; 
+        let index = Math.floor(progress * scrollTexts.length);
+        
+        if (currentScroll < 5) index = 0; 
         index = Math.max(0, Math.min(index, scrollTexts.length - 1));
 
         scrollTexts.forEach((txt, i) => {
@@ -469,7 +477,7 @@
       };
 
       window.addEventListener('scroll', handleScroll, { passive: true });
-      handleScroll(); // 页面加载后立即执行一次
+      handleScroll(); 
 
       window.addEventListener('resize', () => {
         handleLogoInteraction();
@@ -507,15 +515,13 @@
         if (el) { 
           el.textContent = text; 
           el.href = url; 
-          el.addEventListener('mouseenter', () => {
+          el.onmouseenter = () => {
             if(window.innerWidth > 768) {
               centerOverlay.textContent = centerMsg;
               centerOverlay.classList.add('show');
             }
-          });
-          el.addEventListener('mouseleave', () => {
-            centerOverlay.classList.remove('show');
-          });
+          };
+          el.onmouseleave = () => centerOverlay.classList.remove('show');
         }
         if (mobEl) { mobEl.textContent = text; mobEl.href = url; }
       });
