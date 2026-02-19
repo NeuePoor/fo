@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <!-- 
   项目名称: Folio Portfolio Navigation
-  版本号: v3.0
-  描述: 优化深色模式适配，排除 Logo 视频的反色效果，保持品牌标识原样。
+  版本号: v3.1
+  描述: 将 Footer 内容完全提取至自定义配置区，方便修改 Email, Ins, Wechat, Redbook 等链接。
 -->
 <title>Loading...</title>
 <link id="dynamicFavicon" rel="icon" type="image/webp" href="">
@@ -57,13 +57,29 @@
     --nav-link-2-text: "(Play)";  
     --nav-link-2-url: "#play";    
     --nav-link-3-text: "Me";      
-    --nav-link-3-url: "#me";      
+    --nav-link-3-url: "/me";      
 
     /* --- 6. 底部导航设置 (Footer) --- */
+    /* 样式控制 */
     --footer-font-size: 10px;     
-    --footer-font-weight: bold;   
+    --footer-font-weight: bold;   /* 可选: normal 或 bold */
     --footer-padding: 10px 8px;   
     --footer-link-gap: 12px;      
+
+    /* 左侧链接 1: Email */
+    --footer-link-1-text: "Email";
+    --footer-link-1-url: "mailto:hello@example.com";
+    /* 左侧链接 2: Instagram */
+    --footer-link-2-text: "Ins";
+    --footer-link-2-url: "https://instagram.com";
+    /* 左侧链接 3: WeChat */
+    --footer-link-3-text: "Wechat";
+    --footer-link-3-url: "#wechat-qr";
+    /* 左侧链接 4: Redbook */
+    --footer-link-4-text: "Redbook";
+    --footer-link-4-url: "https://xiaohongshu.com";
+
+    /* 右侧版权信息 */
     --footer-right-text: "©2024 Folio Archive.";
     --footer-right-url: "fo.neuepoor.com";
 
@@ -97,7 +113,6 @@
       --nav-hover-opacity: 0.4;
       --bg-video-opacity: 0.6; 
     }
-    /* 已移除针对 .logo-video 的 filter 规则，保持其原始颜色 */
   }
 
   /* ==============================================
@@ -169,7 +184,6 @@
 
   .logo-video {
     height: 100%; width: auto; display: none; background: transparent; object-fit: contain;
-    /* 不设置 filter，保持原样 */
   }
 
   .logo-fallback {
@@ -383,20 +397,15 @@
   </div>
 
   <footer class="custom-footer">
-    <div class="footer-left" id="footerLeft"></div>
+    <div class="footer-left" id="footerLeft">
+      <!-- 链接将通过 JS 动态生成 -->
+    </div>
     <div class="footer-right">
       <a href="#" id="footerRightLink"></a>
     </div>
   </footer>
 
   <script>
-    const footerLinks = [
-      { text: "Email", url: "mailto:hello@example.com" },
-      { text: "Ins", url: "https://instagram.com" },
-      { text: "Wechat", url: "#wechat-qr" },
-      { text: "Redbook", url: "https://xiaohongshu.com" }
-    ];
-
     let isMenuOpen = false;
     let isBgPlaying = false; 
 
@@ -423,10 +432,15 @@
       const root = document.documentElement;
       const getVar = (name) => getComputedStyle(root).getPropertyValue(name).trim().replace(/^"(.*)"$/, '$1');
       
+      // 站点基础
       document.title = getVar('--site-title');
-      const favicon = document.getElementById('dynamicFavicon');
+      const favicon = document.getElementById('dynamicFavicon') || document.createElement('link');
+      favicon.id = 'dynamicFavicon';
+      favicon.rel = 'icon';
       favicon.href = getVar('--site-favicon');
+      if (!document.getElementById('dynamicFavicon')) document.head.appendChild(favicon);
 
+      // 背景视频初始化
       const bgVideo = document.getElementById('bgVid');
       const bgWrapper = document.getElementById('bgVideoWrapper');
       const logoLink = document.getElementById('logoLink');
@@ -465,6 +479,7 @@
 
       handleLogoInteraction();
 
+      // 移动端滚动文字
       const scrollTexts = [
         document.getElementById('scrollText1'),
         document.getElementById('scrollText2'),
@@ -479,33 +494,22 @@
 
       const handleScroll = () => {
         if (window.innerWidth > 768) return;
-        
         const maxScroll = document.body.scrollHeight - window.innerHeight;
         const currentScroll = window.scrollY;
-        
         let progress = (currentScroll / maxScroll) * 1.4; 
         let index = Math.floor(progress * scrollTexts.length);
-        
         if (currentScroll < 5) index = 0; 
         index = Math.max(0, Math.min(index, scrollTexts.length - 1));
-
         scrollTexts.forEach((txt, i) => {
-          if (i === index) {
-            txt.classList.add('active');
-          } else {
-            txt.classList.remove('active');
-          }
+          if (i === index) txt.classList.add('active');
+          else txt.classList.remove('active');
         });
       };
 
       window.addEventListener('scroll', handleScroll, { passive: true });
       handleScroll(); 
 
-      window.addEventListener('resize', () => {
-        handleLogoInteraction();
-        handleScroll();
-      });
-
+      // Logo 视频初始化
       const video = document.getElementById('logoVid');
       const fallback = document.getElementById('fallbackText');
       document.getElementById('srcMp4').src = getVar('--logo-video-mp4');
@@ -520,6 +524,7 @@
       };
       updateLogoText();
       
+      // 顶部导航链接渲染
       const navItems = [
         {id: 'nav1', mobId: 'mobNav1', textVar: '--nav-link-1-text', urlVar: '--nav-link-1-url', centerVar: '--center-text-1'},
         {id: 'nav2', mobId: 'mobNav2', textVar: '--nav-link-2-text', urlVar: '--nav-link-2-url', centerVar: '--center-text-2'},
@@ -530,10 +535,8 @@
         const text = getVar(item.textVar);
         const url = getVar(item.urlVar);
         const centerMsg = getVar(item.centerVar);
-        
         const el = document.getElementById(item.id);
         const mobEl = document.getElementById(item.mobId);
-
         if (el) { 
           el.textContent = text; 
           el.href = url; 
@@ -548,16 +551,38 @@
         if (mobEl) { mobEl.textContent = text; mobEl.href = url; }
       });
 
+      // --- 底部 Footer 动态渲染 ---
       const footerLeft = document.getElementById('footerLeft');
       footerLeft.innerHTML = "";
-      footerLinks.forEach(link => {
-        const a = document.createElement('a');
-        a.href = link.url; a.textContent = link.text;
-        footerLeft.appendChild(a);
+      
+      // 这里的链接现在全部从 CSS 变量读取
+      const footerLinkConfig = [
+        { textVar: '--footer-link-1-text', urlVar: '--footer-link-1-url' },
+        { textVar: '--footer-link-2-text', urlVar: '--footer-link-2-url' },
+        { textVar: '--footer-link-3-text', urlVar: '--footer-link-3-url' },
+        { textVar: '--footer-link-4-text', urlVar: '--footer-link-4-url' }
+      ];
+
+      footerLinkConfig.forEach(cfg => {
+        const text = getVar(cfg.textVar);
+        const url = getVar(cfg.urlVar);
+        if (text) { // 只有配置了文字才生成
+          const a = document.createElement('a');
+          a.href = url; 
+          a.textContent = text;
+          footerLeft.appendChild(a);
+        }
       });
+
       const rightLink = document.getElementById('footerRightLink');
       rightLink.textContent = getVar('--footer-right-text');
       rightLink.href = getVar('--footer-right-url');
+
+      window.addEventListener('resize', () => {
+        handleLogoInteraction();
+        handleScroll();
+        updateLogoText();
+      });
     }
 
     document.addEventListener('DOMContentLoaded', init);
