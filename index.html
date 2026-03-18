@@ -2,13 +2,12 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
 <!-- 
-  Folio Portfolio Navigation - Universal Compatibility Edition
-  Optimizations:
-  - Fixed Mobile Bottom Nav position with 100dvh
-  - Constant 12px bottom margin regardless of dynamic bars
-  - Cross-browser Vendor Prefixes
+  项目名称: Folio Portfolio Navigation
+  当前版本: v1.0 (Stable)
+  更新记录:
+  - v1.0: 基础稳定版，包含多设备兼容、毛玻璃导航、基础动效及视频/文本回退逻辑。
 -->
 <title>Folio</title>
 <link id="favicon" rel="icon" type="image/webp" href="https://folio.neuepoor.com/Favicon.webp">
@@ -17,6 +16,7 @@
     /* 核心配置 */
     --bg: #fff; --text: #000;
     --gutter: 4px; --margin: 4px;
+    /* 增强型字体栈，覆盖全设备 */
     --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", "Segoe UI", Roboto, Arial, sans-serif;
     
     /* 导航配置 */
@@ -37,7 +37,7 @@
 
   * { 
     box-sizing: border-box; 
-    -webkit-tap-highlight-color: transparent;
+    -webkit-tap-highlight-color: transparent; /* 移除移动端点击高亮 */
   }
 
   html, body { 
@@ -47,12 +47,10 @@
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility; 
     overflow-x: hidden;
-    /* 解决移动端滚动高度计算的关键 */
-    min-height: 100dvh;
-    height: 100%;
+    min-height: 100vh;
   }
 
-  /* --- 动效核心 --- */
+  /* --- 动效核心：兼容旧版 Webkit --- */
   .reveal-item {
     opacity: 0;
     -webkit-transform: translateY(var(--reveal-dist));
@@ -71,10 +69,11 @@
 
   /* --- 布局系统 --- */
   .main-grid {
+    display: -ms-grid; /* 兼容旧版 IE/Edge */
     display: grid; 
     grid-template-columns: repeat(12, 1fr);
     gap: var(--gutter); margin: var(--margin);
-    padding: 80px 0 160px; /* 增加底部 padding 防止内容被导航栏永远遮挡 */
+    padding: 80px 0 120px;
   }
 
   .item-full { grid-column: span 12; }
@@ -92,6 +91,7 @@
     color: rgba(255,255,255,0.9);
   }
 
+  /* --- 响应式布局 --- */
   @media (max-width: 768px) {
     .main-grid { padding-top: 20px; }
     [class*="item-"], .col-1, .col-2, .col-3 { grid-column: span 12; }
@@ -102,6 +102,7 @@
 
   /* --- 导航控制 --- */
   .nav {
+    position: -webkit-sticky;
     position: fixed; 
     width: 100%; display: flex; justify-content: space-between;
     align-items: center; padding: 0 4px; z-index: 999; height: var(--nav-h);
@@ -117,18 +118,12 @@
   @media (max-width: 768px) {
     .nav {
       top: auto;
-      /* 核心修复：使用 100dvh 减去自身高度再减去 12px 间距，并减去安全区域 */
-      /* 但更稳健的方式是直接 bottom 定位配合安全区域 */
-      bottom: calc(12px + env(safe-area-inset-bottom, 0px));
-      height: 32px; padding: 0 16px; left: 12px;
+      bottom: 12px; height: 32px; padding: 0 16px; left: 12px;
       width: calc(100% - 24px); border-radius: 16px;
       background: var(--m-nav-bg); 
       -webkit-backdrop-filter: blur(20px) saturate(180%);
       backdrop-filter: blur(20px) saturate(180%); 
       border: 0.5px solid rgba(0,0,0,0.08);
-      /* 强制始终吸附可视区域底部 */
-      position: fixed; 
-      margin-bottom: 0;
     }
     @media (prefers-color-scheme: dark) {
       .nav { border: 0.5px solid rgba(255,255,255,0.1); }
@@ -155,6 +150,7 @@
 
   <nav class="nav">
     <a href="/" class="logo-wrap" id="logo">
+      <!-- 视频强制 playsinline 和 muted 提高移动端自动播放成功率 -->
       <video class="logo-v" id="v" autoplay loop muted playsinline webkit-playsinline preload="auto">
         <source src="https://folio.neuepoor.com/head_chrome.webm" type="video/webm">
         <source src="https://folio.neuepoor.com/head_safari.mov" type='video/mp4; codecs="hvc1"'>
@@ -192,16 +188,21 @@
     const init = () => {
       const v = document.getElementById('v'), t = document.getElementById('t'), ls = document.getElementById('ls');
 
+      // 1. 极简导航渲染
       ls.innerHTML = CONFIG.nav.map(n => `<a href="${n.u}">${n.t}</a>`).join('');
 
+      // 2. 增强的视频加载监控
       if (v) {
+        // 尝试自动播放，防止某些浏览器静音也会拦截
         const promise = v.play();
         if (promise !== undefined) {
           promise.catch(() => {
+            // 如果自动播放失败，保持文本显示
             v.style.display = 'none';
             t.style.display = 'block';
           });
         }
+
         v.oncanplay = () => { 
           v.style.display = 'block'; 
           t.style.display = 'none'; 
@@ -212,6 +213,8 @@
         };
       }
 
+      // 3. 高性能单次触发 Observer
+      // 检查浏览器是否支持 IntersectionObserver (几乎现代设备都支持)
       if ('IntersectionObserver' in window) {
         const observer = new IntersectionObserver((recs) => {
           recs.forEach(r => {
@@ -222,14 +225,17 @@
           });
         }, { 
           threshold: 0.1,
-          rootMargin: '0px 0px -50px 0px' 
+          rootMargin: '0px 0px -50px 0px' // 稍微提前触发，体验更平滑
         });
+
         document.querySelectorAll('.reveal-item').forEach(el => observer.observe(el));
       } else {
+        // 针对极旧浏览器 (如 IE) 的降级处理：直接显示
         document.querySelectorAll('.reveal-item').forEach(el => el.classList.add('is-visible'));
       }
     };
 
+    // 优先使用 DOMContentLoaded 提高首屏速度，window.onload 作为兜底
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', init);
     } else {
