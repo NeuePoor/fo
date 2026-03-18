@@ -6,10 +6,9 @@
 <!-- 
   Folio Portfolio Navigation - Universal Compatibility Edition
   Optimizations:
-  - Fixed Mobile Bottom Nav position issues (iOS Safari/Chrome bars)
-  - Added viewport-fit=cover for notched displays
-  - Cross-browser Vendor Prefixes (Safari/Chrome/Firefox)
-  - Legacy iOS Backdrop-filter Support
+  - Fixed Mobile Bottom Nav position with 100dvh
+  - Constant 12px bottom margin regardless of dynamic bars
+  - Cross-browser Vendor Prefixes
 -->
 <title>Folio</title>
 <link id="favicon" rel="icon" type="image/webp" href="https://folio.neuepoor.com/Favicon.webp">
@@ -48,8 +47,9 @@
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility; 
     overflow-x: hidden;
-    /* 使用 min-height: 100% 配合 viewport-fit 解决滚动回弹背景色问题 */
-    min-height: 100%;
+    /* 解决移动端滚动高度计算的关键 */
+    min-height: 100dvh;
+    height: 100%;
   }
 
   /* --- 动效核心 --- */
@@ -74,7 +74,7 @@
     display: grid; 
     grid-template-columns: repeat(12, 1fr);
     gap: var(--gutter); margin: var(--margin);
-    padding: 80px 0 120px;
+    padding: 80px 0 160px; /* 增加底部 padding 防止内容被导航栏永远遮挡 */
   }
 
   .item-full { grid-column: span 12; }
@@ -117,17 +117,18 @@
   @media (max-width: 768px) {
     .nav {
       top: auto;
-      /* 使用 env(safe-area-inset-bottom) 适配 iPhone 底部横条 */
-      bottom: calc(12px + env(safe-area-inset-bottom, 0px)); 
+      /* 核心修复：使用 100dvh 减去自身高度再减去 12px 间距，并减去安全区域 */
+      /* 但更稳健的方式是直接 bottom 定位配合安全区域 */
+      bottom: calc(12px + env(safe-area-inset-bottom, 0px));
       height: 32px; padding: 0 16px; left: 12px;
       width: calc(100% - 24px); border-radius: 16px;
       background: var(--m-nav-bg); 
       -webkit-backdrop-filter: blur(20px) saturate(180%);
       backdrop-filter: blur(20px) saturate(180%); 
       border: 0.5px solid rgba(0,0,0,0.08);
-      /* 强制硬件加速以解决位置滞后 */
-      -webkit-transform: translateZ(0);
-      transform: translateZ(0);
+      /* 强制始终吸附可视区域底部 */
+      position: fixed; 
+      margin-bottom: 0;
     }
     @media (prefers-color-scheme: dark) {
       .nav { border: 0.5px solid rgba(255,255,255,0.1); }
