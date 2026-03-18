@@ -2,244 +2,324 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
 <!-- 
-  项目名称: Folio Portfolio Navigation
-  当前版本: v1.0 (Stable)
-  更新记录:
-  - v1.0: 基础稳定版，包含多设备兼容、毛玻璃导航、基础动效及视频/文本回退逻辑。
+  项目名称: Folio Design System
+  版本: v1.6 (Navigation Link Update)
+  
+  核心变更:
+  - 更新 SITE_CONFIG 中的导航链接至指定子域名。
+  - 保持 v1.5 的配置驱动架构，方便后续继续扩展。
 -->
-<title>Folio</title>
+<title>Folio | v1.6</title>
 <link id="favicon" rel="icon" type="image/webp" href="https://folio.neuepoor.com/Favicon.webp">
+
 <style>
+  /* ==========================================================================
+     1. DESIGN TOKENS (设计变量)
+     ========================================================================== */
   :root {
-    /* 核心配置 */
-    --bg: #fff; --text: #000;
-    --gutter: 4px; --margin: 4px;
-    /* 增强型字体栈，覆盖全设备 */
-    --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", "Segoe UI", Roboto, Arial, sans-serif;
+    --fl-bg: #fff;
+    --fl-text: #000;
+    --fl-nav-bg-m: rgba(255, 255, 255, 0.7);
     
-    /* 导航配置 */
-    --nav-h: 60px; --nav-fs: 32px; --m-nav-fs: 21px;
-    --m-nav-bg: rgba(255, 255, 255, 0.7);
+    --fl-gutter: 4px;
+    --fl-margin: 4px;
+    --fl-nav-h: 60px;
+    --fl-nav-h-m: 32px;
     
-    /* 动效参数 */
-    --reveal-dist: 20px; --reveal-dur: 0.8s;
-    --ease: cubic-bezier(0.23, 1, 0.32, 1);
+    --fl-font-main: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", "Segoe UI", Roboto, sans-serif;
+    --fl-fs-nav: 32px;
+    --fl-fs-nav-m: 21px;
+    --fl-fs-info: 10px;
+    --fl-fs-item: 11px;
+    
+    --fl-reveal-dist: 20px;
+    --fl-reveal-dur: 0.8s;
+    --fl-ease: cubic-bezier(0.23, 1, 0.32, 1);
   }
 
   @media (prefers-color-scheme: dark) {
     :root { 
-      --bg: #000; --text: #fff; 
-      --m-nav-bg: rgba(28, 28, 30, 0.8); 
+      --fl-bg: #000; 
+      --fl-text: #fff; 
+      --fl-nav-bg-m: rgba(28, 28, 30, 0.8); 
     }
   }
 
-  * { 
-    box-sizing: border-box; 
-    -webkit-tap-highlight-color: transparent; /* 移除移动端点击高亮 */
-  }
-
+  /* ==========================================================================
+     2. BASE & UTILS
+     ========================================================================== */
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  
   html, body { 
-    margin: 0; padding: 0; background: var(--bg); color: var(--text);
-    font-family: var(--font); 
+    margin: 0; padding: 0; 
+    background: var(--fl-bg); color: var(--fl-text);
+    font-family: var(--fl-font-main); 
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility; 
     overflow-x: hidden;
     min-height: 100vh;
   }
 
-  /* --- 动效核心：兼容旧版 Webkit --- */
-  .reveal-item {
+  .fl-reveal {
     opacity: 0;
-    -webkit-transform: translateY(var(--reveal-dist));
-    transform: translateY(var(--reveal-dist));
-    -webkit-transition: opacity var(--reveal-dur) var(--ease), -webkit-transform var(--reveal-dur) var(--ease);
-    transition: opacity var(--reveal-dur) var(--ease), transform var(--reveal-dur) var(--ease);
+    -webkit-transform: translateY(var(--fl-reveal-dist));
+    transform: translateY(var(--fl-reveal-dist));
+    -webkit-transition: opacity var(--fl-reveal-dur) var(--fl-ease), -webkit-transform var(--fl-reveal-dur) var(--fl-ease);
+    transition: opacity var(--fl-reveal-dur) var(--fl-ease), transform var(--fl-reveal-dur) var(--fl-ease);
     will-change: transform, opacity;
   }
-  
-  .reveal-item.is-visible {
+  .fl-reveal.is-visible {
     opacity: 1; 
     -webkit-transform: translateY(0);
     transform: translateY(0);
     will-change: auto; 
   }
 
-  /* --- 布局系统 --- */
-  .main-grid {
-    display: -ms-grid; /* 兼容旧版 IE/Edge */
+  /* ==========================================================================
+     3. LAYOUT SYSTEM
+     ========================================================================== */
+  .fl-grid {
     display: grid; 
     grid-template-columns: repeat(12, 1fr);
-    gap: var(--gutter); margin: var(--margin);
+    gap: var(--fl-gutter); 
+    margin: var(--fl-margin);
     padding: 80px 0 120px;
   }
 
-  .item-full { grid-column: span 12; }
-  .item-wide { grid-column: span 8; }
-  .item-narrow { grid-column: span 4; }
-  .item-qtr { grid-column: span 3; }
-  
-  .info-col { font-size: 10px; line-height: 1.4; opacity: 0.8; margin-bottom: 20px; }
-  .info-col b { display: block; margin-bottom: 4.2em; font-weight: normal; }
+  .col-12 { grid-column: span 12; }
+  .col-8 { grid-column: span 8; }
+  .col-6 { grid-column: span 6; }
+  .col-4 { grid-column: span 4; }
+  .col-3 { grid-column: span 3; }
+  .col-2 { grid-column: span 2; }
 
-  .grid-box {
-    height: 45vh; border-radius: 4px; display: flex;
-    align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 600; text-transform: uppercase;
-    color: rgba(255,255,255,0.9);
-  }
-
-  /* --- 响应式布局 --- */
   @media (max-width: 768px) {
-    .main-grid { padding-top: 20px; }
-    [class*="item-"], .col-1, .col-2, .col-3 { grid-column: span 12; }
-    .info-col { margin-bottom: 12px; }
+    .fl-grid { padding-top: 20px; }
+    .fl-item { grid-column: span 12 !important; }
   }
 
-  .col-1 { grid-column: span 6; } .col-2 { grid-column: span 4; } .col-3 { grid-column: span 2; }
-
-  /* --- 导航控制 --- */
-  .nav {
-    position: -webkit-sticky;
-    position: fixed; 
-    width: 100%; display: flex; justify-content: space-between;
-    align-items: center; padding: 0 4px; z-index: 999; height: var(--nav-h);
-    top: 0;
+  /* ==========================================================================
+     4. COMPONENTS
+     ========================================================================== */
+  
+  .fl-header {
+    position: fixed; width: 100%; z-index: 999;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0 4px; height: var(--fl-nav-h); top: 0;
   }
+
+  .fl-logo {
+    height: 100%; display: flex; align-items: center;
+    text-decoration: none; color: inherit;
+  }
+  .fl-logo__video { height: 48px; width: auto; display: none; }
+  .fl-logo__text { font-weight: 700; font-size: var(--fl-fs-nav); letter-spacing: -0.05em; }
+
+  .fl-nav { display: flex; gap: 40px; }
+  .fl-nav__link { 
+    text-decoration: none; color: inherit; 
+    font-size: var(--fl-fs-nav); font-weight: 700; 
+    transition: opacity 0.3s; 
+  }
+  .fl-nav__link:hover { opacity: 0.3; }
 
   @media (min-width: 769px) {
-    .nav { mix-blend-mode: difference; color: #fff; }
-    .logo-v { -webkit-filter: invert(1); filter: invert(1); }
-    @media (prefers-color-scheme: dark) { .logo-v { -webkit-filter: none; filter: none; } }
+    .fl-header { mix-blend-mode: difference; color: #fff; }
+    .fl-logo__video { -webkit-filter: invert(1); filter: invert(1); }
+    @media (prefers-color-scheme: dark) { .fl-logo__video { -webkit-filter: none; filter: none; } }
   }
 
   @media (max-width: 768px) {
-    .nav {
-      top: auto;
-      bottom: 12px; height: 32px; padding: 0 16px; left: 12px;
-      width: calc(100% - 24px); border-radius: 16px;
-      background: var(--m-nav-bg); 
+    .fl-header {
+      top: auto; bottom: 12px; left: 12px;
+      width: calc(100% - 24px); height: var(--fl-nav-h-m);
+      padding: 0 16px; border-radius: 16px;
+      background: var(--fl-nav-bg-m); 
       -webkit-backdrop-filter: blur(20px) saturate(180%);
       backdrop-filter: blur(20px) saturate(180%); 
       border: 0.5px solid rgba(0,0,0,0.08);
     }
-    @media (prefers-color-scheme: dark) {
-      .nav { border: 0.5px solid rgba(255,255,255,0.1); }
-    }
+    .fl-nav { gap: 16px; }
+    .fl-nav__link { font-size: var(--fl-fs-nav-m); }
+    .fl-logo__video { height: 18px; }
+    .fl-logo__text { font-size: var(--fl-fs-nav-m); }
   }
 
-  .logo-wrap { height: 100%; display: flex; align-items: center; cursor: pointer; text-decoration: none; color: inherit; }
-  .logo-v { height: 48px; width: auto; display: none; }
-  .logo-t { font-weight: 700; font-size: var(--nav-fs); letter-spacing: -0.05em; }
+  .fl-info { 
+    font-size: var(--fl-fs-info); 
+    line-height: 1.4; 
+    opacity: 0.8; 
+    margin-bottom: 20px; 
+    word-break: break-word;
+  }
+  .fl-info__title { display: block; margin-bottom: 4.2em; font-weight: normal; }
 
-  .links { display: flex; gap: 40px; }
-  .links a { text-decoration: none; color: inherit; font-size: var(--nav-fs); font-weight: 700; transition: opacity 0.3s; }
-  .links a:hover { opacity: 0.3; }
-
-  @media (max-width: 768px) {
-    .links { gap: 16px; }
-    .links a { font-size: var(--m-nav-fs); }
-    .logo-v { height: 18px; }
-    .logo-t { font-size: var(--m-nav-fs); }
+  .fl-item {
+    height: 45vh; border-radius: 4px; display: flex;
+    align-items: center; justify-content: center;
+    font-size: var(--fl-fs-item); font-weight: 600; text-transform: uppercase;
+    color: rgba(255,255,255,0.9);
+    text-decoration: none;
+    transition: transform 0.6s var(--fl-ease);
   }
 </style>
 </head>
 <body>
 
-  <nav class="nav">
-    <a href="/" class="logo-wrap" id="logo">
-      <!-- 视频强制 playsinline 和 muted 提高移动端自动播放成功率 -->
-      <video class="logo-v" id="v" autoplay loop muted playsinline webkit-playsinline preload="auto">
-        <source src="https://folio.neuepoor.com/head_chrome.webm" type="video/webm">
-        <source src="https://folio.neuepoor.com/head_safari.mov" type='video/mp4; codecs="hvc1"'>
-      </video>
-      <span class="logo-t" id="t">Fo</span>
+  <header class="fl-header">
+    <a href="/" class="fl-logo" id="logo">
+      <video class="fl-logo__video" id="v" autoplay loop muted playsinline webkit-playsinline preload="auto"></video>
+      <span class="fl-logo__text" id="t">Fo</span>
     </a>
-    <div class="links" id="ls">
-      <!-- 动态注入 -->
-    </div>
-  </nav>
+    <nav class="fl-nav" id="ls"></nav>
+  </header>
 
-  <main class="main-grid">
-    <div class="info-col col-1 reveal-item"><b>Works</b>Branding<br>Vision identity<br>Look Book<br>Interface<br>Packaging<br>Editorial<br>Apparel</div>
-    <div class="info-col col-2 reveal-item"><b>Service</b>Creative Direction<br>Art Direction<br>Graphic<br>Illustration<br>Motion<br>Typeface</div>
-    <div class="info-col col-3 reveal-item"><b>Contacts</b>Email<br>Instagram<br>Github<br>小红书<br>Wechat</div>
-
-    <div class="grid-box item-full reveal-item" style="background:#007aff">Full</div>
-    <div class="grid-box item-wide reveal-item" style="background:#ff2d55">Wide</div>
-    <div class="grid-box item-narrow reveal-item" style="background:#5856d6">Narrow</div>
-    <div class="grid-box item-qtr reveal-item" style="background:#ff9500">Q1</div>
-    <div class="grid-box item-qtr reveal-item" style="background:#34c759">Q2</div>
-    <div class="grid-box item-qtr reveal-item" style="background:#5ac8fa">Q3</div>
-    <div class="grid-box item-qtr reveal-item" style="background:#ffcc00;color:#000">Q4</div>
+  <main class="fl-grid" id="main-grid">
+    <!-- Content injected via DS_ENGINE -->
   </main>
 
   <script>
-    const CONFIG = {
-      nav: [
-        { t: 'Works', u: '#work' },
-        { t: '(Play)', u: '#play' },
-        { t: 'Me', u: '/me' }
-      ]
+    /* ==========================================================================
+       CONFIG 区域 - 修改这里的内容即可更新全站
+       ========================================================================== */
+    const SITE_CONFIG = {
+      // 1. 媒体资源
+      assets: {
+        logoVideoWebm: "https://folio.neuepoor.com/head_chrome.webm",
+        logoVideoMp4: "https://folio.neuepoor.com/head_safari.mov",
+        favicon: "https://folio.neuepoor.com/Favicon.webp"
+      },
+
+      // 2. 导航栏链接 (已更新链接)
+      navigation: [
+        { name: 'Works', link: 'https://works.neuepoor.com' },
+        { name: '(Play)', link: 'https://play.neuepoor.com' },
+        { name: 'Me', link: 'https://me.neuepoor.com' }
+      ],
+
+      // 3. 信息区域
+      infoSections: [
+        {
+          title: "Works",
+          content: "Branding<br>Vision identity<br>Look Book<br>Interface<br>Packaging<br>Editorial<br>Apparel",
+          columnSpan: "col-6"
+        },
+        {
+          title: "Service",
+          content: "Creative Direction<br>Art Direction<br>Graphic<br>Illustration<br>Motion<br>Typeface",
+          columnSpan: "col-4"
+        },
+        {
+          title: "Contacts",
+          content: "Email<br>Instagram<br>Github<br>小红书<br>Wechat",
+          columnSpan: "col-2"
+        }
+      ],
+
+      // 4. 作品集预览
+      galleryItems: [
+        { title: "Full Project", color: "#007aff", span: "col-12", link: "#" },
+        { title: "Wide Project", color: "#ff2d55", span: "col-8", link: "#" },
+        { title: "Narrow Project", color: "#5856d6", span: "col-4", link: "#" },
+        { title: "Q1", color: "#ff9500", span: "col-3", link: "#" },
+        { title: "Q2", color: "#34c759", span: "col-3", link: "#" },
+        { title: "Q3", color: "#5ac8fa", span: "col-3", link: "#" },
+        { title: "Q4", color: "#ffcc00", span: "col-3", link: "#", textColor: "#000" }
+      ],
+
+      // 5. 动效微调
+      motion: {
+        revealDistance: "20px",
+        revealDuration: "0.8s"
+      }
     };
 
-    const init = () => {
-      const v = document.getElementById('v'), t = document.getElementById('t'), ls = document.getElementById('ls');
+    /* ==========================================================================
+       DESIGN SYSTEM ENGINE
+       ========================================================================== */
+    const DS_ENGINE = {
+      initStyles() {
+        document.documentElement.style.setProperty('--fl-reveal-dist', SITE_CONFIG.motion.revealDistance);
+        document.documentElement.style.setProperty('--fl-reveal-dur', SITE_CONFIG.motion.revealDuration);
+      },
 
-      // 1. 极简导航渲染
-      ls.innerHTML = CONFIG.nav.map(n => `<a href="${n.u}">${n.t}</a>`).join('');
+      initLogo() {
+        const v = document.getElementById('v'), t = document.getElementById('t');
+        if (!v) return;
+        
+        v.innerHTML = `
+          <source src="${SITE_CONFIG.assets.logoVideoWebm}" type="video/webm">
+          <source src="${SITE_CONFIG.assets.logoVideoMp4}" type='video/mp4; codecs="hvc1"'>
+        `;
 
-      // 2. 增强的视频加载监控
-      if (v) {
-        // 尝试自动播放，防止某些浏览器静音也会拦截
         const promise = v.play();
         if (promise !== undefined) {
-          promise.catch(() => {
-            // 如果自动播放失败，保持文本显示
-            v.style.display = 'none';
-            t.style.display = 'block';
-          });
+          promise.catch(() => { v.style.display = 'none'; t.style.display = 'block'; });
         }
+        v.oncanplay = () => { v.style.display = 'block'; t.style.display = 'none'; };
+        v.onerror = () => { v.style.display = 'none'; t.style.display = 'block'; };
+      },
 
-        v.oncanplay = () => { 
-          v.style.display = 'block'; 
-          t.style.display = 'none'; 
-        };
-        v.onerror = () => { 
-          v.style.display = 'none'; 
-          t.style.display = 'block'; 
-        };
-      }
+      initNav() {
+        const navContainer = document.getElementById('ls');
+        if (!navContainer) return;
+        navContainer.innerHTML = SITE_CONFIG.navigation
+          .map(item => `<a href="${item.link}" class="fl-nav__link">${item.name}</a>`)
+          .join('');
+      },
 
-      // 3. 高性能单次触发 Observer
-      // 检查浏览器是否支持 IntersectionObserver (几乎现代设备都支持)
-      if ('IntersectionObserver' in window) {
-        const observer = new IntersectionObserver((recs) => {
-          recs.forEach(r => {
-            if (r.isIntersecting) {
-              r.target.classList.add('is-visible');
-              observer.unobserve(r.target);
+      renderUI() {
+        const grid = document.getElementById('main-grid');
+        if (!grid) return;
+
+        const infoHTML = SITE_CONFIG.infoSections.map(sec => `
+          <div class="fl-info ${sec.columnSpan} fl-reveal">
+            <b class="fl-info__title">${sec.title}</b>
+            ${sec.content}
+          </div>
+        `).join('');
+
+        const galleryHTML = SITE_CONFIG.galleryItems.map(item => `
+          <a href="${item.link}" class="fl-item ${item.span} fl-reveal" 
+             style="background:${item.color}; ${item.textColor ? `color:${item.textColor}` : ''}">
+            ${item.title}
+          </a>
+        `).join('');
+
+        grid.innerHTML = infoHTML + galleryHTML;
+      },
+
+      initReveal() {
+        if (!('IntersectionObserver' in window)) {
+          document.querySelectorAll('.fl-reveal').forEach(el => el.classList.add('is-visible'));
+          return;
+        }
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('is-visible');
+              observer.unobserve(entry.target);
             }
           });
-        }, { 
-          threshold: 0.1,
-          rootMargin: '0px 0px -50px 0px' // 稍微提前触发，体验更平滑
-        });
+        }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+        document.querySelectorAll('.fl-reveal').forEach(el => observer.observe(el));
+      },
 
-        document.querySelectorAll('.reveal-item').forEach(el => observer.observe(el));
-      } else {
-        // 针对极旧浏览器 (如 IE) 的降级处理：直接显示
-        document.querySelectorAll('.reveal-item').forEach(el => el.classList.add('is-visible'));
+      start() {
+        this.initStyles();
+        this.initNav();
+        this.initLogo();
+        this.renderUI();
+        this.initReveal();
       }
     };
 
-    // 优先使用 DOMContentLoaded 提高首屏速度，window.onload 作为兜底
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', init);
+      document.addEventListener('DOMContentLoaded', () => DS_ENGINE.start());
     } else {
-      init();
+      DS_ENGINE.start();
     }
   </script>
 </body>
