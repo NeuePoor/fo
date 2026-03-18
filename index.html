@@ -2,14 +2,14 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
 <!-- 
-  Folio Portfolio Navigation - Professional Engineering Edition
+  Folio Portfolio Navigation - Universal Compatibility Edition
   Optimizations:
-  - Atomic CSS Variables for full control
-  - High-performance Hardware Acceleration Management
-  - DRY (Don't Repeat Yourself) JS Logic
-  - Robust Video-to-Text Fallback
+  - Cross-browser Vendor Prefixes (Safari/Chrome/Firefox)
+  - Mobile Viewport Height Fixes
+  - Legacy iOS Backdrop-filter Support
+  - Robust Autoplay Video Handling
 -->
 <title>Folio</title>
 <link id="favicon" rel="icon" type="image/webp" href="https://folio.neuepoor.com/Favicon.webp">
@@ -18,11 +18,12 @@
     /* 核心配置 */
     --bg: #fff; --text: #000;
     --gutter: 4px; --margin: 4px;
-    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    /* 增强型字体栈，覆盖全设备 */
+    --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", "Segoe UI", Roboto, Arial, sans-serif;
     
     /* 导航配置 */
     --nav-h: 60px; --nav-fs: 32px; --m-nav-fs: 21px;
-    --m-nav-bg: rgba(255, 255, 255, 0.65);
+    --m-nav-bg: rgba(255, 255, 255, 0.7);
     
     /* 动效参数 */
     --reveal-dist: 20px; --reveal-dur: 0.8s;
@@ -30,31 +31,49 @@
   }
 
   @media (prefers-color-scheme: dark) {
-    :root { --bg: #000; --text: #fff; --m-nav-bg: rgba(28, 28, 30, 0.75); }
+    :root { 
+      --bg: #000; --text: #fff; 
+      --m-nav-bg: rgba(28, 28, 30, 0.8); 
+    }
   }
 
-  * { box-sizing: border-box; }
+  * { 
+    box-sizing: border-box; 
+    -webkit-tap-highlight-color: transparent; /* 移除移动端点击高亮 */
+  }
+
   html, body { 
     margin: 0; padding: 0; background: var(--bg); color: var(--text);
-    font-family: var(--font); -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility; overflow-x: hidden;
+    font-family: var(--font); 
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility; 
+    overflow-x: hidden;
+    min-height: 100vh;
   }
 
-  /* --- 动效核心 --- */
+  /* --- 动效核心：兼容旧版 Webkit --- */
   .reveal-item {
     opacity: 0;
+    -webkit-transform: translateY(var(--reveal-dist));
     transform: translateY(var(--reveal-dist));
+    -webkit-transition: opacity var(--reveal-dur) var(--ease), -webkit-transform var(--reveal-dur) var(--ease);
     transition: opacity var(--reveal-dur) var(--ease), transform var(--reveal-dur) var(--ease);
     will-change: transform, opacity;
   }
+  
   .reveal-item.is-visible {
-    opacity: 1; transform: translateY(0);
-    will-change: auto; /* 动画结束后释放合成层，确保字体清晰 */
+    opacity: 1; 
+    -webkit-transform: translateY(0);
+    transform: translateY(0);
+    will-change: auto; 
   }
 
   /* --- 布局系统 --- */
   .main-grid {
-    display: grid; grid-template-columns: repeat(12, 1fr);
+    display: -ms-grid; /* 兼容旧版 IE/Edge */
+    display: grid; 
+    grid-template-columns: repeat(12, 1fr);
     gap: var(--gutter); margin: var(--margin);
     padding: 80px 0 120px;
   }
@@ -85,27 +104,36 @@
 
   /* --- 导航控制 --- */
   .nav {
-    position: fixed; width: 100%; display: flex; justify-content: space-between;
-    align-items: center; padding: 0 4px; z-index: 99; height: var(--nav-h);
+    position: -webkit-sticky;
+    position: fixed; 
+    width: 100%; display: flex; justify-content: space-between;
+    align-items: center; padding: 0 4px; z-index: 999; height: var(--nav-h);
+    top: 0;
   }
 
   @media (min-width: 769px) {
-    .nav { top: 0; mix-blend-mode: difference; color: #fff; }
-    .logo-v { filter: invert(1); }
-    @media (prefers-color-scheme: dark) { .logo-v { filter: none; } }
+    .nav { mix-blend-mode: difference; color: #fff; }
+    .logo-v { -webkit-filter: invert(1); filter: invert(1); }
+    @media (prefers-color-scheme: dark) { .logo-v { -webkit-filter: none; filter: none; } }
   }
 
   @media (max-width: 768px) {
     .nav {
-      bottom: 12px; height: 30px; padding: 0 16px; left: 12px;
-      width: calc(100% - 24px); border-radius: 15px;
-      background: var(--m-nav-bg); backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px); border: 0.5px solid rgba(0,0,0,0.1);
+      top: auto;
+      bottom: 12px; height: 32px; padding: 0 16px; left: 12px;
+      width: calc(100% - 24px); border-radius: 16px;
+      background: var(--m-nav-bg); 
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      backdrop-filter: blur(20px) saturate(180%); 
+      border: 0.5px solid rgba(0,0,0,0.08);
+    }
+    @media (prefers-color-scheme: dark) {
+      .nav { border: 0.5px solid rgba(255,255,255,0.1); }
     }
   }
 
-  .logo-wrap { height: 48px; display: flex; align-items: center; cursor: pointer; text-decoration: none; color: inherit; }
-  .logo-v { height: 100%; display: none; }
+  .logo-wrap { height: 100%; display: flex; align-items: center; cursor: pointer; text-decoration: none; color: inherit; }
+  .logo-v { height: 48px; width: auto; display: none; }
   .logo-t { font-weight: 700; font-size: var(--nav-fs); letter-spacing: -0.05em; }
 
   .links { display: flex; gap: 40px; }
@@ -115,7 +143,7 @@
   @media (max-width: 768px) {
     .links { gap: 16px; }
     .links a { font-size: var(--m-nav-fs); }
-    .logo-wrap { height: 18px; }
+    .logo-v { height: 18px; }
     .logo-t { font-size: var(--m-nav-fs); }
   }
 </style>
@@ -124,7 +152,8 @@
 
   <nav class="nav">
     <a href="/" class="logo-wrap" id="logo">
-      <video class="logo-v" id="v" autoplay loop muted playsinline preload="auto">
+      <!-- 视频强制 playsinline 和 muted 提高移动端自动播放成功率 -->
+      <video class="logo-v" id="v" autoplay loop muted playsinline webkit-playsinline preload="auto">
         <source src="https://folio.neuepoor.com/head_chrome.webm" type="video/webm">
         <source src="https://folio.neuepoor.com/head_safari.mov" type='video/mp4; codecs="hvc1"'>
       </video>
@@ -164,24 +193,56 @@
       // 1. 极简导航渲染
       ls.innerHTML = CONFIG.nav.map(n => `<a href="${n.u}">${n.t}</a>`).join('');
 
-      // 2. 健壮的视频加载逻辑
-      v.oncanplay = () => { v.style.display = 'block'; t.style.display = 'none'; };
-      v.onerror = () => { v.style.display = 'none'; t.style.display = 'block'; };
+      // 2. 增强的视频加载监控
+      if (v) {
+        // 尝试自动播放，防止某些浏览器静音也会拦截
+        const promise = v.play();
+        if (promise !== undefined) {
+          promise.catch(() => {
+            // 如果自动播放失败，保持文本显示
+            v.style.display = 'none';
+            t.style.display = 'block';
+          });
+        }
+
+        v.oncanplay = () => { 
+          v.style.display = 'block'; 
+          t.style.display = 'none'; 
+        };
+        v.onerror = () => { 
+          v.style.display = 'none'; 
+          t.style.display = 'block'; 
+        };
+      }
 
       // 3. 高性能单次触发 Observer
-      const observer = new IntersectionObserver((recs) => {
-        recs.forEach(r => {
-          if (r.isIntersecting) {
-            r.target.classList.add('is-visible');
-            observer.unobserve(r.target);
-          }
+      // 检查浏览器是否支持 IntersectionObserver (几乎现代设备都支持)
+      if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver((recs) => {
+          recs.forEach(r => {
+            if (r.isIntersecting) {
+              r.target.classList.add('is-visible');
+              observer.unobserve(r.target);
+            }
+          });
+        }, { 
+          threshold: 0.1,
+          rootMargin: '0px 0px -50px 0px' // 稍微提前触发，体验更平滑
         });
-      }, { threshold: 0.15 });
 
-      document.querySelectorAll('.reveal-item').forEach(el => observer.observe(el));
+        document.querySelectorAll('.reveal-item').forEach(el => observer.observe(el));
+      } else {
+        // 针对极旧浏览器 (如 IE) 的降级处理：直接显示
+        document.querySelectorAll('.reveal-item').forEach(el => el.classList.add('is-visible'));
+      }
     };
 
-    window.onload = init;
+    // 优先使用 DOMContentLoaded 提高首屏速度，window.onload 作为兜底
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
   </script>
 </body>
 </html>
