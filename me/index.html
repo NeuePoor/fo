@@ -3,360 +3,502 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
-<title>Folio | Optimized</title>
-<link id="favicon" rel="icon" type="image/webp" href="">
+<title>Foo | Portfolio</title>
+<link id="favicon" rel="icon" type="image/webp" href="https://folio.neuepoor.com/favicon.webp">
 
 <style>
-  /* ==========================================================================
-     BASE CSS & DYNAMIC TOKENS
-     ========================================================================== */
-  :root {
-    --fl-bg: #ffffff;
-    --fl-text: #000000;
-    --fl-gutter: 4px; 
-    --fl-margin: 4px;
-    --fl-nav-h: 60px;
-    --fl-nav-h-m: 35px;
-    --fl-ease: cubic-bezier(0.23, 1, 0.32, 1);
-    --fl-reveal-dist: 30px; 
-    --fl-reveal-dur: 1.2s;  
-    --fl-font-fallback: "Arial", "Helvetica", sans-serif;
-    
-    /* Skeleton Colors */
-    --fl-skeleton-bg: #f2f2f2;
-    --fl-skeleton-highlight: #e6e6e6;
+/* ==========================================================================
+BASE CSS & DYNAMIC TOKENS | 基础样式与动态令牌 [LOCKED]
+========================================================================== */
+:root {
+--fl-bg: #ffffff;
+--fl-text: #000000;
+--fl-gutter: 4px;
+--fl-margin: 4px;
+--fl-nav-h: 60px;
+--fl-nav-h-m: 35px;
+--fl-ease: cubic-bezier(0.23, 1, 0.32, 1);
+--fl-reveal-dist: 30px;
+--fl-reveal-dur: 1.2s;
+--fl-font-fallback: "Arial", "Helvetica", sans-serif;
+--fl-skeleton-op: rgba(0,0,0,0.03);
+}
+
+@media (prefers-color-scheme: dark) {
+:root {
+--fl-bg: #000000;
+--fl-text: #ffffff;
+--fl-skeleton-op: rgba(255,255,255,0.03);
+}
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; -webkit-font-smoothing: antialiased; }
+html, body { scrollbar-width: none; -ms-overflow-style: none; user-select: none; height: 100%; margin: 0; padding: 0; }
+html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+
+body {
+font-family: var(--fl-font-fallback);
+background: var(--fl-bg);
+color: var(--fl-text);
+overflow-x: hidden;
+line-height: 1.4;
+transition: background-color 0.25s ease-out;
+}
+
+/* ==========================================================================
+   ULTRA-RESPONSIVE CROSSHAIR SYSTEM [v4.8.7 FINAL]
+   ========================================================================== */
+@media (min-width: 769px) {
+  /* [A] 全站默认态：全尺寸十字架 (100%) */
+  html, body, *, 
+  .fl-nav__link, .back-icon-trigger, .fl-logo__gif, .fl-item-wrapper {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cline x1='16' y1='0' x2='16' y2='32' stroke='black' stroke-width='1'/%3E%3Cline x1='0' y1='16' x2='32' y2='16' stroke='black' stroke-width='1'/%3E%3C/svg%3E") 16 16, crosshair !important;
   }
 
+  /* [B] 交互态：收缩态十字架 (70%) */
+  a:hover, 
+  button:hover, 
+  .fl-nav__link:hover, 
+  .back-icon-trigger:hover, 
+  .fl-logo__gif:hover, 
+  .fl-item-wrapper:hover,
+  .fl-info a:hover,
+  #trigger-wechat:hover {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cline x1='16' y1='4.8' x2='16' y2='27.2' stroke='black' stroke-width='1'/%3E%3Cline x1='4.8' y1='16' x2='27.2' y2='16' stroke='black' stroke-width='1'/%3E%3C/svg%3E") 16 16, pointer !important;
+  }
+
+  /* [C] 深色模式自适应 */
   @media (prefers-color-scheme: dark) {
-    :root { 
-      --fl-bg: #000000; 
-      --fl-text: #ffffff; 
-      --fl-skeleton-bg: #1a1a1a;
-      --fl-skeleton-highlight: #262626;
+    html, body, *, .fl-nav__link, .back-icon-trigger, .fl-logo__gif, .fl-item-wrapper {
+      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cline x1='16' y1='0' x2='16' y2='32' stroke='white' stroke-width='1'/%3E%3Cline x1='0' y1='16' x2='32' y2='16' stroke='white' stroke-width='1'/%3E%3C/svg%3E") 16 16, crosshair !important;
+    }
+    a:hover, button:hover, .fl-nav__link:hover, .back-icon-trigger:hover, .fl-logo__gif:hover, .fl-item-wrapper:hover, .fl-info a:hover, #trigger-wechat:hover {
+      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cline x1='16' y1='4.8' x2='16' y2='27.2' stroke='white' stroke-width='1'/%3E%3Cline x1='4.8' y1='16' x2='27.2' y2='16' stroke='white' stroke-width='1'/%3E%3C/svg%3E") 16 16, pointer !important;
     }
   }
+}
 
-  * { 
-    box-sizing: border-box; 
-    -webkit-tap-highlight-color: transparent; 
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+/* [D] 移动端安全策略：强制恢复系统指针，解决文本光标问题 */
+@media (max-width: 768px) {
+  html, body { 
+    cursor: default !important; 
+  }
+  /* 显式声明交互元素的指针，防止其变成文字选择光标 */
+  a, button, .fl-nav__link, .fl-logo__gif, .trigger-wechat, .fl-item-wrapper {
+    cursor: pointer !important; 
+  }
+}
+
+/* Grid & Reveal Logic [LOCKED] */
+.fl-grid {
+display: grid;
+grid-template-columns: repeat(12, 1fr);
+gap: var(--fl-gutter);
+margin: var(--fl-margin);
+padding: 80px 0 120px;
+transform: translateZ(0);
+}
+
+.fl-reveal {
+opacity: 0;
+transform: translateY(var(--fl-reveal-dist));
+transition: opacity var(--fl-reveal-dur) var(--fl-ease), transform var(--fl-reveal-dur) var(--fl-ease);
+will-change: transform, opacity;
+}
+.fl-reveal.is-visible { opacity: 1; transform: translateY(0); }
+
+/* ==========================================================================
+FOCUS MODE CSS
+========================================================================== */
+.fl-nav__link, .fl-info-row, .fl-info__title, .fl-cdn-container, .type-item {
+  transition: filter 0.5s var(--fl-ease), opacity 0.5s var(--fl-ease);
+}
+
+body.is-focus-mode .fl-nav__link,
+body.is-focus-mode .fl-info-row,
+body.is-focus-mode .fl-info__title,
+body.is-focus-mode .fl-cdn-container {
+  filter: blur(8px);
+  opacity: 0.4;
+}
+
+body.is-net-slow.is-focus-mode .fl-nav__link,
+body.is-net-slow.is-focus-mode .fl-info-row,
+body.is-net-slow.is-focus-mode .fl-info__title,
+body.is-net-slow.is-focus-mode .fl-cdn-container {
+  filter: none !important;
+  opacity: 0.2;
+}
+
+body.is-net-slow * { transition-duration: 0.2s !important; }
+
+body.is-focus-mode .fl-nav__link:hover,
+body.is-focus-mode .fl-info-row:hover,
+body.is-focus-mode .fl-info__title:hover,
+body.is-focus-mode .fl-item-wrapper:hover .fl-cdn-container,
+body.is-focus-mode .fl-item-wrapper:hover .type-item {
+  filter: blur(0) !important;
+  opacity: 1 !important;
+  z-index: 1010;
+}
+
+body.is-net-slow.is-focus-mode .fl-nav__link:hover,
+body.is-net-slow.is-focus-mode .fl-info-row:hover,
+body.is-net-slow.is-focus-mode .fl-info__title:hover,
+body.is-net-slow.is-focus-mode .fl-item-wrapper:hover .fl-cdn-container,
+body.is-net-slow.is-focus-mode .fl-item-wrapper:hover .type-item {
+  filter: none !important;
+  opacity: 1 !important;
+}
+
+.type-item-container { z-index: 1020; pointer-events: none; }
+
+/* ==========================================================================
+COMPONENT: HEADER & LOGO [LOCKED]
+========================================================================== */
+.fl-logo__gif-wrap {
+position: fixed; top: 0; left: 4px; height: var(--fl-nav-h);
+display: flex; align-items: center; z-index: 1001;
+transition: transform 0.6s var(--fl-ease), opacity 0.6s var(--fl-ease);
+}
+.fl-logo__gif {
+height: var(--logo-size-pc);
+width: auto; opacity: 0;
+transition: opacity 0.3s var(--fl-ease);
+}
+.fl-logo__gif:hover { opacity: 0.7 !important; }
+
+.fl-header {
+position: fixed; width: 100%; z-index: 999;
+display: flex; justify-content: space-between; align-items: center;
+padding: 0 4px; height: var(--fl-nav-h); top: 0;
+mix-blend-mode: difference;
+transition: transform 0.6s var(--fl-ease), opacity 0.6s var(--fl-ease);
+}
+
+.fl-logo-text {
+text-decoration: none; color: #fff;
+font-family: var(--header-font); font-size: var(--header-fs); font-weight: var(--header-fw);
+transition: opacity 0.3s var(--fl-ease);
+opacity: 0;
+}
+
+.fl-nav { display: flex; gap: 40px; }
+.fl-nav__link {
+font-family: var(--header-font); font-size: var(--header-fs); font-weight: var(--header-fw);
+color: #fff; text-decoration: none;
+}
+
+/* ==========================================================================
+MOBILE PATCH
+========================================================================== */
+@media (max-width: 768px) {
+  body.is-focus-mode .fl-nav__link,
+  body.is-focus-mode .fl-info-row,
+  body.is-focus-mode .fl-info__title,
+  body.is-focus-mode .fl-cdn-container {
+    filter: none !important;
+    opacity: 1 !important;
+  }
+
+  body.is-focus-mode .fl-item-wrapper:hover .fl-cdn-container,
+  body.is-focus-mode .fl-item-wrapper:hover .type-item {
+    filter: none !important;
+    opacity: 1 !important;
   }
   
-  html, body {
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    user-select: none;
-    height: 100%;
-  }
-  html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
-
-  body { 
-    margin: 0; padding: 0; 
-    font-family: var(--fl-font-fallback);
-    background: var(--fl-bg); 
-    color: var(--fl-text);
-    overflow-x: hidden; 
-    line-height: 1.4;
+  body.is-focus-mode .fl-item-wrapper:hover {
+    z-index: auto !important;
+    position: static !important;
   }
 
-  .fl-grid {
-    display: grid; 
-    grid-template-columns: repeat(12, 1fr);
-    gap: var(--fl-gutter); 
-    margin: var(--fl-margin);
-    padding: 80px 0 120px;
-    transform: translateZ(0);
-  }
-
-  /* ==========================================================================
-     COMPONENT: REVEAL
-     ========================================================================== */
-  .fl-reveal {
-    opacity: 0;
-    transform: translateY(var(--fl-reveal-dist));
-    transition: 
-      opacity var(--fl-reveal-dur) var(--fl-ease), 
-      transform var(--fl-reveal-dur) var(--fl-ease);
-    will-change: transform, opacity;
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    perspective: 1000px;
-  }
-  .fl-reveal.is-visible { opacity: 1; transform: translateY(0); }
-
-  /* ==========================================================================
-     COMPONENT: LOGO & HEADER
-     ========================================================================== */
-  .fl-logo__gif-wrap {
-    position: fixed; top: 0; left: 4px; height: var(--fl-nav-h);
-    display: flex; align-items: center; z-index: 1001; 
-    transition: transform 0.6s var(--fl-ease), opacity 0.6s var(--fl-ease);
-  }
-  .fl-logo__gif { height: var(--logo-size-pc); width: auto; cursor: pointer; transition: opacity 0.3s; }
-
+  .is-nav-hidden { transform: translateY(100px) !important; opacity: 0; pointer-events: none; }
+  .fl-grid { padding: 4px 0 120px; }
   .fl-header {
-    position: fixed; width: 100%; z-index: 999;
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 0 4px; height: var(--fl-nav-h); top: 0;
-    mix-blend-mode: difference; 
-    transition: transform 0.6s var(--fl-ease), opacity 0.6s var(--fl-ease);
+    top: auto !important; bottom: 24px !important; left: 32px !important; width: calc(100% - 64px) !important;
+    height: 44px !important; padding: 0 16px !important; border-radius: 12px !important;
+    mix-blend-mode: normal !important; background: rgba(255, 255, 255, 0.95) !important;
+    border: 0.5px solid rgba(0, 0, 0, 0.1) !important; box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
   }
-
-  .fl-nav { display: flex; gap: 40px; }
-  .fl-nav__link {
-    font-family: var(--header-font); font-size: var(--header-fs); font-weight: var(--header-fw);
-    color: #fff; text-decoration: none; transition: opacity 0.3s;
+  @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+    .fl-header { background: rgba(255, 255, 255, 0.2) !important; backdrop-filter: blur(16px) saturate(160%) !important; -webkit-backdrop-filter: blur(16px) saturate(160%) !important; }
   }
-
-  /* ==========================================================================
-     MOBILE ONLY INTERACTION
-     ========================================================================== */
-  @media (max-width: 768px) {
-    .is-nav-hidden { 
-      transform: translateY(80px); 
-      opacity: 0; 
-      pointer-events: none; 
-    }
-    
-    .fl-grid { padding: 4px 0 120px; }
-    .fl-logo__gif-wrap { top: auto; bottom: 12px; left: 28px; height: var(--fl-nav-h-m); }
-    .fl-logo__gif { height: var(--logo-size-m); }
-    .fl-header {
-      top: auto; bottom: 12px; left: 12px;
-      width: calc(100% - 24px); height: var(--fl-nav-h-m);
-      padding: 0 16px; border-radius: 12px; 
-      mix-blend-mode: normal; 
-      background: rgba(255, 255, 255, 0.65); 
-      backdrop-filter: blur(40px) saturate(200%); 
-      -webkit-backdrop-filter: blur(40px) saturate(200%);
-      border: 0.5px solid rgba(0,0,0,0.05);
-    }
-    @media (prefers-color-scheme: dark) {
-      .fl-header { background: rgba(20, 20, 20, 0.75); border: 0.5px solid rgba(255,255,255,0.05); }
-    }
-    .fl-nav__link { font-size: var(--header-fs-m); color: var(--fl-text); } 
+  @media (prefers-color-scheme: dark) {
+    .fl-header { background: rgba(28, 28, 30, 0.98) !important; }
+    @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) { .fl-header { background: rgba(28, 28, 30, 0.45) !important; } }
   }
+  .fl-logo__gif-wrap { top: auto !important; bottom: 24px !important; left: 48px !important; height: 44px !important; }
+  .fl-nav__link, .fl-logo-text { font-size: var(--header-fs-m) !important; color: var(--fl-text) !important; }
+  .fl-logo__gif { height: var(--logo-size-m) !important; }
+  .fl-nav { gap: 20px !important; }
+}
 
-  /* ==========================================================================
-     MEDIA & INFO
-     ========================================================================== */
-  .fl-cdn-container { 
-    position: relative; 
-    width: 100%; 
-    overflow: hidden; 
-    background-color: transparent; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center;
-    transform: translateZ(0);
-    /* 移除固定比例，允许高度自适应 */
-    min-height: 100px; 
-  }
-  
-  .fl-cdn-container:not(.is-loaded) {
-    background-color: var(--fl-skeleton-bg);
-  }
+/* ==========================================================================
+COMPONENT: INFO & GALLERY
+========================================================================== */
+.fl-info { margin-bottom: 20px; font-family: var(--info-font); font-size: var(--info-fs); font-weight: var(--info-fw); color: var(--fl-text); opacity: 0.8; }
+.fl-info__title { display: block; margin-bottom: 4.2em; font-weight: normal; }
+.fl-info-row { display: block; }
+.fl-info a, .trigger-wechat { color: inherit; text-decoration: none; }
 
-  .fl-cdn-container::after { 
-    content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-    background: linear-gradient(90deg, transparent, var(--fl-skeleton-highlight), transparent); 
-    transform: translateX(-100%); animation: skeleton-wave 1.5s infinite; 
-  }
-  .is-loaded.fl-cdn-container::after { display: none; }
-  @keyframes skeleton-wave { 100% { transform: translateX(100%); } }
+.fl-item-wrapper { position: relative; display: flex; flex-direction: column; }
+.type-item {
+font-family: var(--gallery-font); font-size: var(--gallery-fs);
+color: #fff; opacity: 0; transform: translateY(5px);
+}
+.fl-item-wrapper:hover .type-item { opacity: 1; transform: translateY(0); }
 
-  .fl-cdn-media { 
-    width: 100%; 
-    height: auto; /* 关键：高度根据宽度缩放自适应 */
-    display: block; 
-    opacity: 0; 
-    transition: opacity 0.5s var(--fl-ease); 
-  }
-  .is-loaded .fl-cdn-media { opacity: 1; }
+.fl-cdn-container {
+position: relative; width: 100%; overflow: hidden;
+display: flex; align-items: center; justify-content: center;
+min-height: 200px; background-color: var(--fl-bg);
+}
+.fl-cdn-media {
+width: 100%; height: auto; display: block; opacity: 0.1;
+filter: blur(40px) scale(1.05); transition: opacity 1.2s var(--fl-ease), filter 1.2s var(--fl-ease);
+object-fit: cover; z-index: 2;
+}
+.is-loaded .fl-cdn-media { opacity: 1; filter: blur(0) scale(1); }
+.fl-cdn-container::after {
+content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+background: linear-gradient(90deg, transparent, var(--fl-skeleton-op), transparent);
+transform: translateX(-100%); animation: skeleton-wave 2s infinite; z-index: 5;
+}
+.is-loaded.fl-cdn-container::after { display: none; }
+@keyframes skeleton-wave { 100% { transform: translateX(100%); } }
 
-  .fl-info { margin-bottom: 20px; font-family: var(--info-font); font-size: var(--info-fs); font-weight: var(--info-fw); color: var(--info-color); opacity: 0.8; }
-  .fl-info__title { display: block; margin-bottom: 4.2em; font-weight: normal; }
+.fl-cdn-shield { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; }
 
-  .fl-item-wrapper { position: relative; display: flex; flex-direction: column; }
-  .type-item { font-family: var(--gallery-font); font-size: var(--gallery-fs); font-weight: var(--gallery-fw); color: var(--gallery-color); }
-
-  @media (min-width: 769px) {
-    /* 如果高度自适应，标签位置需要保持在容器中心或根据需要调整 */
-    .type-item-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; mix-blend-mode: difference; z-index: 20; pointer-events: none; }
-    .type-item { color: #fff; opacity: 0; transform: translateY(5px); transition: all 0.4s var(--fl-ease); }
-    .fl-item-wrapper:hover .type-item { opacity: 1; transform: translateY(0); }
-  }
+.fl-overlay {
+position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+background: rgba(0, 0, 0, 0.9); display: flex; align-items: center; justify-content: center;
+z-index: 2000; opacity: 0; pointer-events: none;
+transition: opacity 0.4s var(--fl-ease); backdrop-filter: blur(10px);
+}
+.fl-overlay.is-active { opacity: 1; pointer-events: auto; }
+.fl-overlay img { max-width: 300px; width: 80%; transform: scale(0.9); transition: transform 0.5s var(--fl-ease); }
+.fl-overlay.is-active img { transform: scale(1); }
 </style>
 </head>
 <body>
 
-  <div class="fl-logo__gif-wrap" id="mobile-logo-wrap">
-    <img class="fl-logo__gif" id="ui-gif" alt="Logo" draggable="false">
-  </div>
+<div class="fl-logo__gif-wrap" id="ui-logo-gif-wrap">
+<img class="fl-logo__gif" id="ui-logo-gif" alt="Logo" draggable="false">
+</div>
 
-  <header class="fl-header" id="ui-header">
-    <a href="https://fo.neuepoor.com" class="fl-logo">
-      <span style="display:none">Foo</span>
-    </a>
-    <nav class="fl-nav" id="ui-nav"></nav>
-  </header>
+<header class="fl-header" id="ui-header">
+<a href="https://neuepoor.com" class="fl-logo-text" id="ui-logo-text">Foo</a>
+<nav class="fl-nav" id="ui-nav"></nav>
+</header>
 
-  <main class="fl-grid" id="ui-main-grid"></main>
+<main class="fl-grid" id="ui-main-grid"></main>
 
-  <script>
-    /**
-     * CONFIG v4.5.8
-     * 第一性原则：除标注为 _editable: true 的区域外，
-     * 未经用户显式指令，禁止 AI 修改任何标记为 _lock: true 的配置项。
-     */
-    const CONFIG = {
-      version: "4.5.8",
-      seo: { 
-        _lock: true,
-        title: "Folio | Optimized System", 
-        favicon: "https://folio.neuepoor.com/Favicon.webp" 
-      },
-      typography: {
-        _lock: true,
-        header: { font: "Arial, sans-serif", weight: "700", sizePC: "32px", sizeMobile: "21px", color: "#ffffff" },
-        info: { font: "Arial, sans-serif", weight: "400", sizePC: "10px", sizeMobile: "10px", color: "inherit" },
-        gallery: { font: "Arial, sans-serif", weight: "400", sizePC: "10px", sizeMobile: "10px", color: "inherit" }
-      },
-      header: {
-        _lock: true,
-        logo: { gif: "https://folio.neuepoor.com/logo.gif", link: "https://fo.neuepoor.com", sizePC: "32px", sizeMobile: "18px" },
-        nav: [{ name: 'Works', link: '#' }, { name: '(Play)', link: '#' }, { name: 'Me', link: '#' }]
-      },
-      // [LOCK] Info Section - 禁止修改
-      info: {
-        _lock: true,
-        data: [
-          { title: "Works", content: "Branding<br>Vision identity<br>Look Book<br>Interface<br>Packaging<br>Editorial<br>Apparel", span: 6 },
-          { title: "Service", content: "Creative Direction<br>Art Direction<br>Graphic<br>Illustration<br>Motion<br>Typeface", span: 4 },
-          { title: "Contacts", content: "Email<br>Instagram<br>Github<br>小红书<br>Wechat", span: 2 }
-        ]
-      },
-      // [EDITABLE] Gallery Section - 可调区域
-      // 更新：移除了 ratio，由图片内容自然撑开高度
-      gallery: {
-        _editable: true,
-        items: [
-          { id: "02001", span: 12, src: "https://folio.neuepoor.com/works/Quick%20Look%20Example-1.png" },
-          { id: "02002", span: 12, src: "https://folio.neuepoor.com/works/Quick%20Look%20Example-3.png" },
-          { id: "02003", span: 12, src: "https://folio.neuepoor.com/works/Quick%20Look%20Example-4.png" },
-          { id: "02004", span: 12, src: "https://folio.neuepoor.com/works/Quick%20Look%20Example-6.png" },
-          { id: "02005", span: 12, src: "https://folio.neuepoor.com/works/Quick%20Look%20Example-7.png" }
-        ]
+<div class="fl-overlay" id="ui-wechat-overlay">
+<img src="https://folio.neuepoor.com/wechatsuckboyz.svg" alt="WeChat QR Code" draggable="false">
+</div>
+
+<script>
+/**
+* RUNTIME 决策引擎 v4.8.7
+*/
+const RUNTIME = {
+  isSlow: false,
+  supportWebp: false,
+  
+  async checkCapabilities() {
+    const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    if (conn) {
+      if (['slow-2g', '2g', '3g'].includes(conn.effectiveType) || conn.saveData) {
+        this.isSlow = true;
+        document.body.classList.add('is-net-slow');
       }
-    };
+    }
+    const canvas = document.createElement('canvas');
+    if (canvas.getContext && canvas.getContext('2d')) {
+      this.supportWebp = canvas.toDataURL('image/webp').indexOf('data:image/webp') == 0;
+    }
+  },
 
-    const ENGINE = {
-      initScrollInteraction() {
-        const header = document.getElementById('ui-header');
-        const logo = document.getElementById('mobile-logo-wrap');
-        let isScrolling;
+  resolveAsset(src) {
+    if (!src) return '';
+    return src;
+  }
+};
 
-        const handleScroll = () => {
-          const isMobile = window.innerWidth <= 768;
-          
-          if (!isMobile) {
-            header.classList.remove('is-nav-hidden');
-            logo.classList.remove('is-nav-hidden');
-            return;
-          }
+/**
+* CONFIG
+*/
+const CONFIG = {
+version: "4.8.7",
+seo: { _lock: true, title: "Foo", description: "Portfolio of Foo", canonical: "http://fo.neuepoor.com", favicon: "https://folio.neuepoor.com/favicon.webp" },
+typography: {
+_lock: true,
+header: { font: "Arial, sans-serif", weight: "700", sizePC: "32px", sizeMobile: "21px" },
+info: { font: "Arial, sans-serif", weight: "400", sizePC: "10px", sizeMobile: "10px" },
+gallery: { font: "Arial, sans-serif", weight: "400", sizePC: "10px", sizeMobile: "10px" }
+},
+header: {
+_lock: true,
+logo: { gif: "https://folio.neuepoor.com/logo.gif", link: "https://neuepoor.com", text: "Foo", sizePC: "32px", sizeMobile: "18px" },
+nav: [
+{ name: 'Works', link: 'https://fo.neuepoor.com/works' },
+{ name: '(Play)', link: 'https://fo.neuepoor.com/play' },
+{ name: 'Me', link: 'https://fo.neuepoor.com/me' }
+]
+},
+info: {
+_lock: true,
+data: [
+{ title: "Works", content: "Branding<br>Vision identity<br>Look Book<br>Interface<br>Packaging<br>Editorial<br>Apparel", span: 6 },
+{ title: "Service", content: "Creative Direction<br>Art Direction<br>Graphic<br>Illustration<br>Motion<br>Typeface", span: 4 },
+{ title: "Contacts", content: `<a href="mailto:poorleaglguy@qq.com">Email</a><br><a href="https://www.instagram.com/neuepoor" target="_blank">Instagram</a><br><a href="https://github.com/NeuePoor" target="_blank">Github</a><br><a href="https://xhslink.com/m/9qPnrun1Dh9" target="_blank">小红书</a><br><span class="trigger-wechat" id="trigger-wechat">Wechat</span>`, span: 2 }
+]
+},
+gallery: {
+_editable: true,
+items: [
+{ id: "02001", span: 12, src: "https://folio.neuepoor.com/works/Quick%20Look%20Example-1.png" },
+{ id: "02002", span: 12, src: "https://folio.neuepoor.com/works/Quick%20Look%20Example-3.png" },
+{ id: "02003", span: 12, src: "https://folio.neuepoor.com/works/Quick%20Look%20Example-4.png" },
+{ id: "02004", span: 12, src: "https://folio.neuepoor.com/works/Quick%20Look%20Example-6.png" },
+{ id: "02005", span: 12, src: "https://folio.neuepoor.com/works/Quick%20Look%20Example-7.png" }
+]
+}
+};
 
-          header.classList.add('is-nav-hidden');
-          logo.classList.add('is-nav-hidden');
-          
-          window.clearTimeout(isScrolling);
-          isScrolling = setTimeout(() => {
-            if (window.innerWidth <= 768) {
-              header.classList.remove('is-nav-hidden');
-              logo.classList.remove('is-nav-hidden');
-            }
-          }, 250);
-        };
+/**
+* ENGINE
+*/
+const ENGINE = {
+initSEO() {
+document.title = CONFIG.seo.title;
+const fav = document.getElementById('favicon');
+if (fav) fav.href = CONFIG.seo.favicon;
+},
 
-        window.addEventListener('scroll', handleScroll, { passive: true });
-        
-        window.addEventListener('resize', () => {
-          if (window.innerWidth > 768) {
-            header.classList.remove('is-nav-hidden');
-            logo.classList.remove('is-nav-hidden');
-            window.clearTimeout(isScrolling);
-          }
-        });
-      },
+renderMedia(src) {
+  if (!src) return '';
+  const finalSrc = RUNTIME.resolveAsset(src);
+  const ext = finalSrc.split('.').pop().toLowerCase();
+  const isVideo = ['mp4', 'webm', 'mov'].includes(ext);
+  const autoPlayAttr = RUNTIME.isSlow ? '' : 'autoplay';
+  const commonAttrs = `class="fl-cdn-media" draggable="false" oncontextmenu="return false;"`;
+  return `<div class="fl-cdn-container">${
+    isVideo 
+    ? `<video ${commonAttrs} muted loop playsinline ${autoPlayAttr}><source src="${finalSrc}"></video>` 
+    : `<img ${commonAttrs} src="${finalSrc}" loading="lazy" alt="Material">`
+  }</div>`;
+},
 
-      applyTypography() {
-        const root = document.documentElement;
-        const t = CONFIG.typography;
-        const l = CONFIG.header.logo;
-        const props = {
-          '--header-font': t.header.font, '--header-fw': t.header.weight, '--header-fs': t.header.sizePC, '--header-fs-m': t.header.sizeMobile,
-          '--info-font': t.info.font, '--info-fw': t.info.weight, '--info-fs': t.info.sizePC, '--info-color': t.info.color,
-          '--gallery-font': t.gallery.font, '--gallery-fw': t.gallery.weight, '--gallery-fs': t.gallery.sizePC, '--gallery-fs-m': t.gallery.sizeMobile, '--gallery-color': t.gallery.color,
-          '--logo-size-pc': l.sizePC, '--logo-size-m': l.sizeMobile
-        };
-        Object.entries(props).forEach(([k, v]) => root.style.setProperty(k, v));
-      },
+applyTypography() {
+const root = document.documentElement;
+const t = CONFIG.typography;
+const l = CONFIG.header.logo;
+const props = {
+'--header-font': t.header.font, '--header-fw': t.header.weight, '--header-fs': t.header.sizePC, '--header-fs-m': t.header.sizeMobile,
+'--info-font': t.info.font, '--info-fw': t.info.weight, '--info-fs': t.info.sizePC,
+'--gallery-font': t.gallery.font, '--gallery-fs': t.gallery.sizePC,
+'--logo-size-pc': l.sizePC, '--logo-size-m': l.sizeMobile
+};
+Object.entries(props).forEach(([k, v]) => root.style.setProperty(k, v));
+},
 
-      renderHeader() {
-        const gif = document.getElementById('ui-gif');
-        const nav = document.getElementById('ui-nav');
-        gif.src = CONFIG.header.logo.gif;
-        gif.onclick = () => { window.location.href = CONFIG.header.logo.link; };
-        nav.innerHTML = CONFIG.header.nav.map(n => `<a href="${n.link}" class="fl-nav__link">${n.name}</a>`).join('');
-      },
+renderHeader() {
+const gif = document.getElementById('ui-logo-gif');
+const text = document.getElementById('ui-logo-text');
+const nav = document.getElementById('ui-nav');
+text.innerText = CONFIG.header.logo.text;
+gif.src = CONFIG.header.logo.gif;
+gif.onload = () => { gif.style.opacity = "1"; text.style.opacity = "0"; };
+gif.onerror = () => { gif.style.display = "none"; text.style.setProperty('opacity', '1', 'important'); };
+gif.onclick = () => { window.location.href = CONFIG.header.logo.link; };
+nav.innerHTML = CONFIG.header.nav.map(n => `<a href="${n.link}" class="fl-nav__link">${n.name}</a>`).join('');
+},
 
-      buildContent() {
-        const grid = document.getElementById('ui-main-grid');
-        
-        const infoHTML = CONFIG.info.data.map(sec => `
-          <div class="fl-info fl-reveal" style="grid-column: span ${sec.span}">
-            <b class="fl-info__title">${sec.title}</b>
-            ${sec.content}
-          </div>
-        `).join('');
+buildContent() {
+const grid = document.getElementById('ui-main-grid');
+const infoHTML = CONFIG.info.data.map(sec => {
+const rows = sec.content.split('<br>').map(row => `<span class="fl-info-row">${row}</span>`).join('');
+return `
+<div class="fl-info fl-reveal" style="grid-column: span ${sec.span}">
+<b class="fl-info__title">${sec.title}</b>
+${rows}
+</div>`;
+}).join('');
 
-        const galleryHTML = CONFIG.gallery.items.map(item => `
-          <div class="fl-item-wrapper fl-reveal" style="grid-column: span ${item.span || 12}">
-            <div class="type-item-container"><span class="type-item">${item.id}</span></div>
-            <div class="fl-cdn-container">
-              <img class="fl-cdn-media" src="${item.src}" onload="this.parentElement.classList.add('is-loaded')" onerror="this.src='https://placehold.co/1200x600/f2f2f2/999?text=Image+Not+Found'">
-            </div>
-          </div>
-        `).join('');
+const galleryHTML = CONFIG.gallery.items.map(item => `
+<div class="fl-item-wrapper fl-reveal" style="grid-column: span ${item.span || 12}">
+<div class="type-item-container"><span class="type-item">${item.id}</span></div>
+${this.renderMedia(item.src)}
+</div>`).join('');
 
-        grid.innerHTML = infoHTML + galleryHTML;
-        this.initReveal();
-      },
+grid.innerHTML = infoHTML + galleryHTML;
+this.initReveal();
+this.initFocusMode(); 
+this.initWeChatTrigger();
 
-      initReveal() {
-        const observer = new IntersectionObserver((entries) => {
-          const visible = entries.filter(e => e.isIntersecting);
-          visible.forEach((entry, index) => {
-            entry.target.style.transitionDelay = `${index * 0.1}s`;
-            entry.target.classList.add('is-visible');
-            observer.unobserve(entry.target);
-          });
-        }, { 
-          threshold: 0.05, 
-          rootMargin: "0px 0px -20px 0px" 
-        });
-        document.querySelectorAll('.fl-reveal').forEach(el => observer.observe(el));
-      },
+document.querySelectorAll('.fl-cdn-media').forEach(media => {
+const container = media.closest('.fl-cdn-container');
+const markLoaded = () => setTimeout(() => container.classList.add('is-loaded'), 50);
+if (media.tagName === 'VIDEO') { if (media.readyState >= 3) markLoaded(); else media.addEventListener('loadeddata', markLoaded); }
+else { if (media.complete) markLoaded(); else media.addEventListener('load', markLoaded); }
+});
+},
 
-      start() {
-        this.applyTypography();
-        this.renderHeader();
-        this.buildContent();
-        this.initScrollInteraction();
-      }
-    };
+initFocusMode() {
+  const body = document.body;
+  const focusSelectors = 'a, .fl-item-wrapper, .fl-info-row, .fl-nav__link, .fl-info__title';
+  const isDesktop = window.matchMedia('(min-width: 769px)');
+  document.addEventListener('mouseover', (e) => {
+    if (!isDesktop.matches) return;
+    const target = e.target.closest(focusSelectors);
+    if (target) body.classList.add('is-focus-mode');
+  });
+  document.addEventListener('mouseout', (e) => {
+    if (!isDesktop.matches) { body.classList.remove('is-focus-mode'); return; }
+    const related = e.relatedTarget;
+    if (!related || !related.closest(focusSelectors)) body.classList.remove('is-focus-mode');
+  });
+},
 
-    window.onload = () => ENGINE.start();
-  </script>
+initScrollInteraction() {
+const header = document.getElementById('ui-header');
+const logoWrap = document.getElementById('ui-logo-gif-wrap');
+let isScrolling;
+window.addEventListener('scroll', () => {
+if (window.innerWidth <= 768) {
+header.classList.add('is-nav-hidden'); logoWrap.classList.add('is-nav-hidden');
+window.clearTimeout(isScrolling);
+isScrolling = setTimeout(() => { header.classList.remove('is-nav-hidden'); logoWrap.classList.remove('is-nav-hidden'); }, 250);
+}
+}, { passive: true });
+},
+
+initReveal() {
+const observer = new IntersectionObserver((entries) => {
+entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('is-visible'); observer.unobserve(entry.target); } });
+}, { threshold: 0.05 });
+document.querySelectorAll('.fl-reveal').forEach(el => observer.observe(el));
+},
+
+initWeChatTrigger() {
+const trigger = document.getElementById('trigger-wechat');
+const overlay = document.getElementById('ui-wechat-overlay');
+if (trigger && overlay) { trigger.onclick = () => overlay.classList.add('is-active'); overlay.onclick = () => overlay.classList.remove('is-active'); }
+},
+
+async start() { 
+  await RUNTIME.checkCapabilities();
+  this.initSEO(); 
+  this.applyTypography(); 
+  this.renderHeader(); 
+  this.buildContent(); 
+  this.initScrollInteraction(); 
+  this.initFocusMode(); 
+}
+};
+
+window.onload = () => ENGINE.start();
+</script>
 </body>
 </html>
