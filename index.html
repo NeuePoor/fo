@@ -8,7 +8,7 @@
 
 <style>
 /* ==========================================================================
-BASE CSS & DYNAMIC TOKENS | 基础样式与动态令牌 [LOCKED]
+BASE CSS & DYNAMIC TOKENS
 ========================================================================== */
 :root {
 --fl-bg: #ffffff;
@@ -21,20 +21,33 @@ BASE CSS & DYNAMIC TOKENS | 基础样式与动态令牌 [LOCKED]
 --fl-reveal-dist: 30px;
 --fl-reveal-dur: 1.2s;
 --fl-font-fallback: "Arial", "Helvetica", sans-serif;
---fl-skeleton-op: rgba(0,0,0,0.03);
+--grid-color: rgba(0, 0, 0, 0.08);
+--grid-square-color: rgba(0, 0, 0, 0.3);
+--splash-fs: 32px;
+/* v4.11.23: 定义 PC 端画廊段落间距变量 (2个 line-height 约等于 2.2em) */
+--gallery-paragraph-spacing: 2.2em;
 }
 
 @media (prefers-color-scheme: dark) {
 :root {
 --fl-bg: #000000;
 --fl-text: #ffffff;
---fl-skeleton-op: rgba(255,255,255,0.03);
+--grid-color: rgba(255, 255, 255, 0.08);
+--grid-square-color: rgba(255, 255, 255, 0.3);
 }
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; -webkit-font-smoothing: antialiased; }
 html, body { scrollbar-width: none; -ms-overflow-style: none; user-select: none; height: 100%; margin: 0; padding: 0; }
 html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+
+/* PC 鼠标隐藏 */
+@media (min-width: 769px) {
+    body:not(.is-loading) { cursor: none; }
+    body:not(.is-loading) a, 
+    body:not(.is-loading) button, 
+    body:not(.is-loading) img { cursor: none !important; }
+}
 
 body {
 font-family: var(--fl-font-fallback);
@@ -45,242 +58,210 @@ line-height: 1.4;
 transition: background-color 0.25s ease-out;
 }
 
-/* ==========================================================================
-   ULTRA-RESPONSIVE CROSSHAIR SYSTEM [v4.8.7 FINAL]
-   ========================================================================== */
-@media (min-width: 769px) {
-  /* [A] 全站默认态：全尺寸十字架 (100%) */
-  html, body, *, 
-  .fl-nav__link, .back-icon-trigger, .fl-logo__gif, .fl-item-wrapper {
-    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cline x1='16' y1='0' x2='16' y2='32' stroke='black' stroke-width='1'/%3E%3Cline x1='0' y1='16' x2='32' y2='16' stroke='black' stroke-width='1'/%3E%3C/svg%3E") 16 16, crosshair !important;
-  }
+body.is-loading { overflow: hidden; }
+body.no-splash .fl-splash { display: none !important; }
 
-  /* [B] 交互态：收缩态十字架 (70%) */
-  a:hover, 
-  button:hover, 
-  .fl-nav__link:hover, 
-  .back-icon-trigger:hover, 
-  .fl-logo__gif:hover, 
-  .fl-item-wrapper:hover,
-  .fl-info a:hover,
-  #trigger-wechat:hover {
-    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cline x1='16' y1='4.8' x2='16' y2='27.2' stroke='black' stroke-width='1'/%3E%3Cline x1='4.8' y1='16' x2='27.2' y2='16' stroke='black' stroke-width='1'/%3E%3C/svg%3E") 16 16, pointer !important;
-  }
-
-  /* [C] 深色模式自适应 */
-  @media (prefers-color-scheme: dark) {
-    html, body, *, .fl-nav__link, .back-icon-trigger, .fl-logo__gif, .fl-item-wrapper {
-      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cline x1='16' y1='0' x2='16' y2='32' stroke='white' stroke-width='1'/%3E%3Cline x1='0' y1='16' x2='32' y2='16' stroke='white' stroke-width='1'/%3E%3C/svg%3E") 16 16, crosshair !important;
-    }
-    a:hover, button:hover, .fl-nav__link:hover, .back-icon-trigger:hover, .fl-logo__gif:hover, .fl-item-wrapper:hover, .fl-info a:hover, #trigger-wechat:hover {
-      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cline x1='16' y1='4.8' x2='16' y2='27.2' stroke='white' stroke-width='1'/%3E%3Cline x1='4.8' y1='16' x2='27.2' y2='16' stroke='white' stroke-width='1'/%3E%3C/svg%3E") 16 16, pointer !important;
-    }
-  }
+/* CUSTOM CURSOR */
+.fl-cursor {
+    position: fixed; top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    pointer-events: none; z-index: 99999;
+    mix-blend-mode: difference;
+    opacity: 0; 
+    transition: opacity 0.5s ease;
+    will-change: transform;
+    display: none;
+}
+@media (min-width: 769px) and (pointer: fine) {
+    .fl-cursor { display: block; }
+    body:not(.is-loading) .fl-cursor { opacity: 1; }
 }
 
-/* [D] 移动端安全策略：强制恢复系统指针，解决文本光标问题 */
-@media (max-width: 768px) {
-  html, body { 
-    cursor: default !important; 
-  }
-  /* 显式声明交互元素的指针，防止其变成文字选择光标 */
-  a, button, .fl-nav__link, .fl-logo__gif, .trigger-wechat, .fl-item-wrapper {
-    cursor: pointer !important; 
-  }
-}
+.fl-cursor__v, .fl-cursor__h { position: absolute; background: #fff; will-change: transform; }
+.fl-cursor__v { width: 1px; height: 100vh; top: 0; left: 0; }
+.fl-cursor__h { height: 1px; width: 100vw; left: 0; top: 0; }
 
-/* Grid & Reveal Logic [LOCKED] */
+/* GLOBAL DECORATION GRID */
+.fl-global-grid {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 1; pointer-events: none; opacity: 0;
+    transition: opacity 2s var(--fl-ease), filter 0.6s var(--fl-ease);
+}
+body:not(.is-loading) .fl-global-grid { opacity: 1; }
+#ui-grid-svg { width: 100%; height: 100%; display: block; }
+
+/* SPLASH */
+.fl-splash {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 9999; display: flex; align-items: center; justify-content: center;
+    background: var(--fl-bg); transition: background 1.2s var(--fl-ease);
+}
+.fl-splash__bg {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: url('https://folio.neuepoor.com/fo.gif') center/cover no-repeat;
+    transition: filter 1.8s var(--fl-ease), opacity 1.8s var(--fl-ease), transform 1.8s var(--fl-ease);
+    z-index: 1; opacity: 1;
+}
+.fl-splash__text {
+    position: relative; z-index: 3;
+    font-size: var(--splash-fs); font-weight: 700; color: #fff;
+    mix-blend-mode: difference; opacity: 1; pointer-events: none;
+}
+.fl-splash.is-finished { pointer-events: none; background: transparent; z-index: -1; }
+.fl-splash.is-finished .fl-splash__bg { filter: blur(40px); opacity: 1; transform: scale(1.1); z-index: -1; }
+.fl-splash.is-finished .fl-splash__text { opacity: 0 !important; visibility: hidden; transition: opacity 0.5s var(--fl-ease); }
+
+/* LANDING ANIMATION */
+.fl-landing-hero {
+    position: fixed; z-index: 50; pointer-events: none !important;
+    overflow: hidden; opacity: 0; transform: scale(0); transform-origin: center center;
+    will-change: transform, opacity, top, left, width, height;
+}
+.fl-landing-hero img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+
+/* PC: 特殊浮层文本 */
+.fl-pc-special-text {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    z-index: 9999; pointer-events: none; font-size: var(--gallery-fs);
+    font-weight: var(--gallery-fw); color: var(--fl-text);
+    opacity: 0; filter: blur(10px); transition: opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease);
+}
+body.is-focus-mode .fl-pc-special-text.is-active { opacity: 1; filter: blur(0px); }
+
+/* HEADER & NAV */
+.fl-logo__gif-wrap { position: fixed; top: 0; left: 4px; height: var(--fl-nav-h); display: flex; align-items: center; z-index: 1001; transition: transform 0.4s var(--fl-ease), opacity 0.6s var(--fl-ease), filter 0.6s var(--fl-ease); }
+.fl-logo__gif { height: var(--logo-size-pc); width: auto; opacity: 0; transition: opacity 0.3s var(--fl-ease); cursor: pointer; }
+.fl-header { position: fixed; width: 100%; z-index: 1000; display: flex; justify-content: space-between; align-items: center; padding: 0 4px; height: var(--fl-nav-h); top: 0; mix-blend-mode: difference; transition: transform 0.4s var(--fl-ease); }
+.fl-logo-text { text-decoration: none; color: #fff; font-size: var(--header-fs); font-weight: var(--header-fw); opacity: 0; pointer-events: none; }
+.fl-nav { display: flex; gap: 40px; }
+.fl-nav__link { font-size: var(--header-fs); font-weight: var(--header-fw); color: #fff; text-decoration: none; transition: opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease); }
+
+/* FOCUS EFFECT */
+body.is-focus-mode .fl-global-grid,
+body.is-focus-mode .fl-nav__link:not(:hover),
+body.is-focus-mode .fl-gallery-link:not(:hover),
+body.is-focus-mode .fl-logo__gif-wrap:not(:hover) { opacity: 0.2; filter: blur(8px); }
+body.is-focus-mode .fl-landing-hero { opacity: 1 !important; filter: blur(8px); }
+body.is-focus-mode .fl-gallery-text { filter: blur(8px); }
+.fl-nav__link:hover, .fl-gallery-link:hover, .fl-logo__gif-wrap:hover { opacity: 1 !important; filter: blur(0px) !important; }
+
+/* CONTENT LAYOUT */
 .fl-grid {
-display: grid;
-grid-template-columns: repeat(12, 1fr);
-gap: var(--fl-gutter);
-margin: var(--fl-margin);
-padding: 80px 0 120px;
-transform: translateZ(0);
+    position: relative; display: grid; grid-template-columns: repeat(12, 1fr);
+    gap: var(--fl-gutter); margin: var(--fl-margin);
+    padding: 80px 0 0; min-height: calc(100vh - 8px); 
+    z-index: 10; 
 }
-
 .fl-reveal {
-opacity: 0;
-transform: translateY(var(--fl-reveal-dist));
-transition: opacity var(--fl-reveal-dur) var(--fl-ease), transform var(--fl-reveal-dur) var(--fl-ease);
-will-change: transform, opacity;
+    opacity: 0; transform: translateY(var(--fl-reveal-dist));
+    transition: opacity var(--fl-reveal-dur) var(--fl-ease), transform var(--fl-reveal-dur) var(--fl-ease);
 }
 .fl-reveal.is-visible { opacity: 1; transform: translateY(0); }
 
-/* ==========================================================================
-FOCUS MODE CSS
-========================================================================== */
-.fl-nav__link, .fl-info-row, .fl-info__title, .fl-cdn-container, .type-item {
-  transition: filter 0.5s var(--fl-ease), opacity 0.5s var(--fl-ease);
+/* GALLERY WRAPPER */
+.fl-item-wrapper { position: relative; display: flex; flex-direction: column; margin-bottom: 0; }
+/* v4.11.23: 仅针对 PC 端在 gallery 文字上方增加两个段落的间距 */
+.fl-gallery-text { 
+    font-size: var(--gallery-fs); 
+    font-weight: var(--gallery-fw); 
+    color: var(--fl-text); 
+    line-height: 1.1; 
+    padding-top: var(--gallery-paragraph-spacing); 
+    will-change: filter; 
+    transition: filter 0.6s var(--fl-ease); 
 }
-
-body.is-focus-mode .fl-nav__link,
-body.is-focus-mode .fl-info-row,
-body.is-focus-mode .fl-info__title,
-body.is-focus-mode .fl-cdn-container {
-  filter: blur(8px);
-  opacity: 0.4;
-}
-
-body.is-net-slow.is-focus-mode .fl-nav__link,
-body.is-net-slow.is-focus-mode .fl-info-row,
-body.is-net-slow.is-focus-mode .fl-info__title,
-body.is-net-slow.is-focus-mode .fl-cdn-container {
-  filter: none !important;
-  opacity: 0.2;
-}
-
-body.is-net-slow * { transition-duration: 0.2s !important; }
-
-body.is-focus-mode .fl-nav__link:hover,
-body.is-focus-mode .fl-info-row:hover,
-body.is-focus-mode .fl-info__title:hover,
-body.is-focus-mode .fl-item-wrapper:hover .fl-cdn-container,
-body.is-focus-mode .fl-item-wrapper:hover .type-item {
-  filter: blur(0) !important;
-  opacity: 1 !important;
-  z-index: 1010;
-}
-
-body.is-net-slow.is-focus-mode .fl-nav__link:hover,
-body.is-net-slow.is-focus-mode .fl-info-row:hover,
-body.is-net-slow.is-focus-mode .fl-info__title:hover,
-body.is-net-slow.is-focus-mode .fl-item-wrapper:hover .fl-cdn-container,
-body.is-net-slow.is-focus-mode .fl-item-wrapper:hover .type-item {
-  filter: none !important;
-  opacity: 1 !important;
-}
-
-.type-item-container { z-index: 1020; pointer-events: none; }
+/* v4.11.23: 特定文字段落之间不需要间距 */
+.no-spacing .fl-gallery-text { padding-top: 0 !important; }
 
 /* ==========================================================================
-COMPONENT: HEADER & LOGO [LOCKED]
+CONTACT COMPONENT STYLES (4.11.22)
 ========================================================================== */
-.fl-logo__gif-wrap {
-position: fixed; top: 0; left: 4px; height: var(--fl-nav-h);
-display: flex; align-items: center; z-index: 1001;
-transition: transform 0.6s var(--fl-ease), opacity 0.6s var(--fl-ease);
-}
-.fl-logo__gif {
-height: var(--logo-size-pc);
-width: auto; opacity: 0;
-transition: opacity 0.3s var(--fl-ease);
-}
-.fl-logo__gif:hover { opacity: 0.7 !important; }
-
-.fl-header {
-position: fixed; width: 100%; z-index: 999;
-display: flex; justify-content: space-between; align-items: center;
-padding: 0 4px; height: var(--fl-nav-h); top: 0;
-mix-blend-mode: difference;
-transition: transform 0.6s var(--fl-ease), opacity 0.6s var(--fl-ease);
+.fl-footer-contact {
+    grid-column: span 12;
+    padding: 0 0 60px;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
 }
 
-.fl-logo-text {
-text-decoration: none; color: #fff;
-font-family: var(--header-font); font-size: var(--header-fs); font-weight: var(--header-fw);
-transition: opacity 0.3s var(--fl-ease);
-opacity: 0;
+.fl-contact-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 40px;
 }
 
-.fl-nav { display: flex; gap: 40px; }
-.fl-nav__link {
-font-family: var(--header-font); font-size: var(--header-fs); font-weight: var(--header-fw);
-color: #fff; text-decoration: none;
+.fl-gallery-link {
+    font-size: var(--gallery-fs);
+    font-weight: var(--gallery-fw);
+    color: var(--fl-text);
+    text-decoration: none;
+    transition: opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease);
+    display: inline-block;
 }
 
-/* ==========================================================================
-MOBILE PATCH
-========================================================================== */
+/* WECHAT OVERLAY */
+.fl-wechat-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    z-index: 10000; display: flex; align-items: center; justify-content: center;
+    opacity: 0; visibility: hidden; transition: 0.4s var(--fl-ease);
+}
+.fl-wechat-overlay.is-active { opacity: 1; visibility: visible; }
+.fl-wechat-card { width: 320px; background: #fff; padding: 40px; text-align: center; transform: translateY(20px); transition: transform 0.5s var(--fl-ease); }
+.fl-wechat-overlay.is-active .fl-wechat-card { transform: translateY(0px); }
+.fl-wechat-qr { width: 100%; aspect-ratio: 1; margin-bottom: 24px; display: flex; align-items: center; justify-content: center; }
+.fl-wechat-qr img { width: 100%; height: 100%; object-fit: contain; }
+.fl-wechat-id { font-family: var(--fl-font-fallback); font-size: 16px; color: #000; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+
+/* Mobile Special Styles */
 @media (max-width: 768px) {
-  body.is-focus-mode .fl-nav__link,
-  body.is-focus-mode .fl-info-row,
-  body.is-focus-mode .fl-info__title,
-  body.is-focus-mode .fl-cdn-container {
-    filter: none !important;
-    opacity: 1 !important;
+  :root {
+    /* v4.11.23: 移动端保持原始间距 */
+    --gallery-paragraph-spacing: 0px;
   }
-
-  body.is-focus-mode .fl-item-wrapper:hover .fl-cdn-container,
-  body.is-focus-mode .fl-item-wrapper:hover .type-item {
-    filter: none !important;
-    opacity: 1 !important;
-  }
-  
-  body.is-focus-mode .fl-item-wrapper:hover {
-    z-index: auto !important;
-    position: static !important;
-  }
-
-  .is-nav-hidden { transform: translateY(100px) !important; opacity: 0; pointer-events: none; }
-  .fl-grid { padding: 4px 0 120px; }
+  .fl-grid { padding-top: 20px; }
+  .fl-item-wrapper { margin-bottom: 24px; }
+  .fl-pc-special-text { display: none; }
   .fl-header {
     top: auto !important; bottom: 24px !important; left: 32px !important; width: calc(100% - 64px) !important;
     height: 44px !important; padding: 0 16px !important; border-radius: 12px !important;
     mix-blend-mode: normal !important; background: rgba(255, 255, 255, 0.95) !important;
-    border: 0.5px solid rgba(0, 0, 0, 0.1) !important; box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+    border: 0.5px solid rgba(0, 0, 0, 0.1) !important; z-index: 1002;
   }
-  @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
-    .fl-header { background: rgba(255, 255, 255, 0.2) !important; backdrop-filter: blur(16px) saturate(160%) !important; -webkit-backdrop-filter: blur(16px) saturate(160%) !important; }
-  }
-  @media (prefers-color-scheme: dark) {
-    .fl-header { background: rgba(28, 28, 30, 0.98) !important; }
-    @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) { .fl-header { background: rgba(28, 28, 30, 0.45) !important; } }
-  }
-  .fl-logo__gif-wrap { top: auto !important; bottom: 24px !important; left: 48px !important; height: 44px !important; }
-  .fl-nav__link, .fl-logo-text { font-size: var(--header-fs-m) !important; color: var(--fl-text) !important; }
-  .fl-logo__gif { height: var(--logo-size-m) !important; }
+  @media (prefers-color-scheme: dark) { .fl-header { background: rgba(28, 28, 30, 0.98) !important; } }
+  .fl-logo__gif-wrap { top: auto !important; bottom: 24px !important; left: 48px !important; height: 44px !important; z-index: 1003; opacity: 1 !important; filter: none !important; }
+  .fl-nav__link { font-size: var(--header-fs-m) !important; color: var(--fl-text) !important; opacity: 1 !important; filter: none !important; }
+  .fl-logo__gif { height: var(--logo-size-m) !important; opacity: 1 !important; }
   .fl-nav { gap: 20px !important; }
+  .is-nav-hidden { transform: translateY(150%) !important; }
+  .fl-footer-contact { padding: 0 0 100px; height: auto; margin-top: 20px; }
+  .fl-contact-row { gap: 20px; }
+  .fl-gallery-link { font-size: var(--gallery-fs-m); opacity: 1 !important; filter: none !important; }
 }
-
-/* ==========================================================================
-COMPONENT: INFO & GALLERY
-========================================================================== */
-.fl-info { margin-bottom: 20px; font-family: var(--info-font); font-size: var(--info-fs); font-weight: var(--info-fw); color: var(--fl-text); opacity: 0.8; }
-.fl-info__title { display: block; margin-bottom: 4.2em; font-weight: normal; }
-.fl-info-row { display: block; }
-.fl-info a, .trigger-wechat { color: inherit; text-decoration: none; }
-
-.fl-item-wrapper { position: relative; display: flex; flex-direction: column; }
-.type-item {
-font-family: var(--gallery-font); font-size: var(--gallery-fs);
-color: #fff; opacity: 0; transform: translateY(5px);
-}
-.fl-item-wrapper:hover .type-item { opacity: 1; transform: translateY(0); }
-
-.fl-cdn-container {
-position: relative; width: 100%; overflow: hidden;
-display: flex; align-items: center; justify-content: center;
-min-height: 200px; background-color: var(--fl-bg);
-}
-.fl-cdn-media {
-width: 100%; height: auto; display: block; opacity: 0.1;
-filter: blur(40px) scale(1.05); transition: opacity 1.2s var(--fl-ease), filter 1.2s var(--fl-ease);
-object-fit: cover; z-index: 2;
-}
-.is-loaded .fl-cdn-media { opacity: 1; filter: blur(0) scale(1); }
-.fl-cdn-container::after {
-content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-background: linear-gradient(90deg, transparent, var(--fl-skeleton-op), transparent);
-transform: translateX(-100%); animation: skeleton-wave 2s infinite; z-index: 5;
-}
-.is-loaded.fl-cdn-container::after { display: none; }
-@keyframes skeleton-wave { 100% { transform: translateX(100%); } }
-
-.fl-cdn-shield { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; }
-
-.fl-overlay {
-position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-background: rgba(0, 0, 0, 0.9); display: flex; align-items: center; justify-content: center;
-z-index: 2000; opacity: 0; pointer-events: none;
-transition: opacity 0.4s var(--fl-ease); backdrop-filter: blur(10px);
-}
-.fl-overlay.is-active { opacity: 1; pointer-events: auto; }
-.fl-overlay img { max-width: 300px; width: 80%; transform: scale(0.9); transition: transform 0.5s var(--fl-ease); }
-.fl-overlay.is-active img { transform: scale(1); }
 </style>
 </head>
-<body>
+<body class="is-loading">
+
+<div class="fl-cursor" id="ui-cursor">
+    <div class="fl-cursor__v" id="ui-cursor-v"></div>
+    <div class="fl-cursor__h" id="ui-cursor-h"></div>
+</div>
+
+<div class="fl-global-grid" id="ui-grid-wrapper">
+    <svg xmlns="http://www.w3.org/2000/svg" id="ui-grid-svg"></svg>
+</div>
+
+<div id="ui-pc-special-container"></div>
+
+<div class="fl-landing-hero" id="ui-landing-hero">
+    <img src="https://folio.neuepoor.com/landing.gif" alt="Landing Animation">
+</div>
+
+<div class="fl-splash" id="ui-splash">
+    <div class="fl-splash__bg" id="ui-splash-bg"></div>
+    <div class="fl-splash__text" id="ui-splash-text">Hi. I'm Fo</div>
+</div>
 
 <div class="fl-logo__gif-wrap" id="ui-logo-gif-wrap">
 <img class="fl-logo__gif" id="ui-logo-gif" alt="Logo" draggable="false">
@@ -291,213 +272,297 @@ transition: opacity 0.4s var(--fl-ease); backdrop-filter: blur(10px);
 <nav class="fl-nav" id="ui-nav"></nav>
 </header>
 
-<main class="fl-grid" id="ui-main-grid"></main>
+<main class="fl-grid" id="ui-main-grid">
+    <footer class="fl-footer-contact fl-reveal" id="ui-footer-contact"></footer>
+</main>
 
-<div class="fl-overlay" id="ui-wechat-overlay">
-<img src="https://folio.neuepoor.com/wechatsuckboyz.svg" alt="WeChat QR Code" draggable="false">
+<div class="fl-wechat-overlay" id="ui-wechat-overlay">
+    <div class="fl-wechat-card">
+        <div class="fl-wechat-qr"><img src="https://folio.neuepoor.com/wechatsuckboyz.svg" alt="WeChat QR"></div>
+        <div class="fl-wechat-id">WeChat: NeuePoor</div>
+    </div>
 </div>
 
 <script>
-/**
-* RUNTIME 决策引擎 v4.8.7
-*/
-const RUNTIME = {
-  isSlow: false,
-  supportWebp: false,
-  
-  async checkCapabilities() {
-    const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-    if (conn) {
-      if (['slow-2g', '2g', '3g'].includes(conn.effectiveType) || conn.saveData) {
-        this.isSlow = true;
-        document.body.classList.add('is-net-slow');
-      }
-    }
-    const canvas = document.createElement('canvas');
-    if (canvas.getContext && canvas.getContext('2d')) {
-      this.supportWebp = canvas.toDataURL('image/webp').indexOf('data:image/webp') == 0;
-    }
-  },
-
-  resolveAsset(src) {
-    if (!src) return '';
-    return src;
-  }
-};
-
-/**
-* CONFIG
-*/
 const CONFIG = {
-version: "4.8.7",
-seo: { _lock: true, title: "Foo", description: "Portfolio of Foo", canonical: "http://fo.neuepoor.com", favicon: "https://folio.neuepoor.com/favicon.webp" },
+version: "4.11.24",
+seo: { title: "Foo | Portfolio", favicon: "https://folio.neuepoor.com/favicon.webp" },
 typography: {
-_lock: true,
 header: { font: "Arial, sans-serif", weight: "700", sizePC: "32px", sizeMobile: "21px" },
-info: { font: "Arial, sans-serif", weight: "400", sizePC: "10px", sizeMobile: "10px" },
-gallery: { font: "Arial, sans-serif", weight: "400", sizePC: "10px", sizeMobile: "10px" }
+gallery: { font: "Arial, sans-serif", weight: "700", sizePC: "32px", sizeMobile: "21px" }
 },
 header: {
-_lock: true,
 logo: { gif: "https://folio.neuepoor.com/logo.gif", link: "https://neuepoor.com", text: "Foo", sizePC: "32px", sizeMobile: "18px" },
 nav: [
-{ name: 'Works', link: 'https://fo.neuepoor.com/works' },
-{ name: '(Play)', link: 'https://fo.neuepoor.com/play' },
-{ name: 'Me', link: 'https://fo.neuepoor.com/me' }
-]
-},
-info: {
-_lock: true,
-data: [
-{ title: "Works", content: "Branding<br>Vision identity<br>Look Book<br>Interface<br>Packaging<br>Editorial<br>Apparel", span: 6 },
-{ title: "Service", content: "Creative Direction<br>Art Direction<br>Graphic<br>Illustration<br>Motion<br>Typeface", span: 4 },
-{ title: "Contacts", content: `<a href="mailto:poorleaglguy@qq.com">Email</a><br><a href="https://www.instagram.com/neuepoor" target="_blank">Instagram</a><br><a href="https://github.com/NeuePoor" target="_blank">Github</a><br><a href="https://xhslink.com/m/9qPnrun1Dh9" target="_blank">小红书</a><br><span class="trigger-wechat" id="trigger-wechat">Wechat</span>`, span: 2 }
+{ name: 'Works', link: 'https://works.neuepoor.com', specialText: "I Wrok 4 Brand" },
+{ name: '(Play)', link: 'https://play.neuepoor.com', specialText: "I (Play) Sth" },
+{ name: 'Me', link: 'https://Me.neuepoor.com', specialText: "I (Capture) Free Me" }
 ]
 },
 gallery: {
-_editable: true,
 items: [
-{ id: "02001", span: 12, src: "https://folio.neuepoor.com/works/Quick%20Look%20Example-1.png" },
-{ id: "02002", span: 12, src: "https://folio.neuepoor.com/works/Quick%20Look%20Example-3.png" },
-{ id: "02003", span: 12, src: "https://folio.neuepoor.com/works/Quick%20Look%20Example-4.png" },
-{ id: "02004", span: 12, src: "https://folio.neuepoor.com/works/Quick%20Look%20Example-6.png" },
-{ id: "02005", span: 12, src: "https://folio.neuepoor.com/works/Quick%20Look%20Example-7.png" }
+    { span: 12, type: "text", content: "I'm a multi-disciplinary designer with focus on Graphic&Illustration,Creative Direction, Branding,Visual Identities, Packaging, Website, and Print& Editorial Design." },
+    { span: 12, type: "text", content: "If you are looking for a designer who excles in BrandStrategy/Visual Direction/Print Works/Products/IP/Curatorial/Grid Layout/Website design/Typeface Customization.", noSpacing: true },
+    { span: 12, type: "text", content: "Please contact me.", isLast: true, noSpacing: true }
 ]
+},
+contact: {
+    links: [
+        { name: "Email", link: "mailto:poorleaglguy@qq.com" },
+        { name: "Instagram", link: "https://www.instagram.com/neuepoor" },
+        { name: "Github", link: "https://github.com/NeuePoor" },
+        { name: "小红书", link: "https://xhslink.com/m/9qPnrun1Dh9" },
+        { name: "WeChat", link: "#", isWeChat: true }
+    ]
 }
 };
 
-/**
-* ENGINE
-*/
 const ENGINE = {
-initSEO() {
-document.title = CONFIG.seo.title;
-const fav = document.getElementById('favicon');
-if (fav) fav.href = CONFIG.seo.favicon;
-},
-
-renderMedia(src) {
-  if (!src) return '';
-  const finalSrc = RUNTIME.resolveAsset(src);
-  const ext = finalSrc.split('.').pop().toLowerCase();
-  const isVideo = ['mp4', 'webm', 'mov'].includes(ext);
-  const autoPlayAttr = RUNTIME.isSlow ? '' : 'autoplay';
-  const commonAttrs = `class="fl-cdn-media" draggable="false" oncontextmenu="return false;"`;
-  return `<div class="fl-cdn-container">${
-    isVideo 
-    ? `<video ${commonAttrs} muted loop playsinline ${autoPlayAttr}><source src="${finalSrc}"></video>` 
-    : `<img ${commonAttrs} src="${finalSrc}" loading="lazy" alt="Material">`
-  }</div>`;
-},
+isMobile() { return window.innerWidth <= 768; },
+initSEO() { document.title = CONFIG.seo.title; const fav = document.getElementById('favicon'); if (fav) fav.href = CONFIG.seo.favicon; },
 
 applyTypography() {
-const root = document.documentElement;
-const t = CONFIG.typography;
-const l = CONFIG.header.logo;
-const props = {
-'--header-font': t.header.font, '--header-fw': t.header.weight, '--header-fs': t.header.sizePC, '--header-fs-m': t.header.sizeMobile,
-'--info-font': t.info.font, '--info-fw': t.info.weight, '--info-fs': t.info.sizePC,
-'--gallery-font': t.gallery.font, '--gallery-fs': t.gallery.sizePC,
-'--logo-size-pc': l.sizePC, '--logo-size-m': l.sizeMobile
-};
-Object.entries(props).forEach(([k, v]) => root.style.setProperty(k, v));
+    const root = document.documentElement;
+    const t = CONFIG.typography; const l = CONFIG.header.logo;
+    const props = {
+        '--header-font': t.header.font, '--header-fw': t.header.weight, '--header-fs': t.header.sizePC, '--header-fs-m': t.header.sizeMobile,
+        '--gallery-font': t.gallery.font, '--gallery-fw': t.gallery.weight, '--gallery-fs': t.gallery.sizePC, '--gallery-fs-m': t.gallery.sizeMobile,
+        '--logo-size-pc': l.sizePC, '--logo-size-m': l.sizeMobile
+    };
+    Object.entries(props).forEach(([k, v]) => root.style.setProperty(k, v));
 },
 
 renderHeader() {
-const gif = document.getElementById('ui-logo-gif');
-const text = document.getElementById('ui-logo-text');
-const nav = document.getElementById('ui-nav');
-text.innerText = CONFIG.header.logo.text;
-gif.src = CONFIG.header.logo.gif;
-gif.onload = () => { gif.style.opacity = "1"; text.style.opacity = "0"; };
-gif.onerror = () => { gif.style.display = "none"; text.style.setProperty('opacity', '1', 'important'); };
-gif.onclick = () => { window.location.href = CONFIG.header.logo.link; };
-nav.innerHTML = CONFIG.header.nav.map(n => `<a href="${n.link}" class="fl-nav__link">${n.name}</a>`).join('');
+    const gif = document.getElementById('ui-logo-gif');
+    const text = document.getElementById('ui-logo-text');
+    const nav = document.getElementById('ui-nav');
+    const pcSpecialContainer = document.getElementById('ui-pc-special-container');
+    text.innerText = CONFIG.header.logo.text;
+    gif.src = CONFIG.header.logo.gif;
+    gif.onload = () => { gif.style.opacity = "1"; text.style.opacity = "0"; };
+    gif.onclick = () => { window.location.href = CONFIG.header.logo.link; };
+    nav.innerHTML = CONFIG.header.nav.map(n => `<a href="${n.link}" class="fl-nav__link" data-nav-name="${n.name}">${n.name}</a>`).join('');
+    pcSpecialContainer.innerHTML = CONFIG.header.nav.map(n => {
+        const id = n.name.replace(/[()]/g, '');
+        return `<div class="fl-pc-special-text" id="pc-text-${id}">${n.specialText}</div>`;
+    }).join('');
 },
 
 buildContent() {
-const grid = document.getElementById('ui-main-grid');
-const infoHTML = CONFIG.info.data.map(sec => {
-const rows = sec.content.split('<br>').map(row => `<span class="fl-info-row">${row}</span>`).join('');
-return `
-<div class="fl-info fl-reveal" style="grid-column: span ${sec.span}">
-<b class="fl-info__title">${sec.title}</b>
-${rows}
-</div>`;
-}).join('');
-
-const galleryHTML = CONFIG.gallery.items.map(item => `
-<div class="fl-item-wrapper fl-reveal" style="grid-column: span ${item.span || 12}">
-<div class="type-item-container"><span class="type-item">${item.id}</span></div>
-${this.renderMedia(item.src)}
-</div>`).join('');
-
-grid.innerHTML = infoHTML + galleryHTML;
-this.initReveal();
-this.initFocusMode(); 
-this.initWeChatTrigger();
-
-document.querySelectorAll('.fl-cdn-media').forEach(media => {
-const container = media.closest('.fl-cdn-container');
-const markLoaded = () => setTimeout(() => container.classList.add('is-loaded'), 50);
-if (media.tagName === 'VIDEO') { if (media.readyState >= 3) markLoaded(); else media.addEventListener('loadeddata', markLoaded); }
-else { if (media.complete) markLoaded(); else media.addEventListener('load', markLoaded); }
-});
+    const grid = document.getElementById('ui-main-grid');
+    const footer = document.getElementById('ui-footer-contact');
+    const isM = this.isMobile();
+    let galleryHTML = '';
+    if (isM) {
+        galleryHTML += CONFIG.header.nav.map(n => `<div class="fl-item-wrapper fl-reveal" style="grid-column: span 12; margin-bottom: 8px"><div class="fl-gallery-text">${n.specialText}</div></div>`).join('');
+    }
+    galleryHTML += CONFIG.gallery.items.map(item => `<div class="fl-item-wrapper fl-reveal ${item.noSpacing && !isM ? 'no-spacing' : ''}" style="grid-column: span ${item.span || 12}; margin-bottom: ${item.isLast ? (isM ? '48px' : '64px') : '0'}"><div class="fl-gallery-text">${item.content}</div></div>`).join('');
+    grid.innerHTML = galleryHTML;
+    grid.appendChild(footer); 
+    if (CONFIG.contact) {
+        footer.innerHTML = `<div class="fl-contact-row">${CONFIG.contact.links.map(l => `<a href="${l.link}" class="fl-gallery-link" ${l.isWeChat ? 'id="trigger-wechat"' : 'target="_blank"'}>${l.name}</a>`).join('')}</div>`;
+    }
+    this.initReveal();
+    this.initWeChatTrigger();
 },
 
 initFocusMode() {
-  const body = document.body;
-  const focusSelectors = 'a, .fl-item-wrapper, .fl-info-row, .fl-nav__link, .fl-info__title';
-  const isDesktop = window.matchMedia('(min-width: 769px)');
-  document.addEventListener('mouseover', (e) => {
-    if (!isDesktop.matches) return;
-    const target = e.target.closest(focusSelectors);
-    if (target) body.classList.add('is-focus-mode');
-  });
-  document.addEventListener('mouseout', (e) => {
-    if (!isDesktop.matches) { body.classList.remove('is-focus-mode'); return; }
-    const related = e.relatedTarget;
-    if (!related || !related.closest(focusSelectors)) body.classList.remove('is-focus-mode');
-  });
+    const body = document.body;
+    const focusTriggerSelectors = '.fl-nav__link, .fl-gallery-link, .fl-logo__gif-wrap'; 
+    if (this.isMobile()) return;
+    document.addEventListener('mouseover', (e) => {
+        if (body.classList.contains('is-loading')) return;
+        const trigger = e.target.closest(focusTriggerSelectors);
+        if (trigger) {
+            body.classList.add('is-focus-mode');
+            const navLink = trigger.closest('.fl-nav__link');
+            if (navLink) {
+                const name = navLink.getAttribute('data-nav-name');
+                const cleanName = name.replace(/[()]/g, ''); 
+                const targetPC = document.getElementById(`pc-text-${cleanName}`);
+                if (targetPC) targetPC.classList.add('is-active');
+            }
+        }
+    });
+    document.addEventListener('mouseout', (e) => {
+        const related = e.relatedTarget;
+        if (!related || !related.closest(focusTriggerSelectors)) {
+            body.classList.remove('is-focus-mode');
+            document.querySelectorAll('.fl-pc-special-text').forEach(el => el.classList.remove('is-active'));
+        }
+    });
+},
+
+initCustomCursor() {
+    if (this.isMobile()) return;
+    const v = document.getElementById('ui-cursor-v');
+    const h = document.getElementById('ui-cursor-h');
+    const cursor = document.getElementById('ui-cursor');
+    let lastX = 0, lastY = 0; let ticking = false;
+    window.addEventListener('mousemove', (e) => {
+        if (document.body.classList.contains('is-loading')) return;
+        lastX = e.clientX; lastY = e.clientY;
+        if (!ticking) {
+            window.requestAnimationFrame(() => {
+                v.style.transform = `translateX(${lastX}px)`;
+                h.style.transform = `translateY(${lastY}px)`;
+                ticking = false;
+            });
+            ticking = true;
+        }
+    }, { passive: true });
+},
+
+initLandingHero() {
+    const hero = document.getElementById('ui-landing-hero');
+    const logoGifWrap = document.getElementById('ui-logo-gif-wrap');
+    if (!hero || !logoGifWrap) return;
+
+    this.animateHeroEntrance = () => {
+        const mobile = this.isMobile();
+        const logoRect = logoGifWrap.getBoundingClientRect();
+        
+        hero.style.transition = 'none';
+        hero.style.top = `${logoRect.top + logoRect.height/2}px`;
+        hero.style.left = `${logoRect.left + logoRect.width/2}px`;
+        hero.style.width = '0px'; hero.style.height = '0px'; hero.style.opacity = '0';
+        hero.style.transform = 'translate(-50%, -50%) scale(0)';
+        hero.offsetHeight; 
+        
+        hero.style.transition = `opacity 1.5s var(--fl-ease), transform 1.5s var(--fl-ease), width 1.5s var(--fl-ease), height 1.5s var(--fl-ease), top 1.5s var(--fl-ease), left 1.5s var(--fl-ease)`;
+        
+        if (mobile) {
+            const targetWidth = window.innerWidth * 0.85;
+            const targetHeight = targetWidth * 0.56;
+            hero.style.width = `${targetWidth}px`; hero.style.height = `${targetHeight}px`;
+            hero.style.top = '50%'; hero.style.left = '50%'; hero.style.opacity = "1";
+            hero.style.transform = `translate(-50%, -50%) scale(3)`;
+        } else {
+            const unit = window.innerWidth / 12;
+            const targetWidth = unit * 7 - 4;
+            const targetHeight = targetWidth * 0.56;
+            hero.style.width = `${targetWidth}px`; hero.style.height = `${targetHeight}px`;
+            hero.style.top = `${80 + targetHeight/2}px`; 
+            hero.style.left = `${(unit * 5 + 2) + targetWidth/2}px`;
+            hero.style.opacity = "1"; 
+            hero.style.transform = `translate(-50%, -50%) scale(3)`;
+
+            setTimeout(() => {
+                const currentLogoRect = logoGifWrap.getBoundingClientRect();
+                hero.style.top = `${currentLogoRect.top + currentLogoRect.height/2}px`;
+                hero.style.left = `${currentLogoRect.left + currentLogoRect.width/2}px`;
+                hero.style.width = '0px'; hero.style.height = '0px';
+                hero.style.opacity = '0';
+                hero.style.transform = 'translate(-50%, -50%) scale(0)';
+            }, 2500); 
+        }
+    };
+    
+    window.addEventListener('scroll', () => {
+        if (!this.isMobile() || document.body.classList.contains('is-loading')) return;
+        const scrollY = window.scrollY;
+        const progress = Math.max(0, Math.min(1, scrollY / 300));
+        const logoRect = logoGifWrap.getBoundingClientRect();
+        const centerX = window.innerWidth / 2;
+        const centerY = window.innerHeight / 2;
+        const targetX = logoRect.left + logoRect.width / 2;
+        const targetY = logoRect.top + logoRect.height / 2;
+        const currentX = centerX + (targetX - centerX) * progress;
+        const currentY = centerY + (targetY - centerY) * progress;
+        const currentScale = 3 * (1 - progress);
+        hero.style.transition = 'none';
+        hero.style.top = `${currentY}px`;
+        hero.style.left = `${currentX}px`;
+        hero.style.transform = `translate(-50%, -50%) scale(${currentScale})`;
+        hero.style.opacity = (1 - progress).toString();
+    }, { passive: true });
 },
 
 initScrollInteraction() {
-const header = document.getElementById('ui-header');
-const logoWrap = document.getElementById('ui-logo-gif-wrap');
-let isScrolling;
-window.addEventListener('scroll', () => {
-if (window.innerWidth <= 768) {
-header.classList.add('is-nav-hidden'); logoWrap.classList.add('is-nav-hidden');
-window.clearTimeout(isScrolling);
-isScrolling = setTimeout(() => { header.classList.remove('is-nav-hidden'); logoWrap.classList.remove('is-nav-hidden'); }, 250);
-}
-}, { passive: true });
+    const header = document.getElementById('ui-header');
+    const logoWrap = document.getElementById('ui-logo-gif-wrap');
+    let isScrolling;
+    window.addEventListener('scroll', () => {
+        if (this.isMobile()) {
+            header.classList.add('is-nav-hidden'); logoWrap.classList.add('is-nav-hidden');
+            window.clearTimeout(isScrolling);
+            isScrolling = setTimeout(() => { 
+                header.classList.remove('is-nav-hidden'); 
+                logoWrap.classList.remove('is-nav-hidden'); 
+            }, 250);
+        }
+    }, { passive: true });
 },
 
 initReveal() {
-const observer = new IntersectionObserver((entries) => {
-entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('is-visible'); observer.unobserve(entry.target); } });
-}, { threshold: 0.05 });
-document.querySelectorAll('.fl-reveal').forEach(el => observer.observe(el));
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('is-visible'); observer.unobserve(entry.target); } });
+    }, { threshold: 0.05 });
+    document.querySelectorAll('.fl-reveal').forEach(el => observer.observe(el));
 },
 
 initWeChatTrigger() {
-const trigger = document.getElementById('trigger-wechat');
-const overlay = document.getElementById('ui-wechat-overlay');
-if (trigger && overlay) { trigger.onclick = () => overlay.classList.add('is-active'); overlay.onclick = () => overlay.classList.remove('is-active'); }
+    const trigger = document.getElementById('trigger-wechat');
+    const overlay = document.getElementById('ui-wechat-overlay');
+    if (trigger && overlay) { 
+        trigger.onclick = (e) => { e.preventDefault(); overlay.classList.add('is-active'); };
+        overlay.onclick = () => overlay.classList.remove('is-active'); 
+    }
 },
 
-async start() { 
-  await RUNTIME.checkCapabilities();
-  this.initSEO(); 
-  this.applyTypography(); 
-  this.renderHeader(); 
-  this.buildContent(); 
-  this.initScrollInteraction(); 
-  this.initFocusMode(); 
+drawGlobalGrid() {
+    const svg = document.getElementById('ui-grid-svg');
+    if (!svg) return;
+    const width = window.innerWidth;
+    const height = Math.max(document.documentElement.scrollHeight, window.innerHeight); 
+    const unit = 60;
+    let cols = Math.round(width / unit); let rows = Math.round(height / unit);
+    const stepX = width / cols; const stepY = height / rows;
+    const style = getComputedStyle(document.documentElement);
+    const lineColor = style.getPropertyValue('--grid-color');
+    const sqColor = style.getPropertyValue('--grid-square-color');
+    let html = '';
+    for (let i = 0; i <= cols; i++) html += `<line x1="${i*stepX}" y1="0" x2="${i*stepX}" y2="${height}" stroke="${lineColor}" stroke-width="1" />`;
+    for (let i = 0; i <= rows; i++) html += `<line x1="0" y1="${i*stepY}" x2="${width}" y2="${i*stepY}" stroke="${lineColor}" stroke-width="1" />`;
+    for (let i = 0; i <= cols; i++) { for (let j = 0; j <= rows; j++) html += `<rect x="${i*stepX-1}" y="${j*stepY-1}" width="2" height="2" fill="${sqColor}" />`; }
+    svg.innerHTML = html;
+},
+
+initSplash() {
+    const splash = document.getElementById('ui-splash');
+    const body = document.body;
+    const hasVisited = sessionStorage.getItem('fl_visited');
+    if (hasVisited) {
+        body.classList.remove('is-loading'); body.classList.add('no-splash');
+        requestAnimationFrame(() => { if (this.animateHeroEntrance) this.animateHeroEntrance(); });
+        return;
+    }
+    let isDismissed = false;
+    const dismiss = () => { 
+        if(isDismissed) return; isDismissed = true;
+        splash.classList.add('is-finished'); body.classList.remove('is-loading'); 
+        sessionStorage.setItem('fl_visited', 'true');
+        if (this.animateHeroEntrance) this.animateHeroEntrance();
+    };
+    setTimeout(dismiss, 3000); 
+    splash.addEventListener('click', dismiss);
+},
+
+start() { 
+    this.initSEO(); this.applyTypography(); this.renderHeader(); 
+    this.buildContent(); this.drawGlobalGrid(); this.initFocusMode();
+    this.initCustomCursor(); this.initScrollInteraction(); 
+    this.initLandingHero(); this.initSplash();
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+            this.buildContent(); this.drawGlobalGrid();
+            if(this.animateHeroEntrance) this.animateHeroEntrance();
+        }, 200);
+    });
 }
 };
-
 window.onload = () => ENGINE.start();
 </script>
 </body>
