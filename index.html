@@ -146,11 +146,10 @@ body.is-focus-mode .fl-pc-special-text.is-active { opacity: 1; filter: blur(0px)
 .fl-nav { display: flex; gap: 40px; }
 .fl-nav__link { font-size: var(--header-fs); font-weight: var(--header-fw); color: #fff; text-decoration: none; transition: opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease); }
 
-/* FOCUS EFFECT - LANDING HERO EXEMPTION */
+/* FOCUS EFFECT */
 body.is-focus-mode .fl-nav__link:not(:hover),
 body.is-focus-mode .fl-gallery-link:not(:hover),
 body.is-focus-mode .fl-logo__gif-wrap:not(:hover) { opacity: 0.2; filter: blur(8px); }
-/* 移除 Landing Hero 的模糊效果，确保悬停显示时清晰 */
 body.is-focus-mode .fl-landing-hero.is-active { opacity: 1 !important; filter: none !important; } 
 body.is-focus-mode .fl-gallery-text { filter: blur(8px); }
 .fl-nav__link:hover, .fl-gallery-link:hover, .fl-logo__gif-wrap:hover { opacity: 1 !important; filter: blur(0px) !important; }
@@ -180,10 +179,11 @@ body.is-focus-mode .fl-gallery-text { filter: blur(8px); }
     transition: filter 0.6s var(--fl-ease); 
 }
 
-/* PC 端特殊间距处理：段落合一逻辑 */
+/* PC 端特殊间距处理 */
 @media (min-width: 769px) {
-    .no-spacing .fl-gallery-text { padding-top: 0 !important; }
-    .double-top-spacing .fl-gallery-text { padding-top: calc(var(--gallery-paragraph-spacing) * 2) !important; }
+    .combined-text .fl-gallery-text { 
+        padding-top: calc(var(--gallery-paragraph-spacing) * 2) !important; 
+    }
 }
 
 /* CONTACT COMPONENT */
@@ -259,7 +259,6 @@ body.is-focus-mode .fl-gallery-text { filter: blur(8px); }
     <img src="https://folio.neuepoor.com/landing.gif" alt="Landing Animation">
 </div>
 
-<!-- 开屏容器：始终渲染 -->
 <div class="fl-splash" id="ui-splash">
     <div class="fl-splash__bg" id="ui-splash-bg"></div>
     <div class="fl-splash__text" id="ui-splash-text">Hi. I'm Fo</div>
@@ -303,9 +302,14 @@ nav: [
 },
 gallery: {
 items: [
-    { span: 12, type: "text", content: "I'm a multi-disciplinary designer with focus on Graphic&Illustration,Creative Direction, Branding,Visual Identities, Packaging, Website, and Print& Editorial Design.", doubleTopSpacing: true },
-    { span: 12, type: "text", content: "If you are looking for a designer who excles in BrandStrategy/Visual Direction/Print Works/Products/IP/Curatorial/Grid Layout/Website design/Typeface Customization.", noSpacing: true },
-    { span: 12, type: "text", content: "Please contact me.", isLast: true, noSpacing: true }
+    { 
+        span: 12, 
+        type: "text", 
+        // 将三段文字合并为一段，使用 <br> 换行
+        content: "I'm a multi-disciplinary designer with focus on Graphic&Illustration,Creative Direction, Branding,Visual Identities, Packaging, Website, and Print& Editorial Design.<br><br>If you are looking for a designer who excles in BrandStrategy/Visual Direction/Print Works/Products/IP/Curatorial/Grid Layout/Website design/Typeface Customization.<br><br>Please contact me.", 
+        isLast: true,
+        isCombined: true
+    }
 ]
 },
 contact: {
@@ -342,9 +346,6 @@ renderHeader() {
     text.innerText = CONFIG.header.logo.text;
     gif.src = CONFIG.header.logo.gif;
     gif.onload = () => { gif.style.opacity = "1"; text.style.opacity = "0"; };
-    
-    gif.onclick = null; 
-
     nav.innerHTML = CONFIG.header.nav.map(n => `<a href="${n.link}" class="fl-nav__link" data-nav-name="${n.name}">${n.name}</a>`).join('');
     pcSpecialContainer.innerHTML = CONFIG.header.nav.map(n => {
         const id = n.name.replace(/[()]/g, '');
@@ -361,17 +362,13 @@ buildContent() {
         galleryHTML += CONFIG.header.nav.map(n => `<div class="fl-item-wrapper fl-reveal" style="grid-column: span 12; margin-bottom: 8px"><div class="fl-gallery-text">${n.specialText}</div></div>`).join('');
     }
     
-    // PC 端增强间距逻辑：双倍段落高
     galleryHTML += CONFIG.gallery.items.map(item => {
         let classes = `fl-item-wrapper fl-reveal`;
-        if (!isM) {
-            if (item.noSpacing) classes += ' no-spacing';
-            if (item.doubleTopSpacing) classes += ' double-top-spacing';
-        }
+        if (!isM && item.isCombined) classes += ' combined-text';
         
-        // Please contact me 下方 2 个段落间距处理
         let inlineStyle = `grid-column: span ${item.span || 12};`;
         if (item.isLast) {
+            // 请注意此处：PC 端下方留出 2 个段落间距
             const bottomSpacing = isM ? '48px' : 'calc(var(--gallery-paragraph-spacing) * 2)';
             inlineStyle += ` margin-bottom: ${bottomSpacing};`;
         } else {
@@ -421,19 +418,12 @@ initCustomCursor() {
     if (this.isMobile()) return;
     const v = document.getElementById('ui-cursor-v');
     const h = document.getElementById('ui-cursor-h');
-    const cursor = document.getElementById('ui-cursor');
-    let lastX = 0, lastY = 0; let ticking = false;
     window.addEventListener('mousemove', (e) => {
         if (document.body.classList.contains('is-loading')) return;
-        lastX = e.clientX; lastY = e.clientY;
-        if (!ticking) {
-            window.requestAnimationFrame(() => {
-                v.style.transform = `translate3d(${lastX}px, 0, 0)`;
-                h.style.transform = `translate3d(0, ${lastY}px, 0)`;
-                ticking = false;
-            });
-            ticking = true;
-        }
+        requestAnimationFrame(() => {
+            v.style.transform = `translate3d(${e.clientX}px, 0, 0)`;
+            h.style.transform = `translate3d(0, ${e.clientY}px, 0)`;
+        });
     }, { passive: true });
 },
 
@@ -446,22 +436,18 @@ initLandingHero() {
     const showHero = () => {
         const mobile = this.isMobile();
         hero.style.transition = `opacity 1.2s var(--fl-ease), transform 1.2s var(--fl-ease), width 1.2s var(--fl-ease), height 1.2s var(--fl-ease), top 1.2s var(--fl-ease), left 1.2s var(--fl-ease)`;
-        
         if (mobile) {
             const targetWidth = window.innerWidth * 0.85;
-            const targetHeight = targetWidth * 0.56;
             hero.style.width = `${targetWidth}px`; 
-            hero.style.height = `${targetHeight}px`;
-            hero.style.top = '50%'; 
-            hero.style.left = '50%'; 
+            hero.style.height = `${targetWidth * 0.56}px`;
+            hero.style.top = '50%'; hero.style.left = '50%'; 
             hero.style.opacity = "1";
             hero.style.transform = `translate3d(-50%, -50%, 0) scale(3.5)`;
         } else {
             const unit = window.innerWidth / 12;
             const targetWidth = unit * 7 - 4;
             const targetHeight = targetWidth * 0.56;
-            hero.style.width = `${targetWidth}px`; 
-            hero.style.height = `${targetHeight}px`;
+            hero.style.width = `${targetWidth}px`; hero.style.height = `${targetHeight}px`;
             hero.style.top = `${80 + targetHeight/2}px`; 
             hero.style.left = `${(unit * 5 + 2) + targetWidth/2}px`;
             hero.style.opacity = "1"; 
@@ -475,8 +461,7 @@ initLandingHero() {
         hero.style.transition = `opacity 0.8s var(--fl-ease), transform 0.8s var(--fl-ease), width 0.8s var(--fl-ease), height 0.8s var(--fl-ease), top 0.8s var(--fl-ease), left 0.8s var(--fl-ease)`;
         hero.style.top = `${logoRect.top + logoRect.height/2}px`;
         hero.style.left = `${logoRect.left + logoRect.width/2}px`;
-        hero.style.width = '0px'; 
-        hero.style.height = '0px';
+        hero.style.width = '0px'; hero.style.height = '0px';
         hero.style.opacity = '0';
         hero.style.transform = 'translate3d(-50%, -50%, 0) scale(0)';
         hero.classList.remove('is-active');
@@ -487,27 +472,16 @@ initLandingHero() {
     hero.style.left = `${logoRect.left + logoRect.width/2}px`;
 
     if (this.isMobile()) {
-        logoGif.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (hero.classList.contains('is-active')) hideHero(); else showHero();
-        });
-        document.addEventListener('click', (e) => {
-            if (!logoGifWrap.contains(e.target) && hero.classList.contains('is-active')) hideHero();
-        });
+        logoGif.onclick = (e) => { e.stopPropagation(); if (hero.classList.contains('is-active')) hideHero(); else showHero(); };
+        document.onclick = (e) => { if (!logoGifWrap.contains(e.target) && hero.classList.contains('is-active')) hideHero(); };
     } else {
         this.animateHeroEntrance = () => {
             showHero();
-            const onceHide = (e) => {
-                if (e.propertyName === 'transform') {
-                    hero.removeEventListener('transitionend', onceHide);
-                    hideHero();
-                }
-            };
+            const onceHide = (e) => { if (e.propertyName === 'transform') { hero.removeEventListener('transitionend', onceHide); hideHero(); } };
             hero.addEventListener('transitionend', onceHide);
         };
-
-        logoGifWrap.addEventListener('mouseenter', showHero);
-        logoGifWrap.addEventListener('mouseleave', hideHero);
+        logoGifWrap.onmouseenter = showHero;
+        logoGifWrap.onmouseleave = hideHero;
     }
 },
 
@@ -515,16 +489,13 @@ initScrollInteraction() {
     const header = document.getElementById('ui-header');
     const logoWrap = document.getElementById('ui-logo-gif-wrap');
     let isScrolling;
-    window.addEventListener('scroll', () => {
+    window.onscroll = () => {
         if (this.isMobile()) {
             header.classList.add('is-nav-hidden'); logoWrap.classList.add('is-nav-hidden');
             window.clearTimeout(isScrolling);
-            isScrolling = setTimeout(() => { 
-                header.classList.remove('is-nav-hidden'); 
-                logoWrap.classList.remove('is-nav-hidden'); 
-            }, 250);
+            isScrolling = setTimeout(() => { header.classList.remove('is-nav-hidden'); logoWrap.classList.remove('is-nav-hidden'); }, 250);
         }
-    }, { passive: true });
+    };
 },
 
 initReveal() {
@@ -565,26 +536,17 @@ initSplash() {
     const splash = document.getElementById('ui-splash');
     const body = document.body;
     const hasVisited = sessionStorage.getItem('fl_visited');
-    
     if (hasVisited) {
-        body.classList.remove('is-loading');
-        splash.classList.add('is-finished'); 
-        if (!this.isMobile() && this.animateHeroEntrance) {
-            requestAnimationFrame(() => this.animateHeroEntrance());
-        }
+        body.classList.remove('is-loading'); splash.classList.add('is-finished'); 
+        if (!this.isMobile() && this.animateHeroEntrance) requestAnimationFrame(() => this.animateHeroEntrance());
         return;
     }
-    
-    let isDismissed = false;
     const dismiss = () => { 
-        if(isDismissed) return; isDismissed = true;
-        splash.classList.add('is-finished'); 
-        body.classList.remove('is-loading'); 
+        splash.classList.add('is-finished'); body.classList.remove('is-loading'); 
         sessionStorage.setItem('fl_visited', 'true');
         if (!this.isMobile() && this.animateHeroEntrance) this.animateHeroEntrance();
     };
-    setTimeout(dismiss, 3000); 
-    splash.addEventListener('click', dismiss);
+    setTimeout(dismiss, 3000); splash.onclick = dismiss;
 },
 
 start() { 
@@ -592,13 +554,7 @@ start() {
     this.buildContent(); this.drawGlobalGrid(); this.initFocusMode();
     this.initCustomCursor(); this.initScrollInteraction(); 
     this.initLandingHero(); this.initSplash();
-    let resizeTimer;
-    window.addEventListener('resize', () => {
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(() => {
-            this.buildContent(); this.drawGlobalGrid();
-        }, 200);
-    });
+    window.onresize = () => { this.buildContent(); this.drawGlobalGrid(); };
 }
 };
 window.onload = () => ENGINE.start();
