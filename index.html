@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+<meta name="render" content="webkit">
 <title>Foo | Portfolio</title>
 <link id="favicon" rel="icon" type="image/webp" href="https://folio.neuepoor.com/favicon.webp">
 
@@ -58,7 +59,7 @@ transition: background-color 0.25s ease-out;
 
 body.is-loading { overflow: hidden; }
 
-/* CUSTOM CURSOR */
+/* CUSTOM CURSOR - v4.11.28 STABILITY PATCH */
 .fl-cursor {
     position: fixed; top: 0; left: 0;
     width: 100vw; height: 100vh;
@@ -66,15 +67,26 @@ body.is-loading { overflow: hidden; }
     mix-blend-mode: difference;
     opacity: 0; 
     transition: opacity 0.5s ease;
-    will-change: transform;
     display: none;
+    isolation: isolate; 
+    contain: strict;
+    /* 核心补丁：增加透视，防止某些显卡在差值运算时产生像素撕裂 */
+    perspective: 1000px;
+    -webkit-perspective: 1000px;
 }
 @media (min-width: 769px) and (pointer: fine) {
     .fl-cursor { display: block; }
     body:not(.is-loading) .fl-cursor { opacity: 1; }
 }
 
-.fl-cursor__v, .fl-cursor__h { position: absolute; background: #fff; will-change: transform; }
+.fl-cursor__v, .fl-cursor__h { 
+    position: absolute; 
+    background: #fff; 
+    will-change: transform;
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
 .fl-cursor__v { width: 1px; height: 100vh; top: 0; left: 0; }
 .fl-cursor__h { height: 1px; width: 100vw; left: 0; top: 0; }
 
@@ -83,9 +95,10 @@ body.is-loading { overflow: hidden; }
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     z-index: 2; pointer-events: none; opacity: 0;
     transition: opacity 2s var(--fl-ease), filter 0.6s var(--fl-ease);
+    background-repeat: repeat;
+    will-change: opacity;
 }
 body:not(.is-loading) .fl-global-grid { opacity: 1; }
-#ui-grid-svg { width: 100%; height: 100%; display: block; }
 
 /* SPLASH */
 .fl-splash {
@@ -98,6 +111,7 @@ body:not(.is-loading) .fl-global-grid { opacity: 1; }
     background: url('https://folio.neuepoor.com/fo.gif') center/cover no-repeat;
     transition: filter 1.8s var(--fl-ease), opacity 1.8s var(--fl-ease), transform 1.8s var(--fl-ease);
     z-index: 1; opacity: 1;
+    will-change: transform, filter, opacity;
 }
 .fl-splash__text {
     position: relative; z-index: 3;
@@ -124,13 +138,14 @@ body:not(.is-loading) .fl-global-grid { opacity: 1; }
     z-index: 9999; pointer-events: none; font-size: var(--gallery-fs);
     font-weight: var(--gallery-fw); color: var(--fl-text);
     opacity: 0; filter: blur(10px); transition: opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease);
+    will-change: opacity, filter;
 }
 body.is-focus-mode .fl-pc-special-text.is-active { opacity: 1; filter: blur(0px); }
 
 /* HEADER & NAV */
-.fl-logo__gif-wrap { position: fixed; top: 0; left: 4px; height: var(--fl-nav-h); display: flex; align-items: center; z-index: 1001; transition: transform 0.4s var(--fl-ease), opacity 0.6s var(--fl-ease), filter 0.6s var(--fl-ease); }
+.fl-logo__gif-wrap { position: fixed; top: 0; left: 4px; height: var(--fl-nav-h); display: flex; align-items: center; z-index: 1001; transition: transform 0.4s var(--fl-ease), opacity 0.6s var(--fl-ease), filter 0.6s var(--fl-ease); will-change: transform, opacity; }
 .fl-logo__gif { height: var(--logo-size-pc); width: auto; opacity: 0; transition: opacity 0.3s var(--fl-ease); cursor: pointer; will-change: opacity; }
-.fl-header { position: fixed; width: 100%; z-index: 1000; display: flex; justify-content: space-between; align-items: center; padding: 0 4px; height: var(--fl-nav-h); top: 0; mix-blend-mode: difference; transition: transform 0.4s var(--fl-ease); }
+.fl-header { position: fixed; width: 100%; z-index: 1000; display: flex; justify-content: space-between; align-items: center; padding: 0 4px; height: var(--fl-nav-h); top: 0; mix-blend-mode: difference; transition: transform 0.4s var(--fl-ease); will-change: transform; }
 .fl-logo-text { text-decoration: none; color: #fff; font-size: var(--header-fs); font-weight: var(--header-fw); opacity: 0; pointer-events: none; }
 .fl-nav { display: flex; gap: 40px; }
 .fl-nav__link { font-size: var(--header-fs); font-weight: var(--header-fw); color: #fff; text-decoration: none; transition: opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease); }
@@ -140,7 +155,7 @@ body.is-focus-mode .fl-nav__link:not(:hover),
 body.is-focus-mode .fl-gallery-link:not(:hover),
 body.is-focus-mode .fl-logo__gif-wrap:not(:hover) { opacity: 0.2; filter: blur(8px); }
 body.is-focus-mode .fl-landing-hero.is-active { opacity: 1 !important; filter: none !important; } 
-body.is-focus-mode .fl-gallery-text { filter: blur(8px); }
+body.is-focus-mode .fl-gallery-text { filter: blur(8px); transition: filter 0.6s var(--fl-ease); }
 .fl-nav__link:hover, .fl-gallery-link:hover, .fl-logo__gif-wrap:hover { opacity: 1 !important; filter: blur(0px) !important; }
 
 /* CONTENT LAYOUT */
@@ -174,14 +189,6 @@ body.is-focus-mode .fl-gallery-text { filter: blur(8px); }
     line-height: 1.1; 
     padding-top: var(--gallery-paragraph-spacing); 
     will-change: filter; 
-    transition: filter 0.6s var(--fl-ease); 
-}
-
-/* PC 端特殊间距处理 */
-@media (min-width: 769px) {
-    .combined-text .fl-gallery-text { 
-        padding-top: calc(var(--gallery-paragraph-spacing) * 2) !important; 
-    }
 }
 
 /* CONTACT COMPONENT */
@@ -209,9 +216,10 @@ body.is-focus-mode .fl-gallery-text { filter: blur(8px); }
     background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
     z-index: 10000; display: flex; align-items: center; justify-content: center;
     opacity: 0; visibility: hidden; transition: 0.4s var(--fl-ease);
+    will-change: opacity, visibility;
 }
 .fl-wechat-overlay.is-active { opacity: 1; visibility: visible; }
-.fl-wechat-card { width: 320px; background: #fff; padding: 40px; text-align: center; transform: translateY(20px); transition: transform 0.5s var(--fl-ease); }
+.fl-wechat-card { width: 320px; background: #fff; padding: 40px; text-align: center; transform: translateY(20px); transition: transform 0.5s var(--fl-ease); will-change: transform; }
 .fl-wechat-overlay.is-active .fl-wechat-card { transform: translateY(0px); }
 .fl-wechat-qr { width: 100%; aspect-ratio: 1; margin-bottom: 24px; display: flex; align-items: center; justify-content: center; }
 .fl-wechat-qr img { width: 100%; height: 100%; object-fit: contain; }
@@ -247,9 +255,7 @@ body.is-focus-mode .fl-gallery-text { filter: blur(8px); }
     <div class="fl-cursor__h" id="ui-cursor-h"></div>
 </div>
 
-<div class="fl-global-grid" id="ui-grid-wrapper">
-    <svg xmlns="http://www.w3.org/2000/svg" id="ui-grid-svg"></svg>
-</div>
+<div class="fl-global-grid" id="ui-grid-wrapper"></div>
 
 <div id="ui-pc-special-container"></div>
 
@@ -283,8 +289,11 @@ body.is-focus-mode .fl-gallery-text { filter: blur(8px); }
 </div>
 
 <script>
+// v4.11.28 内存管理句柄
+let currentGridUrl = null;
+
 const CONFIG = {
-version: "4.11.25",
+version: "4.11.28",
 seo: { title: "Foo | Portfolio", favicon: "https://folio.neuepoor.com/favicon.webp" },
 typography: {
 header: { font: "Arial, sans-serif", weight: "700", sizePC: "32px", sizeMobile: "21px" },
@@ -322,6 +331,15 @@ contact: {
 
 const ENGINE = {
 lastWidth: window.innerWidth,
+logoPosCache: null, // v4.11.28 位置预缓存
+
+debounce(func, wait) {
+    let timeout;
+    return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+},
 
 isMobile() { return window.innerWidth <= 768; },
 initSEO() { document.title = CONFIG.seo.title; const fav = document.getElementById('favicon'); if (fav) fav.href = CONFIG.seo.favicon; },
@@ -344,12 +362,21 @@ renderHeader() {
     const pcSpecialContainer = document.getElementById('ui-pc-special-container');
     text.innerText = CONFIG.header.logo.text;
     gif.src = CONFIG.header.logo.gif;
-    gif.onload = () => { gif.style.opacity = "1"; text.style.opacity = "0"; };
+    gif.onload = () => { 
+        gif.style.opacity = "1"; 
+        text.style.opacity = "0"; 
+        this.updateLogoCache(); // 图片加载后预热位置缓存
+    };
     nav.innerHTML = CONFIG.header.nav.map(n => `<a href="${n.link}" class="fl-nav__link" data-nav-name="${n.name}">${n.name}</a>`).join('');
     pcSpecialContainer.innerHTML = CONFIG.header.nav.map(n => {
         const id = n.name.replace(/[()]/g, '');
         return `<div class="fl-pc-special-text" id="pc-text-${id}">${n.specialText}</div>`;
     }).join('');
+},
+
+updateLogoCache() {
+    const wrap = document.getElementById('ui-logo-gif-wrap');
+    if (wrap) this.logoPosCache = wrap.getBoundingClientRect();
 },
 
 buildContent() {
@@ -415,12 +442,18 @@ initCustomCursor() {
     if (this.isMobile()) return;
     const v = document.getElementById('ui-cursor-v');
     const h = document.getElementById('ui-cursor-h');
+    let ticking = false;
+
     window.addEventListener('mousemove', (e) => {
         if (document.body.classList.contains('is-loading')) return;
-        requestAnimationFrame(() => {
-            v.style.transform = `translate3d(${e.clientX}px, 0, 0)`;
-            h.style.transform = `translate3d(0, ${e.clientY}px, 0)`;
-        });
+        if (!ticking) {
+            requestAnimationFrame(() => {
+                v.style.transform = `translate3d(${e.clientX}px, 0, 0)`;
+                h.style.transform = `translate3d(0, ${e.clientY}px, 0)`;
+                ticking = false;
+            });
+            ticking = true;
+        }
     }, { passive: true });
 },
 
@@ -450,7 +483,8 @@ initLandingHero() {
     };
 
     const hideHero = () => {
-        const logoRect = logoGifWrap.getBoundingClientRect();
+        // v4.11.28 优化：使用预缓存的位置信息
+        const logoRect = this.logoPosCache || logoGifWrap.getBoundingClientRect();
         hero.style.transition = `opacity 0.8s var(--fl-ease), transform 0.8s var(--fl-ease), width 0.8s var(--fl-ease), height 0.8s var(--fl-ease), top 0.8s var(--fl-ease), left 0.8s var(--fl-ease)`;
         hero.style.top = `${logoRect.top + logoRect.height/2}px`;
         hero.style.left = `${logoRect.left + logoRect.width/2}px`;
@@ -459,9 +493,12 @@ initLandingHero() {
         hero.classList.remove('is-active');
     };
 
-    const logoRect = logoGifWrap.getBoundingClientRect();
-    hero.style.top = `${logoRect.top + logoRect.height/2}px`;
-    hero.style.left = `${logoRect.left + logoRect.width/2}px`;
+    // 初始同步
+    this.updateLogoCache();
+    if (this.logoPosCache) {
+        hero.style.top = `${this.logoPosCache.top + this.logoPosCache.height/2}px`;
+        hero.style.left = `${this.logoPosCache.left + this.logoPosCache.width/2}px`;
+    }
 
     if (this.isMobile()) {
         logoGif.onclick = (e) => { e.stopPropagation(); if (hero.classList.contains('is-active')) hideHero(); else showHero(); };
@@ -514,21 +551,31 @@ initWeChatTrigger() {
 },
 
 drawGlobalGrid() {
-    const svg = document.getElementById('ui-grid-svg');
-    if (!svg) return;
-    const width = window.innerWidth;
-    const height = Math.max(document.documentElement.scrollHeight, window.innerHeight); 
-    const unit = 60;
-    let cols = Math.round(width / unit); let rows = Math.round(height / unit);
-    const stepX = width / cols; const stepY = height / rows;
+    const wrapper = document.getElementById('ui-grid-wrapper');
+    if (!wrapper) return;
     const style = getComputedStyle(document.documentElement);
-    const lineColor = style.getPropertyValue('--grid-color');
-    const sqColor = style.getPropertyValue('--grid-square-color');
-    let html = '';
-    for (let i = 0; i <= cols; i++) html += `<line x1="${i*stepX}" y1="0" x2="${i*stepX}" y2="${height}" stroke="${lineColor}" stroke-width="1" />`;
-    for (let i = 0; i <= rows; i++) html += `<line x1="0" y1="${i*stepY}" x2="${width}" y2="${i*stepY}" stroke="${lineColor}" stroke-width="1" />`;
-    for (let i = 0; i <= cols; i++) { for (let j = 0; j <= rows; j++) html += `<rect x="${i*stepX-1}" y="${j*stepY-1}" width="2" height="2" fill="${sqColor}" />`; }
-    svg.innerHTML = html;
+    const lineColor = style.getPropertyValue('--grid-color').trim();
+    const sqColor = style.getPropertyValue('--grid-square-color').trim();
+    const unit = 60;
+    const canvas = document.createElement('canvas');
+    canvas.width = unit; canvas.height = unit;
+    const ctx = canvas.getContext('2d');
+    ctx.strokeStyle = lineColor;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, 0); ctx.lineTo(unit, 0);
+    ctx.moveTo(0, 0); ctx.lineTo(0, unit);
+    ctx.stroke();
+    ctx.fillStyle = sqColor;
+    ctx.fillRect(0, 0, 2, 2);
+
+    // v4.11.28 内存回收逻辑
+    if (currentGridUrl) URL.revokeObjectURL(currentGridUrl);
+    
+    canvas.toBlob((blob) => {
+        currentGridUrl = URL.createObjectURL(blob);
+        wrapper.style.backgroundImage = `url(${currentGridUrl})`;
+    }, 'image/png');
 },
 
 initSplash() {
@@ -553,12 +600,17 @@ start() {
     this.buildContent(); this.drawGlobalGrid(); this.initFocusMode();
     this.initCustomCursor(); this.initScrollInteraction(); 
     this.initLandingHero(); this.initSplash();
-    window.addEventListener('resize', () => {
+
+    const handleResize = this.debounce(() => {
         if (Math.abs(window.innerWidth - this.lastWidth) > 5) {
             this.lastWidth = window.innerWidth;
-            this.buildContent(); this.drawGlobalGrid(); 
+            this.updateLogoCache(); // 窗口变化后更新缓存
+            this.buildContent(); 
+            this.drawGlobalGrid(); 
         }
-    }, { passive: true });
+    }, 200);
+
+    window.addEventListener('resize', handleResize, { passive: true });
 }
 };
 window.onload = () => ENGINE.start();
