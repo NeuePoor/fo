@@ -59,7 +59,7 @@ transition: background-color 0.25s ease-out;
 
 body.is-loading { overflow: hidden; }
 
-/* CUSTOM CURSOR - v4.11.28+ STABILITY */
+/* CUSTOM CURSOR */
 .fl-cursor {
     position: fixed; top: 0; left: 0;
     width: 100vw; height: 100vh;
@@ -123,10 +123,11 @@ body:not(.is-loading) .fl-global-grid { opacity: 1; }
 .fl-splash.is-finished .fl-splash__bg { filter: blur(40px); opacity: 1; transform: scale(1.1); }
 .fl-splash.is-finished .fl-splash__text { opacity: 0 !important; visibility: hidden; }
 
-/* LANDING HERO */
+/* LANDING HERO - v4.12.1 入场重构 */
 .fl-landing-hero {
     position: fixed; z-index: 50; pointer-events: none !important;
-    overflow: hidden; opacity: 0; transform: translate3d(0,0,0) scale(0); transform-origin: center center;
+    overflow: hidden; opacity: 0; 
+    transform: translate3d(0,0,0);
     will-change: transform, opacity, width, height, top, left;
 }
 .fl-landing-hero img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
@@ -161,7 +162,8 @@ body.is-focus-mode .fl-gallery-text { filter: blur(8px); transition: filter 0.6s
 .fl-grid {
     position: relative; display: grid; grid-template-columns: repeat(12, 1fr);
     gap: var(--fl-gutter); margin: var(--fl-margin);
-    padding: 80px 0 0; min-height: calc(100vh - 8px); 
+    padding: 80px 0 0; 
+    min-height: auto;
     z-index: 10; 
 }
 
@@ -171,8 +173,6 @@ body.is-focus-mode .fl-gallery-text { filter: blur(8px); transition: filter 0.6s
     transform: translateY(var(--fl-reveal-dist));
     transition: opacity var(--fl-reveal-dur) var(--fl-ease), transform var(--fl-reveal-dur) var(--fl-ease);
     will-change: transform, opacity;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
 }
 .fl-reveal.is-visible { 
     opacity: 1; 
@@ -182,7 +182,6 @@ body.is-focus-mode .fl-gallery-text { filter: blur(8px); transition: filter 0.6s
 /* GALLERY WRAPPER */
 .fl-item-wrapper { position: relative; display: flex; flex-direction: column; margin-bottom: 0; }
 
-/* 优化：v4.12.0 Gallery 段落排版 */
 .fl-gallery-text { 
     font-size: var(--gallery-fs); 
     font-weight: var(--gallery-fw); 
@@ -190,16 +189,16 @@ body.is-focus-mode .fl-gallery-text { filter: blur(8px); transition: filter 0.6s
     line-height: 1.15; 
     padding-top: var(--gallery-paragraph-spacing); 
     will-change: filter; 
-    /* 增加：视觉节奏控制 */
-    max-width: 90%; 
-    text-wrap: balance; 
+    width: clamp(320px, 75%, 850px); 
+    max-width: 100%;
+    text-wrap: wrap; 
     word-break: break-word;
 }
 
-/* CONTACT COMPONENT - v4.12.0 极致适配补丁 */
+/* CONTACT COMPONENT */
 .fl-footer-contact {
     grid-column: span 12;
-    padding: 0 0 60px;
+    padding: 40px 0 60px;
     height: auto;
     display: flex;
     flex-direction: column;
@@ -208,7 +207,7 @@ body.is-focus-mode .fl-gallery-text { filter: blur(8px); transition: filter 0.6s
 
 .fl-contact-row { 
     display: flex; 
-    flex-wrap: nowrap; /* 强制单行，配合字号缩放 */
+    flex-wrap: nowrap; 
     gap: 40px; 
     justify-content: flex-start;
     align-items: center;
@@ -243,6 +242,7 @@ body.is-focus-mode .fl-gallery-text { filter: blur(8px); transition: filter 0.6s
   :root { --gallery-paragraph-spacing: 0px; }
   .fl-grid { padding-top: 20px; }
   .fl-item-wrapper { margin-bottom: 24px; }
+  .fl-gallery-text { width: 100%; }
   .fl-pc-special-text { display: none; }
   .fl-header {
     top: auto !important; bottom: 24px !important; left: 32px !important; width: calc(100% - 64px) !important;
@@ -257,11 +257,8 @@ body.is-focus-mode .fl-gallery-text { filter: blur(8px); transition: filter 0.6s
   .fl-nav { gap: 20px !important; }
   .is-nav-hidden { transform: translateY(150%) !important; }
   .fl-footer-contact { padding: 0 0 100px; height: auto; margin-top: 20px; }
-  
-  /* 移动端 Contact 极致适配 */
   .fl-contact-row { gap: clamp(10px, 4vw, 20px); justify-content: space-between; }
   .fl-gallery-link { 
-    /* 根据屏幕宽度动态计算字号，确保在 320px 时依然不换行 */
     font-size: clamp(12px, 3.5vw, 18px) !important; 
     opacity: 1 !important; filter: none !important;
   }
@@ -314,11 +311,10 @@ body.is-focus-mode .fl-gallery-text { filter: blur(8px); transition: filter 0.6s
 </div>
 
 <script>
-// v4.12.0 内存管理句柄
 let currentGridUrl = null;
 
 const CONFIG = {
-version: "4.12.0",
+version: "4.12.1",
 seo: { title: "Foo | Portfolio", favicon: "https://folio.neuepoor.com/favicon.webp" },
 typography: {
 header: { font: "Arial, sans-serif", weight: "700", sizePC: "32px", sizeMobile: "21px" },
@@ -418,10 +414,12 @@ buildContent() {
         let classes = `fl-item-wrapper fl-reveal`;
         if (!isM && item.isCombined) classes += ' combined-text';
         let inlineStyle = `grid-column: span ${item.span || 12};`;
+        
         if (item.isLast) {
-            const bottomSpacing = isM ? '48px' : 'calc(var(--gallery-paragraph-spacing) * 2)';
+            const bottomSpacing = isM ? '48px' : '0px'; 
             inlineStyle += ` margin-bottom: ${bottomSpacing};`;
         } else { inlineStyle += ` margin-bottom: 0;`; }
+        
         return `<div class="${classes}" style="${inlineStyle}"><div class="fl-gallery-text">${item.content}</div></div>`;
     }).join('');
 
@@ -482,81 +480,76 @@ initCustomCursor() {
     }, { passive: true });
 },
 
+/* v4.12.1 LANDING HERO 逻辑重构 */
 initLandingHero() {
     const hero = document.getElementById('ui-landing-hero');
     const logoGifWrap = document.getElementById('ui-logo-gif-wrap');
     const logoGif = document.getElementById('ui-logo-gif');
     if (!hero || !logoGifWrap) return;
 
-    // v4.12.0 状态切换函数
     const toggleHero = () => {
         if (hero.classList.contains('is-active')) hideHero();
-        else showHero();
+        else showHero(true); // 手动触发时带动画
     };
 
-    const showHero = () => {
+    // showHero: PC 占据 6 栏右对齐，移动端 100% 宽度
+    const showHero = (withAnimation = false) => {
         const mobile = this.isMobile();
-        // 移除滞留感：确保 Transition 属性预设
-        hero.style.transition = `all 1.2s var(--fl-ease)`;
+        hero.style.transition = withAnimation ? `all 1.2s var(--fl-ease)` : 'none';
+        
         if (mobile) {
-            const targetWidth = window.innerWidth * 0.85;
+            const targetWidth = window.innerWidth;
+            const targetHeight = targetWidth * 0.56;
             hero.style.width = `${targetWidth}px`; 
-            hero.style.height = `${targetWidth * 0.56}px`;
-            hero.style.top = '50%'; hero.style.left = '50%';
-            hero.style.transform = `translate3d(-50%, -50%, 0) scale(1)`; 
+            hero.style.height = `${targetHeight}px`;
+            hero.style.top = '50%'; 
+            hero.style.left = '50%';
+            hero.style.transform = `translate3d(-50%, -50%, 0)`; 
         } else {
             const unit = window.innerWidth / 12;
-            const targetWidth = unit * 7 - 4;
+            const targetWidth = unit * 6 - 4; // 占据 6 栏
             const targetHeight = targetWidth * 0.56;
-            hero.style.width = `${targetWidth}px`; hero.style.height = `${targetHeight}px`;
-            hero.style.top = `${80 + targetHeight/2}px`; 
-            hero.style.left = `${(unit * 5 + 2) + targetWidth/2}px`;
-            hero.style.transform = `translate3d(-50%, -50%, 0) scale(1)`;
+            hero.style.width = `${targetWidth}px`; 
+            hero.style.height = `${targetHeight}px`;
+            hero.style.top = '50%'; 
+            hero.style.left = `${unit * 9}px`; // 水平居右 (从第 7 栏开始，中点在第 9 栏)
+            hero.style.transform = `translate3d(-50%, -50%, 0)`;
         }
+        
         hero.style.opacity = "1";
         hero.classList.add('is-active');
     };
 
+    // hideHero: 统一缩回 Logo 位置
     const hideHero = () => {
         const logoRect = this.logoPosCache || logoGifWrap.getBoundingClientRect();
         hero.style.transition = `all 0.8s var(--fl-ease)`; 
         hero.style.top = `${logoRect.top + logoRect.height/2}px`;
         hero.style.left = `${logoRect.left + logoRect.width/2}px`;
-        hero.style.width = '0px'; hero.style.height = '0px'; 
+        hero.style.width = '0px'; 
+        hero.style.height = '0px'; 
         hero.style.opacity = '0';
         hero.style.transform = 'translate3d(-50%, -50%, 0) scale(0)';
         hero.classList.remove('is-active');
     };
 
-    // 绑定点按开关
     logoGif.onclick = (e) => { 
         e.stopPropagation(); 
         toggleHero(); 
     };
 
     if (!this.isMobile()) {
-        logoGifWrap.onmouseenter = showHero;
+        logoGifWrap.onmouseenter = () => showHero(true);
         logoGifWrap.onmouseleave = hideHero;
-        // PC端自动加载动画函数
-        this.animateHeroEntrance = () => {
-            showHero();
-            // 延时 1.5s 后自动收回，消除滞留感
-            setTimeout(hideHero, 1500);
-        };
-    } else {
-        // 移动端自动加载逻辑
-        this.animateHeroEntrance = () => {
-            showHero();
-            setTimeout(hideHero, 2000); 
-        };
     }
 
-    // 初始位置同步
+    // animateHeroEntrance: 加载完成后直接出现，2s 后缩回
+    this.animateHeroEntrance = () => {
+        showHero(false); // 直接出现，无放大动画
+        setTimeout(hideHero, 2000); 
+    };
+
     this.updateLogoCache();
-    if (this.logoPosCache) {
-        hero.style.top = `${this.logoPosCache.top + this.logoPosCache.height/2}px`;
-        hero.style.left = `${this.logoPosCache.left + this.logoPosCache.width/2}px`;
-    }
 },
 
 initScrollInteraction() {
@@ -632,7 +625,6 @@ initSplash() {
         body.classList.remove('is-loading'); 
         sessionStorage.setItem('fl_visited', 'true');
         
-        // 核心：无论 PC 还是 Mobile，开屏结束立刻触发一次 Hero 动画
         if (this.animateHeroEntrance) {
             requestAnimationFrame(() => this.animateHeroEntrance());
         }
@@ -642,7 +634,6 @@ initSplash() {
     if (hasVisited) {
         body.classList.remove('is-loading'); 
         splash.classList.add('is-finished');
-        // 二次访问依然给一个入场动画惊喜
         setTimeout(() => this.animateHeroEntrance && this.animateHeroEntrance(), 500);
         return;
     }
