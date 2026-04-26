@@ -123,7 +123,7 @@ body:not(.is-loading) .fl-global-grid { opacity: 1; }
 .fl-splash.is-finished .fl-splash__bg { filter: blur(40px); opacity: 1; transform: scale(1.1); }
 .fl-splash.is-finished .fl-splash__text { opacity: 0 !important; visibility: hidden; }
 
-/* LANDING HERO - v4.12.1 入场重构 */
+/* LANDING HERO */
 .fl-landing-hero {
     position: fixed; z-index: 50; pointer-events: none !important;
     overflow: hidden; opacity: 0; 
@@ -132,10 +132,11 @@ body:not(.is-loading) .fl-global-grid { opacity: 1; }
 }
 .fl-landing-hero img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
 
-/* PC SPECIAL TEXT */
+/* PC SPECIAL TEXT - v4.12.3 置顶层级 */
 .fl-pc-special-text {
     position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    z-index: 9999; pointer-events: none; font-size: var(--gallery-fs);
+    z-index: 2000; /* 高于 Header(1000) 和 Grid(5) */
+    pointer-events: none; font-size: var(--gallery-fs);
     font-weight: var(--gallery-fw); color: var(--fl-text);
     opacity: 0; filter: blur(10px); transition: opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease);
     will-change: opacity, filter;
@@ -150,22 +151,37 @@ body.is-focus-mode .fl-pc-special-text.is-active { opacity: 1; filter: blur(0px)
 .fl-nav { display: flex; gap: 40px; }
 .fl-nav__link { font-size: var(--header-fs); font-weight: var(--header-fw); color: #fff; text-decoration: none; transition: opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease); }
 
-/* FOCUS EFFECT */
+/* CONTENT LAYOUT - v4.12.3 穿透与层级修正 */
+.fl-grid {
+    position: relative; 
+    display: grid; 
+    grid-template-columns: repeat(12, 1fr);
+    gap: var(--fl-gutter); 
+    margin: var(--fl-margin);
+    min-height: calc(100vh - 8px); 
+    align-content: end; 
+    padding: 80px 0 0; 
+    
+    /* 修改点：降低层级并允许穿透 */
+    z-index: 5; 
+    pointer-events: none; 
+}
+/* 确保内容可交互 */
+.fl-grid > * { pointer-events: auto; }
+
+/* FOCUS EFFECT - v4.12.3 作用域修正 */
 body.is-focus-mode .fl-nav__link:not(:hover),
 body.is-focus-mode .fl-gallery-link:not(:hover),
 body.is-focus-mode .fl-logo__gif-wrap:not(:hover) { opacity: 0.2; filter: blur(8px); }
 body.is-focus-mode .fl-landing-hero.is-active { opacity: 1 !important; filter: none !important; } 
-body.is-focus-mode .fl-gallery-text { filter: blur(8px); transition: filter 0.6s var(--fl-ease); }
-.fl-nav__link:hover, .fl-gallery-link:hover, .fl-logo__gif-wrap:hover { opacity: 1 !important; filter: blur(0px) !important; }
 
-/* CONTENT LAYOUT */
-.fl-grid {
-    position: relative; display: grid; grid-template-columns: repeat(12, 1fr);
-    gap: var(--fl-gutter); margin: var(--fl-margin);
-    padding: 80px 0 0; 
-    min-height: auto;
-    z-index: 10; 
+/* 修正 focus 模式下下沉容器内文本的模糊逻辑 */
+body.is-focus-mode .fl-grid .fl-gallery-text { 
+    filter: blur(8px); 
+    transition: filter 0.6s var(--fl-ease); 
 }
+
+.fl-nav__link:hover, .fl-gallery-link:hover, .fl-logo__gif-wrap:hover { opacity: 1 !important; filter: blur(0px) !important; }
 
 /* REVEAL ANIMATION */
 .fl-reveal {
@@ -187,7 +203,8 @@ body.is-focus-mode .fl-gallery-text { filter: blur(8px); transition: filter 0.6s
     font-weight: var(--gallery-fw); 
     color: var(--fl-text); 
     line-height: 1.15; 
-    padding-top: var(--gallery-paragraph-spacing); 
+    padding-top: 0; 
+    margin-bottom: var(--gallery-paragraph-spacing);
     will-change: filter; 
     width: clamp(320px, 75%, 850px); 
     max-width: 100%;
@@ -198,7 +215,9 @@ body.is-focus-mode .fl-gallery-text { filter: blur(8px); transition: filter 0.6s
 /* CONTACT COMPONENT */
 .fl-footer-contact {
     grid-column: span 12;
-    padding: 40px 0 60px;
+    padding: 0;
+    margin-top: 60px;
+    padding-bottom: 60px;
     height: auto;
     display: flex;
     flex-direction: column;
@@ -240,7 +259,13 @@ body.is-focus-mode .fl-gallery-text { filter: blur(8px); transition: filter 0.6s
 
 @media (max-width: 768px) {
   :root { --gallery-paragraph-spacing: 0px; }
-  .fl-grid { padding-top: 20px; }
+  .fl-grid { 
+    min-height: auto;
+    align-content: start; 
+    padding-top: 20px; 
+    z-index: 10;
+    pointer-events: auto;
+  }
   .fl-item-wrapper { margin-bottom: 24px; }
   .fl-gallery-text { width: 100%; }
   .fl-pc-special-text { display: none; }
@@ -256,17 +281,9 @@ body.is-focus-mode .fl-gallery-text { filter: blur(8px); transition: filter 0.6s
   .fl-logo__gif { height: var(--logo-size-m) !important; opacity: 1 !important; }
   .fl-nav { gap: 20px !important; }
   .is-nav-hidden { transform: translateY(150%) !important; }
-  .fl-footer-contact { padding: 0 0 100px; height: auto; margin-top: 20px; }
+  .fl-footer-contact { padding: 0 0 100px; height: auto; margin-top: 20px; padding-bottom: 100px; }
   .fl-contact-row { gap: clamp(10px, 4vw, 20px); justify-content: space-between; }
-  .fl-gallery-link { 
-    font-size: clamp(12px, 3.5vw, 18px) !important; 
-    opacity: 1 !important; filter: none !important;
-  }
-}
-
-@media (max-width: 320px) {
-    .fl-contact-row { gap: 8px; }
-    .fl-gallery-link { font-size: 11px !important; }
+  .fl-gallery-link { font-size: clamp(12px, 3.5vw, 18px) !important; opacity: 1 !important; filter: none !important; }
 }
 </style>
 </head>
@@ -311,10 +328,8 @@ body.is-focus-mode .fl-gallery-text { filter: blur(8px); transition: filter 0.6s
 </div>
 
 <script>
-let currentGridUrl = null;
-
 const CONFIG = {
-version: "4.12.1",
+version: "4.12.3",
 seo: { title: "Foo | Portfolio", favicon: "https://folio.neuepoor.com/favicon.webp" },
 typography: {
 header: { font: "Arial, sans-serif", weight: "700", sizePC: "32px", sizeMobile: "21px" },
@@ -353,7 +368,6 @@ contact: {
 const ENGINE = {
 lastWidth: window.innerWidth,
 logoPosCache: null, 
-
 debounce(func, wait) {
     let timeout;
     return function(...args) {
@@ -361,10 +375,8 @@ debounce(func, wait) {
         timeout = setTimeout(() => func.apply(this, args), wait);
     };
 },
-
 isMobile() { return window.innerWidth <= 768; },
 initSEO() { document.title = CONFIG.seo.title; const fav = document.getElementById('favicon'); if (fav) fav.href = CONFIG.seo.favicon; },
-
 applyTypography() {
     const root = document.documentElement;
     const t = CONFIG.typography; const l = CONFIG.header.logo;
@@ -375,7 +387,6 @@ applyTypography() {
     };
     Object.entries(props).forEach(([k, v]) => root.style.setProperty(k, v));
 },
-
 renderHeader() {
     const gif = document.getElementById('ui-logo-gif');
     const text = document.getElementById('ui-logo-text');
@@ -394,46 +405,36 @@ renderHeader() {
         return `<div class="fl-pc-special-text" id="pc-text-${id}">${n.specialText}</div>`;
     }).join('');
 },
-
 updateLogoCache() {
     const wrap = document.getElementById('ui-logo-gif-wrap');
     if (wrap) this.logoPosCache = wrap.getBoundingClientRect();
 },
-
 buildContent() {
     const grid = document.getElementById('ui-main-grid');
     const footer = document.getElementById('ui-footer-contact');
     const isM = this.isMobile();
     let galleryHTML = '';
-    
     if (isM) {
         galleryHTML += CONFIG.header.nav.map(n => `<div class="fl-item-wrapper fl-reveal" style="grid-column: span 12; margin-bottom: 8px"><div class="fl-gallery-text">${n.specialText}</div></div>`).join('');
     }
-    
     galleryHTML += CONFIG.gallery.items.map(item => {
         let classes = `fl-item-wrapper fl-reveal`;
         if (!isM && item.isCombined) classes += ' combined-text';
         let inlineStyle = `grid-column: span ${item.span || 12};`;
-        
         if (item.isLast) {
             const bottomSpacing = isM ? '48px' : '0px'; 
             inlineStyle += ` margin-bottom: ${bottomSpacing};`;
         } else { inlineStyle += ` margin-bottom: 0;`; }
-        
         return `<div class="${classes}" style="${inlineStyle}"><div class="fl-gallery-text">${item.content}</div></div>`;
     }).join('');
-
     grid.innerHTML = galleryHTML;
     grid.appendChild(footer); 
-    
     if (CONFIG.contact) {
         footer.innerHTML = `<div class="fl-contact-row">${CONFIG.contact.links.map(l => `<a href="${l.link}" class="fl-gallery-link" ${l.isWeChat ? 'id="trigger-wechat"' : 'target="_blank"'}>${l.name}</a>`).join('')}</div>`;
     }
-    
     this.initReveal();
     this.initWeChatTrigger();
 },
-
 initFocusMode() {
     const body = document.body;
     const focusTriggerSelectors = '.fl-nav__link, .fl-gallery-link, .fl-logo__gif-wrap'; 
@@ -460,13 +461,11 @@ initFocusMode() {
         }
     });
 },
-
 initCustomCursor() {
     if (this.isMobile()) return;
     const v = document.getElementById('ui-cursor-v');
     const h = document.getElementById('ui-cursor-h');
     let ticking = false;
-
     window.addEventListener('mousemove', (e) => {
         if (document.body.classList.contains('is-loading')) return;
         if (!ticking) {
@@ -479,24 +478,18 @@ initCustomCursor() {
         }
     }, { passive: true });
 },
-
-/* v4.12.1 LANDING HERO 逻辑重构 */
 initLandingHero() {
     const hero = document.getElementById('ui-landing-hero');
     const logoGifWrap = document.getElementById('ui-logo-gif-wrap');
     const logoGif = document.getElementById('ui-logo-gif');
     if (!hero || !logoGifWrap) return;
-
     const toggleHero = () => {
         if (hero.classList.contains('is-active')) hideHero();
-        else showHero(true); // 手动触发时带动画
+        else showHero(true); 
     };
-
-    // showHero: PC 占据 6 栏右对齐，移动端 100% 宽度
     const showHero = (withAnimation = false) => {
         const mobile = this.isMobile();
         hero.style.transition = withAnimation ? `all 1.2s var(--fl-ease)` : 'none';
-        
         if (mobile) {
             const targetWidth = window.innerWidth;
             const targetHeight = targetWidth * 0.56;
@@ -507,20 +500,17 @@ initLandingHero() {
             hero.style.transform = `translate3d(-50%, -50%, 0)`; 
         } else {
             const unit = window.innerWidth / 12;
-            const targetWidth = unit * 6 - 4; // 占据 6 栏
+            const targetWidth = unit * 6 - 4; 
             const targetHeight = targetWidth * 0.56;
             hero.style.width = `${targetWidth}px`; 
             hero.style.height = `${targetHeight}px`;
             hero.style.top = '50%'; 
-            hero.style.left = `${unit * 9}px`; // 水平居右 (从第 7 栏开始，中点在第 9 栏)
+            hero.style.left = `${unit * 9}px`; 
             hero.style.transform = `translate3d(-50%, -50%, 0)`;
         }
-        
         hero.style.opacity = "1";
         hero.classList.add('is-active');
     };
-
-    // hideHero: 统一缩回 Logo 位置
     const hideHero = () => {
         const logoRect = this.logoPosCache || logoGifWrap.getBoundingClientRect();
         hero.style.transition = `all 0.8s var(--fl-ease)`; 
@@ -532,26 +522,17 @@ initLandingHero() {
         hero.style.transform = 'translate3d(-50%, -50%, 0) scale(0)';
         hero.classList.remove('is-active');
     };
-
-    logoGif.onclick = (e) => { 
-        e.stopPropagation(); 
-        toggleHero(); 
-    };
-
+    logoGif.onclick = (e) => { e.stopPropagation(); toggleHero(); };
     if (!this.isMobile()) {
         logoGifWrap.onmouseenter = () => showHero(true);
         logoGifWrap.onmouseleave = hideHero;
     }
-
-    // animateHeroEntrance: 加载完成后直接出现，2s 后缩回
     this.animateHeroEntrance = () => {
-        showHero(false); // 直接出现，无放大动画
+        showHero(false); 
         setTimeout(hideHero, 2000); 
     };
-
     this.updateLogoCache();
 },
-
 initScrollInteraction() {
     const header = document.getElementById('ui-header');
     const logoWrap = document.getElementById('ui-logo-gif-wrap');
@@ -566,19 +547,12 @@ initScrollInteraction() {
         }
     }, { passive: true });
 },
-
 initReveal() {
     const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => { 
-            if (entry.isIntersecting) { 
-                entry.target.classList.add('is-visible'); 
-                observer.unobserve(entry.target); 
-            } 
-        });
+        entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('is-visible'); observer.unobserve(entry.target); } });
     }, { threshold: 0.05 });
     document.querySelectorAll('.fl-reveal').forEach(el => observer.observe(el));
 },
-
 initWeChatTrigger() {
     const trigger = document.getElementById('trigger-wechat');
     const overlay = document.getElementById('ui-wechat-overlay');
@@ -587,7 +561,6 @@ initWeChatTrigger() {
         overlay.onclick = () => overlay.classList.remove('is-active'); 
     }
 },
-
 drawGlobalGrid() {
     const wrapper = document.getElementById('ui-grid-wrapper');
     if (!wrapper) return;
@@ -606,57 +579,41 @@ drawGlobalGrid() {
     ctx.stroke();
     ctx.fillStyle = sqColor;
     ctx.fillRect(0, 0, 2, 2);
-
-    if (currentGridUrl) URL.revokeObjectURL(currentGridUrl);
-    
     canvas.toBlob((blob) => {
-        currentGridUrl = URL.createObjectURL(blob);
-        wrapper.style.backgroundImage = `url(${currentGridUrl})`;
+        const url = URL.createObjectURL(blob);
+        wrapper.style.backgroundImage = `url(${url})`;
     }, 'image/png');
 },
-
 initSplash() {
     const splash = document.getElementById('ui-splash');
     const body = document.body;
-    
     const dismiss = () => { 
         if (!body.classList.contains('is-loading')) return;
         splash.classList.add('is-finished'); 
         body.classList.remove('is-loading'); 
         sessionStorage.setItem('fl_visited', 'true');
-        
-        if (this.animateHeroEntrance) {
-            requestAnimationFrame(() => this.animateHeroEntrance());
-        }
+        if (this.animateHeroEntrance) { requestAnimationFrame(() => this.animateHeroEntrance()); }
     };
-
     const hasVisited = sessionStorage.getItem('fl_visited');
     if (hasVisited) {
-        body.classList.remove('is-loading'); 
-        splash.classList.add('is-finished');
+        body.classList.remove('is-loading'); splash.classList.add('is-finished');
         setTimeout(() => this.animateHeroEntrance && this.animateHeroEntrance(), 500);
         return;
     }
-    
     setTimeout(dismiss, 3000); 
     splash.onclick = dismiss;
 },
-
 start() { 
     this.initSEO(); this.applyTypography(); this.renderHeader(); 
     this.buildContent(); this.drawGlobalGrid(); this.initFocusMode();
     this.initCustomCursor(); this.initScrollInteraction(); 
     this.initLandingHero(); this.initSplash();
-
     const handleResize = this.debounce(() => {
         if (Math.abs(window.innerWidth - this.lastWidth) > 5) {
             this.lastWidth = window.innerWidth;
-            this.updateLogoCache(); 
-            this.buildContent(); 
-            this.drawGlobalGrid(); 
+            this.updateLogoCache(); this.buildContent(); this.drawGlobalGrid(); 
         }
     }, 200);
-
     window.addEventListener('resize', handleResize, { passive: true });
 }
 };
