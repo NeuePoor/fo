@@ -151,7 +151,7 @@ body.is-focus-mode .fl-pc-special-text.is-active { opacity: 1; filter: blur(0px)
 .fl-nav { display: flex; gap: 40px; }
 .fl-nav__link { font-size: var(--header-fs); font-weight: var(--header-fw); color: #fff; text-decoration: none; transition: opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease); }
 
-/* CONTENT LAYOUT - v4.12.4 精密下沉版 */
+/* CONTENT LAYOUT - v4.12.5 */
 .fl-grid {
     position: relative; 
     display: grid; 
@@ -203,20 +203,13 @@ body.is-focus-mode .fl-grid .fl-gallery-text { filter: blur(8px); transition: fi
     word-break: break-word;
 }
 
-/* 文字行高补偿针对 PC 端 */
-@media (min-width: 769px) {
-    /* 强制消除 PC 端最后一项文字的底边距，确保紧贴 Contact */
-    .fl-item-wrapper:last-of-type .fl-gallery-text {
-        margin-bottom: 0 !important;
-    }
-}
-
-/* CONTACT COMPONENT - v4.12.4 精密修剪版 */
+/* CONTACT COMPONENT - v4.12.5 间距对齐版 */
 .fl-footer-contact {
     grid-column: span 12;
     padding: 0;
-    margin-top: 4px;      /* 红色标注处：由 60px 缩减至 4px，与全局 Grid 间隙一致 */
-    padding-bottom: 8px;  /* 绿色标注处：缩减底部安全区，仅保留微量呼吸感 */
+    /* 核心修改：将 margin-top 设为与文字段落间距一致的值，减去微量补偿以达成视觉绝对平衡 */
+    margin-top: calc(var(--gallery-paragraph-spacing) - 0.15em); 
+    padding-bottom: 8px;  
     height: auto;
     display: flex;
     flex-direction: column;
@@ -328,7 +321,7 @@ body.is-focus-mode .fl-grid .fl-gallery-text { filter: blur(8px); transition: fi
 
 <script>
 const CONFIG = {
-version: "4.12.4",
+version: "4.12.5",
 seo: { title: "Foo | Portfolio", favicon: "https://folio.neuepoor.com/favicon.webp" },
 typography: {
 header: { font: "Arial, sans-serif", weight: "700", sizePC: "32px", sizeMobile: "21px" },
