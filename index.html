@@ -132,10 +132,10 @@ body:not(.is-loading) .fl-global-grid { opacity: 1; }
 }
 .fl-landing-hero img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
 
-/* PC SPECIAL TEXT - v4.12.3 置顶层级 */
+/* PC SPECIAL TEXT */
 .fl-pc-special-text {
     position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    z-index: 2000; /* 高于 Header(1000) 和 Grid(5) */
+    z-index: 2000; 
     pointer-events: none; font-size: var(--gallery-fs);
     font-weight: var(--gallery-fw); color: var(--fl-text);
     opacity: 0; filter: blur(10px); transition: opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease);
@@ -151,36 +151,30 @@ body.is-focus-mode .fl-pc-special-text.is-active { opacity: 1; filter: blur(0px)
 .fl-nav { display: flex; gap: 40px; }
 .fl-nav__link { font-size: var(--header-fs); font-weight: var(--header-fw); color: #fff; text-decoration: none; transition: opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease); }
 
-/* CONTENT LAYOUT - v4.12.3 穿透与层级修正 */
+/* CONTENT LAYOUT - v4.12.4 精密下沉版 */
 .fl-grid {
     position: relative; 
     display: grid; 
     grid-template-columns: repeat(12, 1fr);
     gap: var(--fl-gutter); 
     margin: var(--fl-margin);
-    min-height: calc(100vh - 8px); 
-    align-content: end; 
-    padding: 80px 0 0; 
     
-    /* 修改点：降低层级并允许穿透 */
+    /* 核心：min-height 减去底部 margin，确保绝对触底 */
+    min-height: calc(100vh - (var(--fl-margin) * 2)); 
+    align-content: end; 
+    
+    padding: 80px 0 0; 
     z-index: 5; 
     pointer-events: none; 
 }
-/* 确保内容可交互 */
 .fl-grid > * { pointer-events: auto; }
 
-/* FOCUS EFFECT - v4.12.3 作用域修正 */
+/* FOCUS EFFECT */
 body.is-focus-mode .fl-nav__link:not(:hover),
 body.is-focus-mode .fl-gallery-link:not(:hover),
 body.is-focus-mode .fl-logo__gif-wrap:not(:hover) { opacity: 0.2; filter: blur(8px); }
 body.is-focus-mode .fl-landing-hero.is-active { opacity: 1 !important; filter: none !important; } 
-
-/* 修正 focus 模式下下沉容器内文本的模糊逻辑 */
-body.is-focus-mode .fl-grid .fl-gallery-text { 
-    filter: blur(8px); 
-    transition: filter 0.6s var(--fl-ease); 
-}
-
+body.is-focus-mode .fl-grid .fl-gallery-text { filter: blur(8px); transition: filter 0.6s var(--fl-ease); }
 .fl-nav__link:hover, .fl-gallery-link:hover, .fl-logo__gif-wrap:hover { opacity: 1 !important; filter: blur(0px) !important; }
 
 /* REVEAL ANIMATION */
@@ -190,10 +184,7 @@ body.is-focus-mode .fl-grid .fl-gallery-text {
     transition: opacity var(--fl-reveal-dur) var(--fl-ease), transform var(--fl-reveal-dur) var(--fl-ease);
     will-change: transform, opacity;
 }
-.fl-reveal.is-visible { 
-    opacity: 1; 
-    transform: translateY(0); 
-}
+.fl-reveal.is-visible { opacity: 1; transform: translateY(0); }
 
 /* GALLERY WRAPPER */
 .fl-item-wrapper { position: relative; display: flex; flex-direction: column; margin-bottom: 0; }
@@ -212,12 +203,20 @@ body.is-focus-mode .fl-grid .fl-gallery-text {
     word-break: break-word;
 }
 
-/* CONTACT COMPONENT */
+/* 文字行高补偿针对 PC 端 */
+@media (min-width: 769px) {
+    /* 强制消除 PC 端最后一项文字的底边距，确保紧贴 Contact */
+    .fl-item-wrapper:last-of-type .fl-gallery-text {
+        margin-bottom: 0 !important;
+    }
+}
+
+/* CONTACT COMPONENT - v4.12.4 精密修剪版 */
 .fl-footer-contact {
     grid-column: span 12;
     padding: 0;
-    margin-top: 60px;
-    padding-bottom: 60px;
+    margin-top: 4px;      /* 红色标注处：由 60px 缩减至 4px，与全局 Grid 间隙一致 */
+    padding-bottom: 8px;  /* 绿色标注处：缩减底部安全区，仅保留微量呼吸感 */
     height: auto;
     display: flex;
     flex-direction: column;
@@ -329,7 +328,7 @@ body.is-focus-mode .fl-grid .fl-gallery-text {
 
 <script>
 const CONFIG = {
-version: "4.12.3",
+version: "4.12.4",
 seo: { title: "Foo | Portfolio", favicon: "https://folio.neuepoor.com/favicon.webp" },
 typography: {
 header: { font: "Arial, sans-serif", weight: "700", sizePC: "32px", sizeMobile: "21px" },
