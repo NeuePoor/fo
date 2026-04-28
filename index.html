@@ -143,7 +143,7 @@ body:not(.is-loading) .fl-global-grid { opacity: 1; }
     will-change: opacity, filter;
 }
 
-/* Hero Special Text (aligned left 4px, vertical center, follows Hero animation logic) */
+/* Hero Special Text */
 .fl-hero-special-text {
     position: fixed; 
     z-index: 2000; 
@@ -155,7 +155,7 @@ body:not(.is-loading) .fl-global-grid { opacity: 1; }
     overflow: hidden;
     white-space: nowrap;
 }
-/* 焦点模式显示文本 */
+
 body.is-focus-mode .fl-pc-special-text.is-active,
 body.is-focus-mode .fl-hero-special-text.is-active { opacity: 1; filter: blur(0px); }
 
@@ -282,10 +282,17 @@ body.is-focus-mode .fl-grid .fl-gallery-text { filter: blur(8px); transition: fi
   .fl-header {
     top: auto !important; bottom: 24px !important; left: 32px !important; width: calc(100% - 64px) !important;
     height: 44px !important; padding: 0 16px !important; border-radius: 12px !important;
-    mix-blend-mode: normal !important; background: rgba(255, 255, 255, 0.95) !important;
+    mix-blend-mode: normal !important; 
+    background: rgba(255, 255, 255, 0.9) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
     border: 0.5px solid rgba(0, 0, 0, 0.1) !important; z-index: 1002;
   }
-  @media (prefers-color-scheme: dark) { .fl-header { background: rgba(28, 28, 30, 0.98) !important; } }
+  @media (prefers-color-scheme: dark) { 
+    .fl-header { 
+        background: rgba(28, 28, 30, 0.9) !important; 
+    } 
+  }
   .fl-logo__gif-wrap { top: auto !important; bottom: 24px !important; left: 48px !important; height: 44px !important; z-index: 1003; opacity: 1 !important; filter: none !important; }
   .fl-nav__link { font-size: var(--header-fs-m) !important; color: var(--fl-text) !important; opacity: 1 !important; filter: none !important; }
   .fl-logo__gif { height: var(--logo-size-m) !important; opacity: 1 !important; }
@@ -339,7 +346,7 @@ body.is-focus-mode .fl-grid .fl-gallery-text { filter: blur(8px); transition: fi
 
 <script>
 const CONFIG = {
-version: "4.12.9",
+version: "4.12.10",
 seo: { title: "Foo | Portfolio", favicon: "https://folio.neuepoor.com/favicon.webp" },
 typography: {
 header: { font: "Arial, sans-serif", weight: "700", sizePC: "32px", sizeMobile: "21px" },
@@ -538,15 +545,14 @@ initLandingHero() {
             hero.style.left = `${unit * 10}px`; 
             hero.style.transform = `translate3d(-50%, -50%, 0)`;
 
-            // 重置文本到固定位置
             if (heroText) {
                 document.body.classList.add('is-focus-mode');
                 heroText.classList.add('is-active');
                 heroText.style.left = '4px';
                 heroText.style.top = '50%';
-                heroText.style.width = 'auto'; // 恢复自动宽度
-                heroText.style.height = 'auto'; // 恢复自动高度
-                heroText.style.transform = `translateY(-50%)`; // 居中对齐
+                heroText.style.width = 'auto'; 
+                heroText.style.height = 'auto'; 
+                heroText.style.transform = `translateY(-50%)`; 
                 heroText.style.opacity = '1';
             }
         }
