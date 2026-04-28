@@ -129,6 +129,7 @@ body:not(.is-loading) .fl-global-grid { opacity: 1; }
     overflow: hidden; opacity: 0; 
     transform: translate3d(0,0,0);
     will-change: transform, opacity, width, height, top, left;
+    display: flex; align-items: center; justify-content: center;
 }
 .fl-landing-hero img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
 
@@ -141,7 +142,22 @@ body:not(.is-loading) .fl-global-grid { opacity: 1; }
     opacity: 0; filter: blur(10px); transition: opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease);
     will-change: opacity, filter;
 }
-body.is-focus-mode .fl-pc-special-text.is-active { opacity: 1; filter: blur(0px); }
+
+/* Hero Special Text (aligned left 4px, vertical center, follows Hero animation logic) */
+.fl-hero-special-text {
+    position: fixed; 
+    z-index: 2000; 
+    pointer-events: none; font-size: var(--gallery-fs);
+    font-weight: var(--gallery-fw); color: var(--fl-text);
+    opacity: 0; filter: blur(10px); 
+    will-change: opacity, filter, transform, top, left, width, height;
+    display: flex; align-items: center;
+    overflow: hidden;
+    white-space: nowrap;
+}
+/* 焦点模式显示文本 */
+body.is-focus-mode .fl-pc-special-text.is-active,
+body.is-focus-mode .fl-hero-special-text.is-active { opacity: 1; filter: blur(0px); }
 
 /* HEADER & NAV */
 .fl-logo__gif-wrap { position: fixed; top: 0; left: 4px; height: var(--fl-nav-h); display: flex; align-items: center; z-index: 1001; transition: transform 0.4s var(--fl-ease), opacity 0.6s var(--fl-ease), filter 0.6s var(--fl-ease); will-change: transform, opacity; }
@@ -158,14 +174,12 @@ body.is-focus-mode .fl-pc-special-text.is-active { opacity: 1; filter: blur(0px)
     grid-template-columns: repeat(12, 1fr);
     gap: var(--fl-gutter); 
     margin: var(--fl-margin);
-    min-height: calc(100vh - 8px); 
+    min-height: calc(100vh - (var(--fl-margin) * 2)); 
     align-content: end; 
     padding: 80px 0 0; 
     z-index: 5; 
     pointer-events: none; 
-    transition: margin-top 0.8s var(--fl-ease);
 }
-/* v4.12.9 PC Intro Placeholder */
 @media (min-width: 769px) {
     .fl-grid.is-intro { margin-top: 70vh; }
 }
@@ -177,12 +191,7 @@ body.is-focus-mode .fl-nav__link:not(:hover),
 body.is-focus-mode .fl-gallery-link:not(:hover),
 body.is-focus-mode .fl-logo__gif-wrap:not(:hover) { opacity: 0.2; filter: blur(8px); }
 body.is-focus-mode .fl-landing-hero.is-active { opacity: 1 !important; filter: none !important; } 
-
-body.is-focus-mode .fl-grid .fl-gallery-text { 
-    filter: blur(8px); 
-    transition: filter 0.6s var(--fl-ease); 
-}
-
+body.is-focus-mode .fl-grid .fl-gallery-text { filter: blur(8px); transition: filter 0.6s var(--fl-ease); }
 .fl-nav__link:hover, .fl-gallery-link:hover, .fl-logo__gif-wrap:hover { opacity: 1 !important; filter: blur(0px) !important; }
 
 /* REVEAL ANIMATION */
@@ -192,10 +201,7 @@ body.is-focus-mode .fl-grid .fl-gallery-text {
     transition: opacity var(--fl-reveal-dur) var(--fl-ease), transform var(--fl-reveal-dur) var(--fl-ease);
     will-change: transform, opacity;
 }
-.fl-reveal.is-visible { 
-    opacity: 1; 
-    transform: translateY(0); 
-}
+.fl-reveal.is-visible { opacity: 1; transform: translateY(0); }
 
 /* GALLERY WRAPPER */
 .fl-item-wrapper { position: relative; display: flex; flex-direction: column; margin-bottom: 0; }
@@ -218,8 +224,8 @@ body.is-focus-mode .fl-grid .fl-gallery-text {
 .fl-footer-contact {
     grid-column: span 12;
     padding: 0;
-    margin-top: 60px;
-    padding-bottom: 60px;
+    margin-top: calc(var(--gallery-paragraph-spacing) - 0.15em); 
+    padding-bottom: 8px;  
     height: auto;
     display: flex;
     flex-direction: column;
@@ -259,6 +265,7 @@ body.is-focus-mode .fl-grid .fl-gallery-text {
 .fl-wechat-qr img { width: 100%; height: 100%; object-fit: contain; }
 .fl-wechat-id { font-family: var(--fl-font-fallback); font-size: 16px; color: #000; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
 
+/* MOBILE ADAPTATION */
 @media (max-width: 768px) {
   :root { --gallery-paragraph-spacing: 0px; }
   .fl-grid { 
@@ -267,11 +274,11 @@ body.is-focus-mode .fl-grid .fl-gallery-text {
     padding-top: 20px; 
     z-index: 10;
     pointer-events: auto;
-    margin-top: 0 !important; /* 强制覆盖 intro 类在移动端的效果 */
+    margin-top: 0 !important;
   }
   .fl-item-wrapper { margin-bottom: 24px; }
   .fl-gallery-text { width: 100%; }
-  .fl-pc-special-text { display: none; }
+  .fl-pc-special-text, .fl-hero-special-text { display: none; }
   .fl-header {
     top: auto !important; bottom: 24px !important; left: 32px !important; width: calc(100% - 64px) !important;
     height: 44px !important; padding: 0 16px !important; border-radius: 12px !important;
@@ -285,7 +292,7 @@ body.is-focus-mode .fl-grid .fl-gallery-text {
   .fl-nav { gap: 20px !important; }
   .is-nav-hidden { transform: translateY(150%) !important; }
   .fl-footer-contact { padding: 0 0 100px; height: auto; margin-top: 20px; padding-bottom: 100px; }
-  .fl-contact-row { gap: clamp(10px, 4vw, 20px); justify-content: space-between; }
+  .fl-contact-row { gap: clamp(10px, 4vw, 20px); justify-content: flex-start; }
   .fl-gallery-link { font-size: clamp(12px, 3.5vw, 18px) !important; opacity: 1 !important; filter: none !important; }
 }
 </style>
@@ -319,7 +326,6 @@ body.is-focus-mode .fl-grid .fl-gallery-text {
 <nav class="fl-nav" id="ui-nav"></nav>
 </header>
 
-<!-- v4.12.9: Added is-intro class for initial placeholder -->
 <main class="fl-grid is-intro" id="ui-main-grid">
     <footer class="fl-footer-contact fl-reveal" id="ui-footer-contact"></footer>
 </main>
@@ -340,7 +346,14 @@ header: { font: "Arial, sans-serif", weight: "700", sizePC: "32px", sizeMobile: 
 gallery: { font: "Arial, sans-serif", weight: "700", sizePC: "32px", sizeMobile: "21px" }
 },
 header: {
-logo: { gif: "https://folio.neuepoor.com/logo.gif", link: "https://neuepoor.com", text: "Foo", sizePC: "32px", sizeMobile: "18px" },
+logo: { 
+    gif: "https://folio.neuepoor.com/logo.gif", 
+    link: "https://neuepoor.com", 
+    text: "Foo", 
+    sizePC: "32px", 
+    sizeMobile: "18px",
+    heroSpecialText: "Hi, I'm Fo" 
+},
 nav: [
 { name: 'Works', link: 'https://works.neuepoor.com', specialText: "I Wrok 4 Brand" },
 { name: '(Play)', link: 'https://play.neuepoor.com', specialText: "I (Play) Sth" },
@@ -404,10 +417,16 @@ renderHeader() {
         this.updateLogoCache(); 
     };
     nav.innerHTML = CONFIG.header.nav.map(n => `<a href="${n.link}" class="fl-nav__link" data-nav-name="${n.name}">${n.name}</a>`).join('');
-    pcSpecialContainer.innerHTML = CONFIG.header.nav.map(n => {
+    
+    let specialHTML = CONFIG.header.nav.map(n => {
         const id = n.name.replace(/[()]/g, '');
         return `<div class="fl-pc-special-text" id="pc-text-${id}">${n.specialText}</div>`;
     }).join('');
+    
+    if (!this.isMobile()) {
+        specialHTML += `<div class="fl-hero-special-text" id="ui-hero-special-text">${CONFIG.header.logo.heroSpecialText}</div>`;
+    }
+    pcSpecialContainer.innerHTML = specialHTML;
 },
 updateLogoCache() {
     const wrap = document.getElementById('ui-logo-gif-wrap');
@@ -461,7 +480,7 @@ initFocusMode() {
         const related = e.relatedTarget;
         if (!related || !related.closest(focusTriggerSelectors)) {
             body.classList.remove('is-focus-mode');
-            document.querySelectorAll('.fl-pc-special-text').forEach(el => el.classList.remove('is-active'));
+            document.querySelectorAll('.fl-pc-special-text, .fl-hero-special-text').forEach(el => el.classList.remove('is-active'));
         }
     });
 },
@@ -486,16 +505,22 @@ initLandingHero() {
     const hero = document.getElementById('ui-landing-hero');
     const logoGifWrap = document.getElementById('ui-logo-gif-wrap');
     const logoGif = document.getElementById('ui-logo-gif');
+    const heroText = document.getElementById('ui-hero-special-text');
     if (!hero || !logoGifWrap) return;
+    
     const toggleHero = () => {
         if (hero.classList.contains('is-active')) hideHero();
         else showHero(true); 
     };
+
     const showHero = (withAnimation = false) => {
         const mobile = this.isMobile();
-        hero.style.transition = withAnimation ? `all 1.2s var(--fl-ease)` : 'none';
+        const duration = withAnimation ? '1.2s' : '0s';
+        hero.style.transition = `all ${duration} var(--fl-ease)`;
+        if (heroText) heroText.style.transition = `all ${duration} var(--fl-ease), opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease)`;
+
         if (mobile) {
-            const targetWidth = window.innerWidth;
+            const targetWidth = window.innerWidth * 2; 
             const targetHeight = targetWidth * 0.56;
             hero.style.width = `${targetWidth}px`; 
             hero.style.height = `${targetHeight}px`;
@@ -504,28 +529,62 @@ initLandingHero() {
             hero.style.transform = `translate3d(-50%, -50%, 0)`; 
         } else {
             const unit = window.innerWidth / 12;
-            const targetWidth = unit * 6 - 4; 
+            const targetWidth = unit * 10 - 4; 
             const targetHeight = targetWidth * 0.56;
+            
             hero.style.width = `${targetWidth}px`; 
             hero.style.height = `${targetHeight}px`;
             hero.style.top = '50%'; 
-            hero.style.left = `${unit * 9}px`; 
+            hero.style.left = `${unit * 10}px`; 
             hero.style.transform = `translate3d(-50%, -50%, 0)`;
+
+            // 重置文本到固定位置
+            if (heroText) {
+                document.body.classList.add('is-focus-mode');
+                heroText.classList.add('is-active');
+                heroText.style.left = '4px';
+                heroText.style.top = '50%';
+                heroText.style.width = 'auto'; // 恢复自动宽度
+                heroText.style.height = 'auto'; // 恢复自动高度
+                heroText.style.transform = `translateY(-50%)`; // 居中对齐
+                heroText.style.opacity = '1';
+            }
         }
         hero.style.opacity = "1";
         hero.classList.add('is-active');
     };
+
     const hideHero = () => {
         const logoRect = this.logoPosCache || logoGifWrap.getBoundingClientRect();
-        hero.style.transition = `all 0.8s var(--fl-ease)`; 
-        hero.style.top = `${logoRect.top + logoRect.height/2}px`;
-        hero.style.left = `${logoRect.left + logoRect.width/2}px`;
+        const duration = '0.8s';
+        hero.style.transition = `all ${duration} var(--fl-ease)`; 
+        if (heroText) heroText.style.transition = `all ${duration} var(--fl-ease), opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease)`;
+
+        const targetX = logoRect.left + logoRect.width/2;
+        const targetY = logoRect.top + logoRect.height/2;
+
+        hero.style.top = `${targetY}px`;
+        hero.style.left = `${targetX}px`;
         hero.style.width = '0px'; 
         hero.style.height = '0px'; 
         hero.style.opacity = '0';
         hero.style.transform = 'translate3d(-50%, -50%, 0) scale(0)';
         hero.classList.remove('is-active');
+
+        if (heroText) {
+            heroText.style.top = `${targetY}px`;
+            heroText.style.left = `${targetX}px`;
+            heroText.style.width = '0px';
+            heroText.style.height = '0px';
+            heroText.style.opacity = '0';
+            heroText.style.transform = 'translateY(-50%) scale(0)';
+            heroText.classList.remove('is-active');
+            
+            const hoveredTrigger = document.querySelector('.fl-nav__link:hover, .fl-gallery-link:hover');
+            if (!hoveredTrigger) document.body.classList.remove('is-focus-mode');
+        }
     };
+
     logoGif.onclick = (e) => { e.stopPropagation(); toggleHero(); };
     if (!this.isMobile()) {
         logoGifWrap.onmouseenter = () => showHero(true);
