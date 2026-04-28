@@ -269,9 +269,9 @@ body.is-focus-mode .fl-grid .fl-gallery-text { filter: blur(8px); transition: fi
 @media (max-width: 768px) {
   :root { --gallery-paragraph-spacing: 0px; }
   .fl-grid { 
-    min-height: auto;
+    min-height: auto !important;
     align-content: start; 
-    padding-top: 20px; 
+    padding: 4px 0 120px !important; 
     z-index: 10;
     pointer-events: auto;
     margin-top: 0 !important;
@@ -279,20 +279,24 @@ body.is-focus-mode .fl-grid .fl-gallery-text { filter: blur(8px); transition: fi
   .fl-item-wrapper { margin-bottom: 24px; }
   .fl-gallery-text { width: 100%; }
   .fl-pc-special-text, .fl-hero-special-text { display: none; }
+  
+  /* Mobile Header Patch - Precise Transparency Logic */
   .fl-header {
     top: auto !important; bottom: 24px !important; left: 32px !important; width: calc(100% - 64px) !important;
     height: 44px !important; padding: 0 16px !important; border-radius: 12px !important;
     mix-blend-mode: normal !important; 
-    background: rgba(255, 255, 255, 0.9) !important;
-    backdrop-filter: blur(20px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    background: rgba(255, 255, 255, 0.2) !important;
+    backdrop-filter: blur(16px) saturate(160%) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(160%) !important;
     border: 0.5px solid rgba(0, 0, 0, 0.1) !important; z-index: 1002;
   }
   @media (prefers-color-scheme: dark) { 
     .fl-header { 
-        background: rgba(28, 28, 30, 0.9) !important; 
+        background: rgba(28, 28, 30, 0.45) !important; 
+        border: 0.5px solid rgba(255, 255, 255, 0.1) !important;
     } 
   }
+
   .fl-logo__gif-wrap { top: auto !important; bottom: 24px !important; left: 48px !important; height: 44px !important; z-index: 1003; opacity: 1 !important; filter: none !important; }
   .fl-nav__link { font-size: var(--header-fs-m) !important; color: var(--fl-text) !important; opacity: 1 !important; filter: none !important; }
   .fl-logo__gif { height: var(--logo-size-m) !important; opacity: 1 !important; }
@@ -346,7 +350,7 @@ body.is-focus-mode .fl-grid .fl-gallery-text { filter: blur(8px); transition: fi
 
 <script>
 const CONFIG = {
-version: "4.12.10",
+version: "4.12.11",
 seo: { title: "Foo | Portfolio", favicon: "https://folio.neuepoor.com/favicon.webp" },
 typography: {
 header: { font: "Arial, sans-serif", weight: "700", sizePC: "32px", sizeMobile: "21px" },
