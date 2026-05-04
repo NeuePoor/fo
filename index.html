@@ -26,8 +26,6 @@ BASE CSS & DYNAMIC TOKENS
 --grid-square-color: rgba(0, 0, 0, 0.3);
 --splash-fs: 32px;
 --gallery-paragraph-spacing: 2.2em;
-/* Safari Dynamic Height Patch */
---vh: 1vh;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -40,7 +38,7 @@ BASE CSS & DYNAMIC TOKENS
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; -webkit-font-smoothing: antialiased; }
-html, body { scrollbar-width: none; -ms-overflow-style: none; user-select: none; height: 100%; margin: 0; padding: 0; }
+html, body { scrollbar-width: none; -ms-overflow-style: none; user-select: none; margin: 0; padding: 0; }
 html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
 @media (min-width: 769px) {
@@ -57,11 +55,12 @@ color: var(--fl-text);
 overflow-x: hidden;
 line-height: 1.4;
 transition: background-color 0.25s ease-out;
-/* Use dynamic VH for mobile */
-height: calc(var(--vh, 1vh) * 100);
+/* v4.12.13 Patch: Removed hard height constraint to match project5.2.2 fluidity */
+min-height: 100vh;
+min-height: 100dvh;
 }
 
-body.is-loading { overflow: hidden; }
+body.is-loading { overflow: hidden; height: 100vh; height: 100dvh; }
 
 /* CUSTOM CURSOR */
 .fl-cursor {
@@ -95,7 +94,8 @@ body.is-loading { overflow: hidden; }
 
 /* GLOBAL DECORATION GRID */
 .fl-global-grid {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    position: fixed; top: 0; left: 0; width: 100%; 
+    height: 100vh; height: 100dvh;
     z-index: 2; pointer-events: none; opacity: 0;
     transition: opacity 2s var(--fl-ease), filter 0.6s var(--fl-ease);
     background-repeat: repeat;
@@ -103,10 +103,10 @@ body.is-loading { overflow: hidden; }
 }
 body:not(.is-loading) .fl-global-grid { opacity: 1; }
 
-/* SPLASH (Patch for Safari Fullscreen) */
+/* SPLASH (v4.12.13: Updated to dvh for Safari Fullscreen) */
 .fl-splash {
     position: fixed; top: 0; left: 0; width: 100%; 
-    height: 100vh; height: calc(var(--vh, 1vh) * 100);
+    height: 100vh; height: 100dvh;
     z-index: 9999; display: flex; align-items: center; justify-content: center;
     background: var(--fl-bg); transition: background 1.2s var(--fl-ease);
 }
@@ -356,7 +356,7 @@ body.is-focus-mode .fl-grid .fl-gallery-text { filter: blur(8px); transition: fi
 
 <script>
 const CONFIG = {
-version: "4.12.12",
+version: "4.12.13",
 seo: { title: "Foo | Portfolio", favicon: "https://folio.neuepoor.com/favicon.webp" },
 typography: {
 header: { font: "Arial, sans-serif", weight: "700", sizePC: "32px", sizeMobile: "21px" },
@@ -663,16 +663,6 @@ drawGlobalGrid() {
         wrapper.style.backgroundImage = `url(${url})`;
     }, 'image/png');
 },
-initSafariPatch() {
-    /* Precise Viewport Height Calculation for iOS Safari */
-    const updateVH = () => {
-        let vh = window.innerHeight * 0.01;
-        document.documentElement.style.setProperty('--vh', `${vh}px`);
-    };
-    window.addEventListener('resize', updateVH);
-    window.addEventListener('orientationchange', updateVH);
-    updateVH();
-},
 initSplash() {
     const splash = document.getElementById('ui-splash');
     const body = document.body;
@@ -693,7 +683,6 @@ initSplash() {
     splash.onclick = dismiss;
 },
 start() { 
-    this.initSafariPatch();
     this.initSEO(); this.applyTypography(); this.renderHeader(); 
     this.buildContent(); this.drawGlobalGrid(); this.initFocusMode();
     this.initCustomCursor(); this.initScrollInteraction(); 
