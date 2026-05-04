@@ -38,7 +38,7 @@ BASE CSS & DYNAMIC TOKENS
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; -webkit-font-smoothing: antialiased; }
-html, body { scrollbar-width: none; -ms-overflow-style: none; user-select: none; margin: 0; padding: 0; }
+html, body { scrollbar-width: none; -ms-overflow-style: none; user-select: none; height: 100%; margin: 0; padding: 0; }
 html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
 @media (min-width: 769px) {
@@ -55,13 +55,9 @@ color: var(--fl-text);
 overflow-x: hidden;
 line-height: 1.4;
 transition: background-color 0.25s ease-out;
-/* v4.12.14 Patch: dvh for seamless mobile support */
-min-height: 100vh;
-min-height: 100dvh;
-position: relative; /* Container for absolute grid */
 }
 
-body.is-loading { overflow: hidden; height: 100vh; height: 100dvh; }
+body.is-loading { overflow: hidden; }
 
 /* CUSTOM CURSOR */
 .fl-cursor {
@@ -93,28 +89,24 @@ body.is-loading { overflow: hidden; height: 100vh; height: 100dvh; }
 .fl-cursor__v { width: 1px; height: 100vh; top: 0; left: 0; }
 .fl-cursor__h { height: 1px; width: 100vw; left: 0; top: 0; }
 
-/* GLOBAL DECORATION GRID (v4.12.14: Absolute to prevent Safari UI spacing) */
+/* GLOBAL DECORATION GRID */
 .fl-global-grid {
-    position: absolute; top: 0; left: 0; width: 100%; 
-    height: 100%; /* Spans full document height */
-    min-height: 100dvh;
-    z-index: 1; pointer-events: none; opacity: 0;
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 2; pointer-events: none; opacity: 0;
     transition: opacity 2s var(--fl-ease), filter 0.6s var(--fl-ease);
     background-repeat: repeat;
     will-change: opacity;
 }
 body:not(.is-loading) .fl-global-grid { opacity: 1; }
 
-/* SPLASH (v4.12.14: Updated to dvh) */
+/* SPLASH */
 .fl-splash {
-    position: fixed; top: 0; left: 0; width: 100%; 
-    height: 100vh; height: 100dvh;
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     z-index: 9999; display: flex; align-items: center; justify-content: center;
     background: var(--fl-bg); transition: background 1.2s var(--fl-ease);
 }
 .fl-splash__bg {
-    position: absolute; top: 0; left: 0; width: 100%; 
-    height: 100%;
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     background: url('https://folio.neuepoor.com/fo.gif') center/cover no-repeat;
     transition: filter 1.8s var(--fl-ease), opacity 1.8s var(--fl-ease), transform 1.8s var(--fl-ease);
     z-index: 1; opacity: 1;
@@ -131,7 +123,7 @@ body:not(.is-loading) .fl-global-grid { opacity: 1; }
 .fl-splash.is-finished .fl-splash__bg { filter: blur(40px); opacity: 1; transform: scale(1.1); }
 .fl-splash.is-finished .fl-splash__text { opacity: 0 !important; visibility: hidden; }
 
-/* LANDING HERO (v4.12.14: Keep fixed but use dynamic units) */
+/* LANDING HERO */
 .fl-landing-hero {
     position: fixed; z-index: 50; pointer-events: none !important;
     overflow: hidden; opacity: 0; 
@@ -175,14 +167,14 @@ body.is-focus-mode .fl-hero-special-text.is-active { opacity: 1; filter: blur(0p
 .fl-nav { display: flex; gap: 40px; }
 .fl-nav__link { font-size: var(--header-fs); font-weight: var(--header-fw); color: #fff; text-decoration: none; transition: opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease); }
 
-/* CONTENT LAYOUT (v4.12.14: Match fluidity of 5.2.2) */
+/* CONTENT LAYOUT */
 .fl-grid {
     position: relative; 
     display: grid; 
     grid-template-columns: repeat(12, 1fr);
     gap: var(--fl-gutter); 
     margin: var(--fl-margin);
-    min-height: calc(100dvh - (var(--fl-margin) * 2)); 
+    min-height: calc(100vh - (var(--fl-margin) * 2)); 
     align-content: end; 
     padding: 80px 0 0; 
     z-index: 5; 
@@ -323,7 +315,6 @@ body.is-focus-mode .fl-grid .fl-gallery-text { filter: blur(8px); transition: fi
     <div class="fl-cursor__h" id="ui-cursor-h"></div>
 </div>
 
-<!-- Global Grid Container: Set to Absolute for scrolling stability -->
 <div class="fl-global-grid" id="ui-grid-wrapper"></div>
 
 <div id="ui-pc-special-container"></div>
@@ -359,7 +350,7 @@ body.is-focus-mode .fl-grid .fl-gallery-text { filter: blur(8px); transition: fi
 
 <script>
 const CONFIG = {
-version: "4.12.14",
+version: "4.12.11",
 seo: { title: "Foo | Portfolio", favicon: "https://folio.neuepoor.com/favicon.webp" },
 typography: {
 header: { font: "Arial, sans-serif", weight: "700", sizePC: "32px", sizeMobile: "21px" },
@@ -594,7 +585,7 @@ initLandingHero() {
             heroText.style.top = `${targetY}px`;
             heroText.style.left = `${targetX}px`;
             heroText.style.width = '0px';
-            heroText.height = '0px';
+            heroText.style.height = '0px';
             heroText.style.opacity = '0';
             heroText.style.transform = 'translateY(-50%) scale(0)';
             heroText.classList.remove('is-active');
