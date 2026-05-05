@@ -26,6 +26,8 @@ BASE CSS & DYNAMIC TOKENS
 --grid-square-color: rgba(0, 0, 0, 0.3);
 --splash-fs: 32px;
 --gallery-paragraph-spacing: 2.2em;
+/* v4.12.12: Intro Position Token */
+--intro-margin: 70vh; 
 }
 
 @media (prefers-color-scheme: dark) {
@@ -181,7 +183,12 @@ body.is-focus-mode .fl-hero-special-text.is-active { opacity: 1; filter: blur(0p
     pointer-events: none; 
 }
 @media (min-width: 769px) {
-    .fl-grid.is-intro { margin-top: 70vh; }
+    /* v4.12.12: Bind to variable with transition */
+    .fl-grid.is-intro { 
+        margin-top: var(--intro-margin); 
+        transition: margin-top 0.8s var(--fl-ease);
+        will-change: margin-top;
+    }
 }
 
 .fl-grid > * { pointer-events: auto; }
@@ -350,7 +357,7 @@ body.is-focus-mode .fl-grid .fl-gallery-text { filter: blur(8px); transition: fi
 
 <script>
 const CONFIG = {
-version: "4.12.11",
+version: "4.12.12",
 seo: { title: "Foo | Portfolio", favicon: "https://folio.neuepoor.com/favicon.webp" },
 typography: {
 header: { font: "Arial, sans-serif", weight: "700", sizePC: "32px", sizeMobile: "21px" },
@@ -517,6 +524,7 @@ initLandingHero() {
     const logoGifWrap = document.getElementById('ui-logo-gif-wrap');
     const logoGif = document.getElementById('ui-logo-gif');
     const heroText = document.getElementById('ui-hero-special-text');
+    const root = document.documentElement; // v4.12.12
     if (!hero || !logoGifWrap) return;
     
     const toggleHero = () => {
@@ -549,6 +557,9 @@ initLandingHero() {
             hero.style.left = `${unit * 10}px`; 
             hero.style.transform = `translate3d(-50%, -50%, 0)`;
 
+            // v4.12.12: Push gallery down when hero expands
+            root.style.setProperty('--intro-margin', '70vh');
+
             if (heroText) {
                 document.body.classList.add('is-focus-mode');
                 heroText.classList.add('is-active');
@@ -580,6 +591,11 @@ initLandingHero() {
         hero.style.opacity = '0';
         hero.style.transform = 'translate3d(-50%, -50%, 0) scale(0)';
         hero.classList.remove('is-active');
+
+        // v4.12.12: Pull gallery up when hero shrinks
+        if (!this.isMobile()) {
+            root.style.setProperty('--intro-margin', '0px');
+        }
 
         if (heroText) {
             heroText.style.top = `${targetY}px`;
