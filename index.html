@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
 <meta name="render" content="webkit">
-<title>Foo | Portfolio</title>
+<title>Foo</title>
 <link id="favicon" rel="icon" type="image/webp" href="https://folio.neuepoor.com/favicon.webp">
 
 <style>
@@ -158,7 +158,6 @@ body:not(.is-loading) .fl-global-grid { opacity: 1; }
     white-space: nowrap;
 }
 
-body.is-focus-mode .fl-pc-special-text.is-active,
 body.is-focus-mode .fl-hero-special-text.is-active { opacity: 1; filter: blur(0px); }
 
 /* HEADER & NAV */
@@ -332,7 +331,7 @@ body.is-focus-mode .fl-grid .fl-gallery-text { filter: blur(8px); transition: fi
 
 <div class="fl-splash" id="ui-splash">
     <div class="fl-splash__bg" id="ui-splash-bg"></div>
-    <div class="fl-splash__text" id="ui-splash-text">Hi. I'm Fo</div>
+    <div class="fl-splash__text" id="ui-splash-text"></div>
 </div>
 
 <div class="fl-logo__gif-wrap" id="ui-logo-gif-wrap">
@@ -357,8 +356,12 @@ body.is-focus-mode .fl-grid .fl-gallery-text { filter: blur(8px); transition: fi
 
 <script>
 const CONFIG = {
-version: "4.12.12",
-seo: { title: "Foo | Portfolio", favicon: "https://folio.neuepoor.com/favicon.webp" },
+version: "Home 4.12.13",
+seo: { title: "Foo", favicon: "https://folio.neuepoor.com/favicon.webp" },
+splash: {
+    text: "Folio",
+    bg: "https://folio.neuepoor.com/fo.gif"
+},
 typography: {
 header: { font: "Arial, sans-serif", weight: "700", sizePC: "32px", sizeMobile: "21px" },
 gallery: { font: "Arial, sans-serif", weight: "700", sizePC: "32px", sizeMobile: "21px" }
@@ -373,9 +376,9 @@ logo: {
     heroSpecialText: "Hi, I'm Fo" 
 },
 nav: [
-{ name: 'Works', link: 'https://works.neuepoor.com', specialText: "I Wrok 4 Brand" },
-{ name: '(Play)', link: 'https://play.neuepoor.com', specialText: "I (Play) Sth" },
-{ name: 'Me', link: 'https://Me.neuepoor.com', specialText: "I (Capture) Free Me" }
+{ name: 'Works', link: 'https://works.neuepoor.com' },
+{ name: '(Play)', link: 'https://play.neuepoor.com' },
+{ name: 'Me', link: 'https://Me.neuepoor.com' }
 ]
 },
 gallery: {
@@ -436,13 +439,9 @@ renderHeader() {
     };
     nav.innerHTML = CONFIG.header.nav.map(n => `<a href="${n.link}" class="fl-nav__link" data-nav-name="${n.name}">${n.name}</a>`).join('');
     
-    let specialHTML = CONFIG.header.nav.map(n => {
-        const id = n.name.replace(/[()]/g, '');
-        return `<div class="fl-pc-special-text" id="pc-text-${id}">${n.specialText}</div>`;
-    }).join('');
-    
+    let specialHTML = '';
     if (!this.isMobile()) {
-        specialHTML += `<div class="fl-hero-special-text" id="ui-hero-special-text">${CONFIG.header.logo.heroSpecialText}</div>`;
+        specialHTML = `<div class="fl-hero-special-text" id="ui-hero-special-text">${CONFIG.header.logo.heroSpecialText}</div>`;
     }
     pcSpecialContainer.innerHTML = specialHTML;
 },
@@ -455,9 +454,7 @@ buildContent() {
     const footer = document.getElementById('ui-footer-contact');
     const isM = this.isMobile();
     let galleryHTML = '';
-    if (isM) {
-        galleryHTML += CONFIG.header.nav.map(n => `<div class="fl-item-wrapper fl-reveal" style="grid-column: span 12; margin-bottom: 8px"><div class="fl-gallery-text">${n.specialText}</div></div>`).join('');
-    }
+    
     galleryHTML += CONFIG.gallery.items.map(item => {
         let classes = `fl-item-wrapper fl-reveal`;
         if (!isM && item.isCombined) classes += ' combined-text';
@@ -476,6 +473,7 @@ buildContent() {
     this.initReveal();
     this.initWeChatTrigger();
 },
+
 initFocusMode() {
     const body = document.body;
     const focusTriggerSelectors = '.fl-nav__link, .fl-gallery-link, .fl-logo__gif-wrap'; 
@@ -485,13 +483,6 @@ initFocusMode() {
         const trigger = e.target.closest(focusTriggerSelectors);
         if (trigger) {
             body.classList.add('is-focus-mode');
-            const navLink = trigger.closest('.fl-nav__link');
-            if (navLink) {
-                const name = navLink.getAttribute('data-nav-name');
-                const cleanName = name.replace(/[()]/g, ''); 
-                const targetPC = document.getElementById(`pc-text-${cleanName}`);
-                if (targetPC) targetPC.classList.add('is-active');
-            }
         }
     });
     document.addEventListener('mouseout', (e) => {
@@ -650,6 +641,7 @@ initWeChatTrigger() {
         overlay.onclick = () => overlay.classList.remove('is-active'); 
     }
 },
+
 drawGlobalGrid() {
     const wrapper = document.getElementById('ui-grid-wrapper');
     if (!wrapper) return;
@@ -675,7 +667,13 @@ drawGlobalGrid() {
 },
 initSplash() {
     const splash = document.getElementById('ui-splash');
+    const splashBg = document.getElementById('ui-splash-bg');
+    const splashText = document.getElementById('ui-splash-text');
     const body = document.body;
+
+    if (splashText) splashText.innerText = CONFIG.splash.text;
+    if (splashBg) splashBg.style.backgroundImage = `url(${CONFIG.splash.bg})`;
+
     const dismiss = () => { 
         if (!body.classList.contains('is-loading')) return;
         splash.classList.add('is-finished'); 
