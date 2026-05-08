@@ -17,7 +17,6 @@ BASE CSS & DYNAMIC TOKENS
 --fl-gutter: 4px;
 --fl-margin: 4px;
 --fl-nav-h: 60px;
---fl-nav-h-m: 35px;
 --fl-ease: cubic-bezier(0.23, 1, 0.32, 1);
 --fl-reveal-dist: 30px;
 --fl-reveal-dur: 1.2s;
@@ -27,7 +26,6 @@ BASE CSS & DYNAMIC TOKENS
 --splash-fs: 32px;
 --gallery-paragraph-spacing: 2.2em;
 --intro-margin: 70vh; 
-/* v4.12.15: Dynamic Viewport Height Patch */
 --full-height: 100vh;
 }
 
@@ -46,303 +44,169 @@ BASE CSS & DYNAMIC TOKENS
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; -webkit-font-smoothing: antialiased; }
 
-/* v4.12.15: Optimized for natural long-page scrolling on mobile */
+/* v4.12.16: Release all viewport locks for natural mobile scrolling */
 html { 
-    background-color: var(--fl-bg); 
-    /* Fix for Safari iOS to fill the screen background */
-    min-height: 100%;
-    height: -webkit-fill-available;
+    background-color: var(--fl-bg);
+    margin: 0; padding: 0;
+    width: 100%;
+    /* No fixed height here */
 }
 
 body {
-    scrollbar-width: none; 
-    -ms-overflow-style: none; 
-    user-select: none; 
-    min-height: 100%;
-    height: auto; 
-    margin: 0; 
-    padding: 0; 
+    margin: 0; padding: 0;
+    width: 100%;
     font-family: var(--fl-font-fallback);
     background: var(--fl-bg);
     color: var(--fl-text);
     overflow-x: hidden;
     line-height: 1.4;
+    /* Ensure system momentum scrolling */
+    -webkit-overflow-scrolling: touch;
     transition: background-color 0.25s ease-out;
 }
 
-html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+/* Hide scrollbars */
+html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; width: 0; height: 0; }
+body { scrollbar-width: none; -ms-overflow-style: none; }
 
+/* PC Cursor logic stays same */
 @media (min-width: 769px) {
     body:not(.is-loading) { cursor: none; }
-    body:not(.is-loading) a, 
-    body:not(.is-loading) button, 
-    body:not(.is-loading) img { cursor: none !important; }
+    body:not(.is-loading) a, body:not(.is-loading) button, body:not(.is-loading) img { cursor: none !important; }
 }
 
-/* Splash loading state still needs to lock scrolling */
-body.is-loading { overflow: hidden; height: var(--full-height); }
+/* Loading state: Only lock when splash is active */
+body.is-loading { overflow: hidden; height: 100vh; position: fixed; width: 100%; }
 
-/* CUSTOM CURSOR */
-.fl-cursor {
-    position: fixed; top: 0; left: 0;
-    width: 100vw; height: var(--full-height);
-    pointer-events: none; z-index: 99999;
-    mix-blend-mode: difference;
-    opacity: 0; 
-    transition: opacity 0.5s ease;
-    display: none;
-    isolation: isolate; 
-    contain: strict;
-    perspective: 1000px;
-    -webkit-perspective: 1000px;
-}
-@media (min-width: 769px) and (pointer: fine) {
-    .fl-cursor { display: block; }
-    body:not(.is-loading) .fl-cursor { opacity: 1; }
-}
-
-.fl-cursor__v, .fl-cursor__h { 
-    position: absolute; 
-    background: #fff; 
-    will-change: transform;
-    transform: translate3d(0, 0, 0);
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-}
-.fl-cursor__v { width: 1px; height: 100vh; top: 0; left: 0; }
-.fl-cursor__h { height: 1px; width: 100vw; left: 0; top: 0; }
-
-/* GLOBAL DECORATION GRID */
-.fl-global-grid {
+/* GLOBAL DECORATION GRID & BG GIF (The Patch) */
+.fl-global-grid, .fl-splash__bg {
     position: fixed; 
-    /* v4.12.15: Enhanced physical stretch to cover elastic scroll gaps */
-    top: -120px; 
-    bottom: -120px; 
-    left: -120px; 
-    right: -120px; 
-    z-index: 2; 
+    /* v4.12.16 Patch: Ultra-stretch to hide browser UI bar gaps */
+    top: -200px; 
+    bottom: -200px; 
+    left: -200px; 
+    right: -200px; 
     pointer-events: none; 
+    will-change: transform, opacity;
+}
+
+.fl-global-grid {
+    z-index: 2; 
     opacity: 0;
-    transition: opacity 2s var(--fl-ease), filter 0.6s var(--fl-ease);
+    transition: opacity 2s var(--fl-ease);
     background-repeat: repeat;
-    will-change: opacity, transform;
-    transform: translateZ(0);
 }
 body:not(.is-loading) .fl-global-grid { opacity: 1; }
 
 /* SPLASH */
 .fl-splash {
-    position: fixed; top: 0; left: 0; width: 100%; height: var(--full-height);
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     z-index: 9999; display: flex; align-items: center; justify-content: center;
     background: var(--fl-bg); transition: background 1.2s var(--fl-ease);
 }
 .fl-splash__bg {
-    position: absolute; 
-    /* v4.12.15: Stretch background GIF beyond viewport for mobile fluidity */
-    top: -120px; left: -120px; width: calc(100% + 240px); height: calc(100% + 240px);
     background: url('https://folio.neuepoor.com/fo.gif') center/cover no-repeat;
     transition: filter 1.8s var(--fl-ease), opacity 1.8s var(--fl-ease), transform 1.8s var(--fl-ease);
     z-index: 1; opacity: 1;
-    will-change: transform, filter, opacity;
 }
 .fl-splash__text {
     position: relative; z-index: 3;
     font-size: var(--splash-fs); font-weight: 700; color: #fff;
-    mix-blend-mode: difference; opacity: 1; pointer-events: none;
-    transition: opacity 0.5s var(--fl-ease);
+    mix-blend-mode: difference; opacity: 1;
 }
-
 .fl-splash.is-finished { pointer-events: none; background: transparent; z-index: 1; }
-.fl-splash.is-finished .fl-splash__bg { filter: blur(40px); opacity: 1; transform: scale(1.1) translateZ(0); }
-.fl-splash.is-finished .fl-splash__text { opacity: 0 !important; visibility: hidden; }
+.fl-splash.is-finished .fl-splash__bg { filter: blur(40px); transform: scale(1.1); }
+.fl-splash.is-finished .fl-splash__text { opacity: 0; visibility: hidden; }
 
-/* LANDING HERO */
-.fl-landing-hero {
-    position: fixed; z-index: 50; pointer-events: none !important;
-    overflow: hidden; opacity: 0; 
-    transform: translate3d(0,0,0);
-    will-change: transform, opacity, width, height, top, left;
-    display: flex; align-items: center; justify-content: center;
-}
-.fl-landing-hero img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
-
-/* Hero Special Text */
-.fl-hero-special-text {
-    position: fixed; 
-    z-index: 2000; 
-    pointer-events: none; font-size: var(--gallery-fs);
-    font-weight: var(--gallery-fw); color: var(--fl-text);
-    opacity: 0; filter: blur(10px); 
-    will-change: opacity, filter, transform, top, left, width, height;
-    display: flex; align-items: center;
-    overflow: hidden;
-    white-space: nowrap;
-}
-
-body.is-focus-mode .fl-hero-special-text.is-active { opacity: 1; filter: blur(0px); }
-
-/* HEADER & NAV */
-.fl-logo__gif-wrap { position: fixed; top: 0; left: 4px; height: var(--fl-nav-h); display: flex; align-items: center; z-index: 1001; transition: transform 0.4s var(--fl-ease), opacity 0.6s var(--fl-ease), filter 0.6s var(--fl-ease); will-change: transform, opacity; }
-.fl-logo__gif { height: var(--logo-size-pc); width: auto; opacity: 0; transition: opacity 0.3s var(--fl-ease); cursor: pointer; will-change: opacity; }
-.fl-header { position: fixed; width: 100%; z-index: 1000; display: flex; justify-content: space-between; align-items: center; padding: 0 4px; height: var(--fl-nav-h); top: 0; mix-blend-mode: difference; transition: transform 0.4s var(--fl-ease); will-change: transform; }
-.fl-logo-text { text-decoration: none; color: #fff; font-size: var(--header-fs); font-weight: var(--header-fw); opacity: 0; pointer-events: none; }
+/* LOGO & NAV */
+.fl-logo__gif-wrap { position: fixed; top: 0; left: 4px; height: var(--fl-nav-h); display: flex; align-items: center; z-index: 1001; transition: transform 0.4s var(--fl-ease), opacity 0.6s var(--fl-ease); }
+.fl-logo__gif { height: var(--logo-size-pc); width: auto; opacity: 0; transition: opacity 0.3s var(--fl-ease); cursor: pointer; }
+.fl-header { position: fixed; width: 100%; z-index: 1000; display: flex; justify-content: space-between; align-items: center; padding: 0 4px; height: var(--fl-nav-h); top: 0; mix-blend-mode: difference; }
 .fl-nav { display: flex; gap: 40px; }
 .fl-nav__link { font-size: var(--header-fs); font-weight: var(--header-fw); color: #fff; text-decoration: none; transition: opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease); }
 
-/* CONTENT LAYOUT */
+/* MAIN GRID CONTENT */
 .fl-grid {
     position: relative; 
     display: grid; 
     grid-template-columns: repeat(12, 1fr);
     gap: var(--fl-gutter); 
     margin: var(--fl-margin);
-    /* PC maintains the focus-hero-intro logic */
-    min-height: calc(var(--full-height) - (var(--fl-margin) * 2)); 
-    align-content: end; 
-    padding: 80px 0 0; 
     z-index: 5; 
     pointer-events: none; 
+    padding-top: 80px;
 }
 @media (min-width: 769px) {
-    .fl-grid.is-intro { 
-        margin-top: var(--intro-margin); 
-        transition: margin-top 0.8s var(--fl-ease);
-        will-change: margin-top;
-    }
+    .fl-grid { min-height: calc(var(--full-height) - 8px); align-content: end; }
+    .fl-grid.is-intro { margin-top: var(--intro-margin); transition: margin-top 0.8s var(--fl-ease); }
 }
-
 .fl-grid > * { pointer-events: auto; }
 
-/* FOCUS EFFECT */
-body.is-focus-mode .fl-nav__link:not(:hover),
-body.is-focus-mode .fl-gallery-link:not(:hover),
-body.is-focus-mode .fl-logo__gif-wrap:not(:hover) { opacity: 0.2; filter: blur(8px); }
-body.is-focus-mode .fl-landing-hero.is-active { opacity: 1 !important; filter: none !important; } 
-body.is-focus-mode .fl-grid .fl-gallery-text { filter: blur(8px); transition: filter 0.6s var(--fl-ease); }
-.fl-nav__link:hover, .fl-gallery-link:hover, .fl-logo__gif-wrap:hover { opacity: 1 !important; filter: blur(0px) !important; }
-
-/* REVEAL ANIMATION */
+/* ITEM STYLES */
 .fl-reveal {
     opacity: 0; 
     transform: translateY(var(--fl-reveal-dist));
     transition: opacity var(--fl-reveal-dur) var(--fl-ease), transform var(--fl-reveal-dur) var(--fl-ease);
-    will-change: transform, opacity;
 }
 .fl-reveal.is-visible { opacity: 1; transform: translateY(0); }
 
-/* GALLERY WRAPPER */
-.fl-item-wrapper { position: relative; display: flex; flex-direction: column; margin-bottom: 0; }
-
+.fl-item-wrapper { position: relative; display: flex; flex-direction: column; }
 .fl-gallery-text { 
     font-size: var(--gallery-fs); 
     font-weight: var(--gallery-fw); 
     color: var(--fl-text); 
     line-height: 1.15; 
-    padding-top: 0; 
     margin-bottom: var(--gallery-paragraph-spacing);
-    will-change: filter; 
     width: clamp(320px, 75%, 850px); 
     max-width: 100%;
     text-wrap: wrap; 
-    word-break: break-word;
 }
 
-/* CONTACT COMPONENT */
-.fl-footer-contact {
-    grid-column: span 12;
-    padding: 0;
-    margin-top: calc(var(--gallery-paragraph-spacing) - 0.15em); 
-    padding-bottom: 8px;  
-    height: auto;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-}
+/* CONTACT */
+.fl-footer-contact { grid-column: span 12; margin-top: 2em; padding-bottom: 20px; }
+.fl-contact-row { display: flex; gap: 40px; align-items: center; }
+.fl-gallery-link { font-size: var(--gallery-fs); font-weight: var(--gallery-fw); color: var(--fl-text); text-decoration: none; transition: 0.4s; }
 
-.fl-contact-row { 
-    display: flex; 
-    flex-wrap: nowrap; 
-    gap: 40px; 
-    justify-content: flex-start;
-    align-items: center;
-}
-
-.fl-gallery-link {
-    font-size: var(--gallery-fs);
-    font-weight: var(--gallery-fw);
-    color: var(--fl-text);
-    text-decoration: none;
-    transition: opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease);
-    display: inline-block;
-    white-space: nowrap;
-}
-
-/* WECHAT OVERLAY */
-.fl-wechat-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: var(--full-height);
-    background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-    z-index: 10000; display: flex; align-items: center; justify-content: center;
-    opacity: 0; visibility: hidden; transition: 0.4s var(--fl-ease);
-    will-change: opacity, visibility;
-}
-.fl-wechat-overlay.is-active { opacity: 1; visibility: visible; }
-.fl-wechat-card { width: 320px; background: #fff; padding: 40px; text-align: center; transform: translateY(20px); transition: transform 0.5s var(--fl-ease); will-change: transform; }
-.fl-wechat-overlay.is-active .fl-wechat-card { transform: translateY(0px); }
-.fl-wechat-qr { width: 100%; aspect-ratio: 1; margin-bottom: 24px; display: flex; align-items: center; justify-content: center; }
-.fl-wechat-qr img { width: 100%; height: 100%; object-fit: contain; }
-.fl-wechat-id { font-family: var(--fl-font-fallback); font-size: 16px; color: #000; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
-
-/* MOBILE ADAPTATION | 手机端优化版本 4.12.15 */
+/* MOBILE ADAPTATION | v4.12.16: Focus on "Unbound" Scrolling */
 @media (max-width: 768px) {
-  :root { --gallery-paragraph-spacing: 0px; }
-  
-  html, body {
-      /* Unlock fixed height to allow natural mobile scrolling like index page */
-      height: auto !important;
-      overflow-y: auto !important;
-      -webkit-overflow-scrolling: touch;
-  }
+    body.is-loading { height: 100%; position: fixed; } /* Lock only during splash */
+    
+    .fl-grid {
+        display: block !important; 
+        margin: 16px !important;
+        padding-top: 20px !important;
+        /* Force height to be content-driven */
+        min-height: auto !important;
+        /* Large bottom padding to ensure scroll feels "deep" and natural */
+        padding-bottom: 180px !important; 
+    }
 
-  .fl-grid { 
-    /* Remove min-height to let content define the page length */
-    min-height: auto !important;
-    align-content: start; 
-    padding: 20px 0 140px !important; /* Extra padding for floating header */
-    z-index: 10;
-    pointer-events: auto;
-    margin-top: 0 !important;
-    display: block !important; /* Simplifies layout for natural scroll */
-  }
-
-  .fl-item-wrapper { margin-bottom: 24px; }
-  .fl-gallery-text { width: 100%; }
-  .fl-pc-special-text, .fl-hero-special-text { display: none; }
-  
-  .fl-header {
-    top: auto !important; bottom: 24px !important; left: 32px !important; width: calc(100% - 64px) !important;
-    height: 44px !important; padding: 0 16px !important; border-radius: 12px !important;
-    mix-blend-mode: normal !important; 
-    background: rgba(255, 255, 255, 0.2) !important;
-    backdrop-filter: blur(16px) saturate(160%) !important;
-    -webkit-backdrop-filter: blur(16px) saturate(160%) !important;
-    border: 0.5px solid rgba(0, 0, 0, 0.1) !important; z-index: 1002;
-  }
-  @media (prefers-color-scheme: dark) { 
-    .fl-header { 
-        background: rgba(28, 28, 30, 0.45) !important; 
-        border: 0.5px solid rgba(255, 255, 255, 0.1) !important;
-    } 
-  }
-
-  .fl-logo__gif-wrap { top: auto !important; bottom: 24px !important; left: 48px !important; height: 44px !important; z-index: 1003; opacity: 1 !important; filter: none !important; }
-  .fl-nav__link { font-size: var(--header-fs-m) !important; color: var(--fl-text) !important; opacity: 1 !important; filter: none !important; }
-  .fl-logo__gif { height: var(--logo-size-m) !important; opacity: 1 !important; }
-  .fl-nav { gap: 20px !important; }
-  .is-nav-hidden { transform: translateY(150%) !important; }
-  .fl-footer-contact { padding: 0 0 100px; height: auto; margin-top: 40px; padding-bottom: 120px; }
-  .fl-contact-row { gap: clamp(10px, 4vw, 20px); justify-content: flex-start; }
-  .fl-gallery-link { font-size: clamp(12px, 3.5vw, 18px) !important; opacity: 1 !important; filter: none !important; }
+    .fl-item-wrapper { margin-bottom: 32px; }
+    .fl-gallery-text { width: 100%; font-size: var(--gallery-fs-m); }
+    
+    .fl-header {
+        top: auto !important; bottom: 32px !important; left: 32px !important; width: calc(100% - 64px) !important;
+        height: 44px !important; padding: 0 16px !important; border-radius: 12px !important;
+        mix-blend-mode: normal !important; 
+        background: rgba(255, 255, 255, 0.25) !important;
+        backdrop-filter: blur(20px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+        border: 0.5px solid rgba(0, 0, 0, 0.1) !important;
+        transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @media (prefers-color-scheme: dark) { .fl-header { background: rgba(28, 28, 30, 0.5) !important; border-color: rgba(255, 255, 255, 0.1) !important; } }
+    
+    .fl-logo__gif-wrap { top: auto !important; bottom: 32px !important; left: 48px !important; height: 44px !important; mix-blend-mode: normal; }
+    .fl-logo__gif { height: 20px !important; opacity: 1 !important; }
+    .fl-nav__link { font-size: 14px !important; color: var(--fl-text) !important; }
+    .is-nav-hidden { transform: translateY(120px) !important; }
 }
+
+/* PC Cursor & Special Text */
+.fl-cursor { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 99999; mix-blend-mode: difference; display: none; }
+@media (min-width: 769px) { .fl-cursor { display: block; } }
+.fl-cursor__v { width: 1px; height: 100vh; background: #fff; position: absolute; }
+.fl-cursor__h { height: 1px; width: 100vw; background: #fff; position: absolute; }
 </style>
 </head>
 <body class="is-loading">
@@ -352,388 +216,180 @@ body.is-focus-mode .fl-grid .fl-gallery-text { filter: blur(8px); transition: fi
     <div class="fl-cursor__h" id="ui-cursor-h"></div>
 </div>
 
+<!-- Global Grid: Ultra-stretched for Mobile -->
 <div class="fl-global-grid" id="ui-grid-wrapper"></div>
 
-<div id="ui-pc-special-container"></div>
-
-<div class="fl-landing-hero" id="ui-landing-hero">
-    <img src="https://folio.neuepoor.com/landing.gif" alt="Landing Animation">
-</div>
-
+<!-- Splash: Fixed cover -->
 <div class="fl-splash" id="ui-splash">
     <div class="fl-splash__bg" id="ui-splash-bg"></div>
     <div class="fl-splash__text" id="ui-splash-text"></div>
 </div>
 
 <div class="fl-logo__gif-wrap" id="ui-logo-gif-wrap">
-<img class="fl-logo__gif" id="ui-logo-gif" alt="Logo" draggable="false">
+    <img class="fl-logo__gif" id="ui-logo-gif" alt="Logo">
 </div>
 
 <header class="fl-header" id="ui-header">
-<a href="https://neuepoor.com" class="fl-logo-text" id="ui-logo-text">Foo</a>
-<nav class="fl-nav" id="ui-nav"></nav>
+    <div style="width: 32px;"></div> <!-- Spacer for Logo -->
+    <nav class="fl-nav" id="ui-nav"></nav>
 </header>
 
 <main class="fl-grid is-intro" id="ui-main-grid">
+    <!-- Content injected here -->
     <footer class="fl-footer-contact fl-reveal" id="ui-footer-contact"></footer>
 </main>
 
-<div class="fl-wechat-overlay" id="ui-wechat-overlay">
-    <div class="fl-wechat-card">
-        <div class="fl-wechat-qr"><img src="https://folio.neuepoor.com/wechatsuckboyz.svg" alt="WeChat QR"></div>
-        <div class="fl-wechat-id">WeChat: NeuePoor</div>
-    </div>
-</div>
-
 <script>
 const CONFIG = {
-version: "Home 4.12.15",
-seo: { title: "Foo", favicon: "https://folio.neuepoor.com/favicon.webp" },
-splash: {
-    text: "Folio",
-    bg: "https://folio.neuepoor.com/fo.gif"
-},
-typography: {
-header: { font: "Arial, sans-serif", weight: "700", sizePC: "32px", sizeMobile: "21px" },
-gallery: { font: "Arial, sans-serif", weight: "700", sizePC: "32px", sizeMobile: "21px" }
-},
-header: {
-logo: { 
-    gif: "https://folio.neuepoor.com/logo.gif", 
-    link: "https://neuepoor.com", 
-    text: "Foo", 
-    sizePC: "32px", 
-    sizeMobile: "18px",
-    heroSpecialText: "Hi, I'm Fo" 
-},
-nav: [
-{ name: 'Works', link: 'https://works.neuepoor.com' },
-{ name: '(Play)', link: 'https://play.neuepoor.com' },
-{ name: 'Me', link: 'https://Me.neuepoor.com' }
-]
-},
-gallery: {
-items: [
-    { 
-        span: 12, 
-        type: "text", 
-        content: "I'm a multi-disciplinary designer with focus on Graphic&Illustration,Creative Direction, Branding,Visual Identities, Packaging, Website, and Print& Editorial Design.<br><br>If you are looking for a designer who excles in BrandStrategy/Visual Direction/Print Works/Products/IP/Curatorial/Grid Layout/Website design/Typeface Customization.<br><br>Please contact me.", 
-        isLast: true,
-        isCombined: true
-    }
-]
-},
-contact: {
-    links: [
+    splash: { text: "Folio", bg: "https://folio.neuepoor.com/fo.gif" },
+    header: {
+        logo: { gif: "https://folio.neuepoor.com/logo.gif", sizePC: "32px", sizeM: "20px" },
+        nav: [
+            { name: 'Works', link: 'https://works.neuepoor.com' },
+            { name: '(Play)', link: 'https://play.neuepoor.com' },
+            { name: 'Me', link: 'https://Me.neuepoor.com' }
+        ]
+    },
+    gallery: [
+        { span: 12, content: "I'm a multi-disciplinary designer with focus on Graphic&Illustration,Creative Direction, Branding,Visual Identities, Packaging, Website, and Print& Editorial Design.<br><br>If you are looking for a designer who excles in BrandStrategy/Visual Direction/Print Works/Products/IP/Curatorial/Grid Layout/Website design/Typeface Customization.<br><br>Please contact me." }
+    ],
+    contact: [
         { name: "Email", link: "mailto:poorleaglguy@qq.com" },
         { name: "Instagram", link: "https://www.instagram.com/neuepoor" },
         { name: "Github", link: "https://github.com/NeuePoor" },
-        { name: "小红书", link: "https://xhslink.com/m/9qPnrun1Dh9" },
-        { name: "WeChat", link: "#", isWeChat: true }
+        { name: "WeChat", link: "#" }
     ]
-}
 };
 
-const ENGINE = {
-lastWidth: window.innerWidth,
-logoPosCache: null, 
-debounce(func, wait) {
-    let timeout;
-    return function(...args) {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => func.apply(this, args), wait);
-    };
-},
-isMobile() { return window.innerWidth <= 768; },
-initSEO() { document.title = CONFIG.seo.title; const fav = document.getElementById('favicon'); if (fav) fav.href = CONFIG.seo.favicon; },
-applyTypography() {
-    const root = document.documentElement;
-    const t = CONFIG.typography; const l = CONFIG.header.logo;
-    const props = {
-        '--header-font': t.header.font, '--header-fw': t.header.weight, '--header-fs': t.header.sizePC, '--header-fs-m': t.header.sizeMobile,
-        '--gallery-font': t.gallery.font, '--gallery-fw': t.gallery.weight, '--gallery-fs': t.gallery.sizePC, '--gallery-fs-m': t.gallery.sizeMobile,
-        '--logo-size-pc': l.sizePC, '--logo-size-m': l.sizeMobile
-    };
-    Object.entries(props).forEach(([k, v]) => root.style.setProperty(k, v));
-},
-renderHeader() {
-    const gif = document.getElementById('ui-logo-gif');
-    const text = document.getElementById('ui-logo-text');
-    const nav = document.getElementById('ui-nav');
-    const pcSpecialContainer = document.getElementById('ui-pc-special-container');
-    text.innerText = CONFIG.header.logo.text;
-    gif.src = CONFIG.header.logo.gif;
-    gif.onload = () => { 
-        gif.style.opacity = "1"; 
-        text.style.opacity = "0"; 
-        this.updateLogoCache(); 
-    };
-    nav.innerHTML = CONFIG.header.nav.map(n => `<a href="${n.link}" class="fl-nav__link" data-nav-name="${n.name}">${n.name}</a>`).join('');
+const APP = {
+    isMobile: () => window.innerWidth <= 768,
     
-    let specialHTML = '';
-    if (!this.isMobile()) {
-        specialHTML = `<div class="fl-hero-special-text" id="ui-hero-special-text">${CONFIG.header.logo.heroSpecialText}</div>`;
-    }
-    pcSpecialContainer.innerHTML = specialHTML;
-},
-updateLogoCache() {
-    const wrap = document.getElementById('ui-logo-gif-wrap');
-    if (wrap) this.logoPosCache = wrap.getBoundingClientRect();
-},
-buildContent() {
-    const grid = document.getElementById('ui-main-grid');
-    const footer = document.getElementById('ui-footer-contact');
-    const isM = this.isMobile();
-    let galleryHTML = '';
-    
-    galleryHTML += CONFIG.gallery.items.map(item => {
-        let classes = `fl-item-wrapper fl-reveal`;
-        if (!isM && item.isCombined) classes += ' combined-text';
-        let inlineStyle = `grid-column: span ${item.span || 12};`;
-        if (item.isLast) {
-            const bottomSpacing = isM ? '48px' : '0px'; 
-            inlineStyle += ` margin-bottom: ${bottomSpacing};`;
-        } else { inlineStyle += ` margin-bottom: 0;`; }
-        return `<div class="${classes}" style="${inlineStyle}"><div class="fl-gallery-text">${item.content}</div></div>`;
-    }).join('');
-    grid.innerHTML = galleryHTML;
-    grid.appendChild(footer); 
-    if (CONFIG.contact) {
-        footer.innerHTML = `<div class="fl-contact-row">${CONFIG.contact.links.map(l => `<a href="${l.link}" class="fl-gallery-link" ${l.isWeChat ? 'id="trigger-wechat"' : 'target="_blank"'}>${l.name}</a>`).join('')}</div>`;
-    }
-    this.initReveal();
-    this.initWeChatTrigger();
-},
+    init() {
+        this.applyStyles();
+        this.render();
+        this.initSplash();
+        this.initScroll();
+        if (!this.isMobile()) this.initCursor();
+        this.drawGrid();
+        this.initReveal();
+    },
 
-initFocusMode() {
-    const body = document.body;
-    const focusTriggerSelectors = '.fl-nav__link, .fl-gallery-link, .fl-logo__gif-wrap'; 
-    if (this.isMobile()) return;
-    document.addEventListener('mouseover', (e) => {
-        if (body.classList.contains('is-loading')) return;
-        const trigger = e.target.closest(focusTriggerSelectors);
-        if (trigger) {
-            body.classList.add('is-focus-mode');
-        }
-    });
-    document.addEventListener('mouseout', (e) => {
-        const related = e.relatedTarget;
-        if (!related || !related.closest(focusTriggerSelectors)) {
-            body.classList.remove('is-focus-mode');
-            document.querySelectorAll('.fl-pc-special-text, .fl-hero-special-text').forEach(el => el.classList.remove('is-active'));
-        }
-    });
-},
-initCustomCursor() {
-    if (this.isMobile()) return;
-    const v = document.getElementById('ui-cursor-v');
-    const h = document.getElementById('ui-cursor-h');
-    let ticking = false;
-    window.addEventListener('mousemove', (e) => {
-        if (document.body.classList.contains('is-loading')) return;
-        if (!ticking) {
-            requestAnimationFrame(() => {
-                v.style.transform = `translate3d(${e.clientX}px, 0, 0)`;
-                h.style.transform = `translate3d(0, ${e.clientY}px, 0)`;
-                ticking = false;
-            });
-            ticking = true;
-        }
-    }, { passive: true });
-},
-initLandingHero() {
-    const hero = document.getElementById('ui-landing-hero');
-    const logoGifWrap = document.getElementById('ui-logo-gif-wrap');
-    const logoGif = document.getElementById('ui-logo-gif');
-    const heroText = document.getElementById('ui-hero-special-text');
-    const root = document.documentElement;
-    if (!hero || !logoGifWrap) return;
-    
-    const toggleHero = () => {
-        if (hero.classList.contains('is-active')) hideHero();
-        else showHero(true); 
-    };
+    applyStyles() {
+        const root = document.documentElement;
+        root.style.setProperty('--header-fw', '700');
+        root.style.setProperty('--header-fs', '32px');
+        root.style.setProperty('--gallery-fw', '700');
+        root.style.setProperty('--gallery-fs', '32px');
+        root.style.setProperty('--gallery-fs-m', '21px');
+        root.style.setProperty('--logo-size-pc', CONFIG.header.logo.sizePC);
+    },
 
-    const showHero = (withAnimation = false) => {
-        const mobile = this.isMobile();
-        const duration = withAnimation ? '1.2s' : '0s';
-        hero.style.transition = `all ${duration} var(--fl-ease)`;
-        if (heroText) heroText.style.transition = `all ${duration} var(--fl-ease), opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease)`;
+    render() {
+        // Logo
+        const logo = document.getElementById('ui-logo-gif');
+        logo.src = CONFIG.header.logo.gif;
+        logo.onload = () => logo.style.opacity = 1;
 
-        if (mobile) {
-            const targetWidth = window.innerWidth * 2; 
-            const targetHeight = targetWidth * 0.56;
-            hero.style.width = `${targetWidth}px`; 
-            hero.style.height = `${targetHeight}px`;
-            hero.style.top = '50%'; 
-            hero.style.left = '50%';
-            hero.style.transform = `translate3d(-50%, -50%, 0)`; 
+        // Nav
+        const nav = document.getElementById('ui-nav');
+        nav.innerHTML = CONFIG.header.nav.map(n => `<a href="${n.link}" class="fl-nav__link">${n.name}</a>`).join('');
+
+        // Grid Content
+        const grid = document.getElementById('ui-main-grid');
+        const footer = document.getElementById('ui-footer-contact');
+        let html = CONFIG.gallery.map(item => `
+            <div class="fl-item-wrapper fl-reveal" style="grid-column: span ${item.span}">
+                <div class="fl-gallery-text">${item.content}</div>
+            </div>
+        `).join('');
+        grid.insertAdjacentHTML('afterbegin', html);
+
+        // Contact
+        footer.innerHTML = `<div class="fl-contact-row">${CONFIG.contact.map(c => `<a href="${c.link}" class="fl-gallery-link">${c.name}</a>`).join('')}</div>`;
+    },
+
+    initSplash() {
+        const splash = document.getElementById('ui-splash');
+        const splashBg = document.getElementById('ui-splash-bg');
+        const splashText = document.getElementById('ui-splash-text');
+        
+        splashText.innerText = CONFIG.splash.text;
+        splashBg.style.backgroundImage = `url(${CONFIG.splash.bg})`;
+
+        const dismiss = () => {
+            splash.classList.add('is-finished');
+            document.body.classList.remove('is-loading');
+            // Patch: Manually ensure body is unlocked
+            document.body.style.position = 'static';
+            document.body.style.overflow = 'visible';
+            document.body.style.height = 'auto';
+        };
+
+        const visited = sessionStorage.getItem('v3_visited');
+        if (visited) {
+            dismiss();
         } else {
-            const unit = window.innerWidth / 12;
-            const targetWidth = unit * 10 - 4; 
-            const targetHeight = targetWidth * 0.56;
+            setTimeout(dismiss, 2800);
+            sessionStorage.setItem('v3_visited', 'true');
+        }
+    },
+
+    initScroll() {
+        const header = document.getElementById('ui-header');
+        const logo = document.getElementById('ui-logo-gif-wrap');
+        let lastPos = 0;
+        let timer;
+
+        window.addEventListener('scroll', () => {
+            if (!this.isMobile()) return;
             
-            hero.style.width = `${targetWidth}px`; 
-            hero.style.height = `${targetHeight}px`;
-            hero.style.top = '50%'; 
-            hero.style.left = `${unit * 10}px`; 
-            hero.style.transform = `translate3d(-50%, -50%, 0)`;
-
-            root.style.setProperty('--intro-margin', '70vh');
-
-            if (heroText) {
-                document.body.classList.add('is-focus-mode');
-                heroText.classList.add('is-active');
-                heroText.style.left = '4px';
-                heroText.style.top = '50%';
-                heroText.style.width = 'auto'; 
-                heroText.style.height = 'auto'; 
-                heroText.style.transform = `translateY(-50%)`; 
-                heroText.style.opacity = '1';
-            }
-        }
-        hero.style.opacity = "1";
-        hero.classList.add('is-active');
-    };
-
-    const hideHero = () => {
-        const logoRect = this.logoPosCache || logoGifWrap.getBoundingClientRect();
-        const duration = '0.8s';
-        hero.style.transition = `all ${duration} var(--fl-ease)`; 
-        if (heroText) heroText.style.transition = `all ${duration} var(--fl-ease), opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease)`;
-
-        const targetX = logoRect.left + logoRect.width/2;
-        const targetY = logoRect.top + logoRect.height/2;
-
-        hero.style.top = `${targetY}px`;
-        hero.style.left = `${targetX}px`;
-        hero.style.width = '0px'; 
-        hero.style.height = '0px'; 
-        hero.style.opacity = '0';
-        hero.style.transform = 'translate3d(-50%, -50%, 0) scale(0)';
-        hero.classList.remove('is-active');
-
-        if (!this.isMobile()) {
-            root.style.setProperty('--intro-margin', '0px');
-        }
-
-        if (heroText) {
-            heroText.style.top = `${targetY}px`;
-            heroText.style.left = `${targetX}px`;
-            heroText.style.width = '0px';
-            heroText.style.height = '0px';
-            heroText.style.opacity = '0';
-            heroText.style.transform = 'translateY(-50%) scale(0)';
-            heroText.classList.remove('is-active');
+            header.classList.add('is-nav-hidden');
+            logo.classList.add('is-nav-hidden');
             
-            const hoveredTrigger = document.querySelector('.fl-nav__link:hover, .fl-gallery-link:hover');
-            if (!hoveredTrigger) document.body.classList.remove('is-focus-mode');
-        }
-    };
+            clearTimeout(timer);
+            timer = setTimeout(() => {
+                header.classList.remove('is-nav-hidden');
+                logo.classList.remove('is-nav-hidden');
+            }, 200);
+        }, { passive: true });
+    },
 
-    logoGif.onclick = (e) => { e.stopPropagation(); toggleHero(); };
-    if (!this.isMobile()) {
-        logoGifWrap.onmouseenter = () => showHero(true);
-        logoGifWrap.onmouseleave = hideHero;
+    initCursor() {
+        const v = document.getElementById('ui-cursor-v');
+        const h = document.getElementById('ui-cursor-h');
+        window.addEventListener('mousemove', (e) => {
+            v.style.transform = `translateX(${e.clientX}px)`;
+            h.style.transform = `translateY(${e.clientY}px)`;
+        });
+    },
+
+    drawGrid() {
+        const wrapper = document.getElementById('ui-grid-wrapper');
+        const canvas = document.createElement('canvas');
+        const size = 60;
+        canvas.width = size; canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        
+        ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--grid-color');
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0,0); ctx.lineTo(size,0);
+        ctx.moveTo(0,0); ctx.lineTo(0,size);
+        ctx.stroke();
+        
+        wrapper.style.backgroundImage = `url(${canvas.toDataURL()})`;
+    },
+
+    initReveal() {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('is-visible') });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.fl-reveal').forEach(el => observer.observe(el));
     }
-    this.animateHeroEntrance = () => {
-        showHero(false); 
-        setTimeout(hideHero, 2000); 
-    };
-    this.updateLogoCache();
-},
-initScrollInteraction() {
-    const header = document.getElementById('ui-header');
-    const logoWrap = document.getElementById('ui-logo-gif-wrap');
-    let isScrolling;
-    window.addEventListener('scroll', () => {
-        if (this.isMobile()) {
-            header.classList.add('is-nav-hidden'); logoWrap.classList.add('is-nav-hidden');
-            window.clearTimeout(isScrolling);
-            isScrolling = setTimeout(() => { 
-                header.classList.remove('is-nav-hidden'); logoWrap.classList.remove('is-nav-hidden'); 
-            }, 250);
-        }
-    }, { passive: true });
-},
-initReveal() {
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('is-visible'); observer.unobserve(entry.target); } });
-    }, { threshold: 0.05 });
-    document.querySelectorAll('.fl-reveal').forEach(el => observer.observe(el));
-},
-initWeChatTrigger() {
-    const trigger = document.getElementById('trigger-wechat');
-    const overlay = document.getElementById('ui-wechat-overlay');
-    if (trigger && overlay) { 
-        trigger.onclick = (e) => { e.preventDefault(); overlay.classList.add('is-active'); };
-        overlay.onclick = () => overlay.classList.remove('is-active'); 
-    }
-},
-
-drawGlobalGrid() {
-    const wrapper = document.getElementById('ui-grid-wrapper');
-    if (!wrapper) return;
-    const style = getComputedStyle(document.documentElement);
-    const lineColor = style.getPropertyValue('--grid-color').trim();
-    const sqColor = style.getPropertyValue('--grid-square-color').trim();
-    const unit = 60;
-    const canvas = document.createElement('canvas');
-    canvas.width = unit; canvas.height = unit;
-    const ctx = canvas.getContext('2d');
-    ctx.strokeStyle = lineColor;
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(0, 0); ctx.lineTo(unit, 0);
-    ctx.moveTo(0, 0); ctx.lineTo(0, unit);
-    ctx.stroke();
-    ctx.fillStyle = sqColor;
-    ctx.fillRect(0, 0, 2, 2);
-    canvas.toBlob((blob) => {
-        const url = URL.createObjectURL(blob);
-        wrapper.style.backgroundImage = `url(${url})`;
-    }, 'image/png');
-},
-initSplash() {
-    const splash = document.getElementById('ui-splash');
-    const splashBg = document.getElementById('ui-splash-bg');
-    const splashText = document.getElementById('ui-splash-text');
-    const body = document.body;
-
-    if (splashText) splashText.innerText = CONFIG.splash.text;
-    if (splashBg) splashBg.style.backgroundImage = `url(${CONFIG.splash.bg})`;
-
-    const dismiss = () => { 
-        if (!body.classList.contains('is-loading')) return;
-        splash.classList.add('is-finished'); 
-        body.classList.remove('is-loading'); 
-        sessionStorage.setItem('fl_visited', 'true');
-        if (this.animateHeroEntrance) { requestAnimationFrame(() => this.animateHeroEntrance()); }
-    };
-    const hasVisited = sessionStorage.getItem('fl_visited');
-    if (hasVisited) {
-        body.classList.remove('is-loading'); splash.classList.add('is-finished');
-        setTimeout(() => this.animateHeroEntrance && this.animateHeroEntrance(), 500);
-        return;
-    }
-    setTimeout(dismiss, 3000); 
-    splash.onclick = dismiss;
-},
-start() { 
-    this.initSEO(); this.applyTypography(); this.renderHeader(); 
-    this.buildContent(); this.drawGlobalGrid(); this.initFocusMode();
-    this.initCustomCursor(); this.initScrollInteraction(); 
-    this.initLandingHero(); this.initSplash();
-    const handleResize = this.debounce(() => {
-        if (Math.abs(window.innerWidth - this.lastWidth) > 5) {
-            this.lastWidth = window.innerWidth;
-            this.updateLogoCache(); this.buildContent(); this.drawGlobalGrid(); 
-        }
-    }, 200);
-    window.addEventListener('resize', handleResize, { passive: true });
-}
 };
-window.onload = () => ENGINE.start();
+
+window.onload = () => APP.init();
 </script>
+
 </body>
 </html>
