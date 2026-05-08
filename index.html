@@ -27,7 +27,7 @@ BASE CSS & DYNAMIC TOKENS
 --splash-fs: 32px;
 --gallery-paragraph-spacing: 2.2em;
 --intro-margin: 70vh; 
-/* v4.12.14: Dynamic Viewport Height Patch */
+/* v4.12.15: Dynamic Viewport Height Patch */
 --full-height: 100vh;
 }
 
@@ -46,9 +46,11 @@ BASE CSS & DYNAMIC TOKENS
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; -webkit-font-smoothing: antialiased; }
 
-/* v4.12.14: Ensure html/body background match the UI to hide seams during elastic scroll */
+/* v4.12.15: Optimized for natural long-page scrolling on mobile */
 html { 
     background-color: var(--fl-bg); 
+    /* Fix for Safari iOS to fill the screen background */
+    min-height: 100%;
     height: -webkit-fill-available;
 }
 
@@ -57,7 +59,7 @@ body {
     -ms-overflow-style: none; 
     user-select: none; 
     min-height: 100%;
-    height: auto; /* Allow content to define height */
+    height: auto; 
     margin: 0; 
     padding: 0; 
     font-family: var(--fl-font-fallback);
@@ -77,6 +79,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
     body:not(.is-loading) img { cursor: none !important; }
 }
 
+/* Splash loading state still needs to lock scrolling */
 body.is-loading { overflow: hidden; height: var(--full-height); }
 
 /* CUSTOM CURSOR */
@@ -112,19 +115,16 @@ body.is-loading { overflow: hidden; height: var(--full-height); }
 /* GLOBAL DECORATION GRID */
 .fl-global-grid {
     position: fixed; 
-    /* v4.12.14: Physical stretch to prevent white gaps during elastic bounce */
-    top: -100px; 
-    bottom: -100px; 
-    left: -100px; 
-    right: -100px; 
-    width: auto; 
-    height: auto;
+    /* v4.12.15: Enhanced physical stretch to cover elastic scroll gaps */
+    top: -120px; 
+    bottom: -120px; 
+    left: -120px; 
+    right: -120px; 
     z-index: 2; 
     pointer-events: none; 
     opacity: 0;
     transition: opacity 2s var(--fl-ease), filter 0.6s var(--fl-ease);
     background-repeat: repeat;
-    /* v4.12.14: GPU Acceleration for smoother fixed background */
     will-change: opacity, transform;
     transform: translateZ(0);
 }
@@ -138,8 +138,8 @@ body:not(.is-loading) .fl-global-grid { opacity: 1; }
 }
 .fl-splash__bg {
     position: absolute; 
-    /* v4.12.14: Stretch splash bg as well */
-    top: -50px; left: -50px; width: calc(100% + 100px); height: calc(100% + 100px);
+    /* v4.12.15: Stretch background GIF beyond viewport for mobile fluidity */
+    top: -120px; left: -120px; width: calc(100% + 240px); height: calc(100% + 240px);
     background: url('https://folio.neuepoor.com/fo.gif') center/cover no-repeat;
     transition: filter 1.8s var(--fl-ease), opacity 1.8s var(--fl-ease), transform 1.8s var(--fl-ease);
     z-index: 1; opacity: 1;
@@ -196,6 +196,7 @@ body.is-focus-mode .fl-hero-special-text.is-active { opacity: 1; filter: blur(0p
     grid-template-columns: repeat(12, 1fr);
     gap: var(--fl-gutter); 
     margin: var(--fl-margin);
+    /* PC maintains the focus-hero-intro logic */
     min-height: calc(var(--full-height) - (var(--fl-margin) * 2)); 
     align-content: end; 
     padding: 80px 0 0; 
@@ -291,17 +292,28 @@ body.is-focus-mode .fl-grid .fl-gallery-text { filter: blur(8px); transition: fi
 .fl-wechat-qr img { width: 100%; height: 100%; object-fit: contain; }
 .fl-wechat-id { font-family: var(--fl-font-fallback); font-size: 16px; color: #000; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
 
-/* MOBILE ADAPTATION */
+/* MOBILE ADAPTATION | 手机端优化版本 4.12.15 */
 @media (max-width: 768px) {
   :root { --gallery-paragraph-spacing: 0px; }
+  
+  html, body {
+      /* Unlock fixed height to allow natural mobile scrolling like index page */
+      height: auto !important;
+      overflow-y: auto !important;
+      -webkit-overflow-scrolling: touch;
+  }
+
   .fl-grid { 
+    /* Remove min-height to let content define the page length */
     min-height: auto !important;
     align-content: start; 
-    padding: 4px 0 120px !important; 
+    padding: 20px 0 140px !important; /* Extra padding for floating header */
     z-index: 10;
     pointer-events: auto;
     margin-top: 0 !important;
+    display: block !important; /* Simplifies layout for natural scroll */
   }
+
   .fl-item-wrapper { margin-bottom: 24px; }
   .fl-gallery-text { width: 100%; }
   .fl-pc-special-text, .fl-hero-special-text { display: none; }
@@ -327,7 +339,7 @@ body.is-focus-mode .fl-grid .fl-gallery-text { filter: blur(8px); transition: fi
   .fl-logo__gif { height: var(--logo-size-m) !important; opacity: 1 !important; }
   .fl-nav { gap: 20px !important; }
   .is-nav-hidden { transform: translateY(150%) !important; }
-  .fl-footer-contact { padding: 0 0 100px; height: auto; margin-top: 20px; padding-bottom: 100px; }
+  .fl-footer-contact { padding: 0 0 100px; height: auto; margin-top: 40px; padding-bottom: 120px; }
   .fl-contact-row { gap: clamp(10px, 4vw, 20px); justify-content: flex-start; }
   .fl-gallery-link { font-size: clamp(12px, 3.5vw, 18px) !important; opacity: 1 !important; filter: none !important; }
 }
@@ -375,7 +387,7 @@ body.is-focus-mode .fl-grid .fl-gallery-text { filter: blur(8px); transition: fi
 
 <script>
 const CONFIG = {
-version: "Home 4.12.14",
+version: "Home 4.12.15",
 seo: { title: "Foo", favicon: "https://folio.neuepoor.com/favicon.webp" },
 splash: {
     text: "Folio",
