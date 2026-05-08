@@ -8,9 +8,6 @@
 <link id="favicon" rel="icon" type="image/webp" href="https://folio.neuepoor.com/favicon.webp">
 
 <style>
-/* ==========================================================================
-BASE CSS & DYNAMIC TOKENS
-========================================================================== */
 :root {
 --fl-bg: #ffffff;
 --fl-text: #000000;
@@ -26,7 +23,6 @@ BASE CSS & DYNAMIC TOKENS
 --grid-square-color: rgba(0, 0, 0, 0.3);
 --splash-fs: 32px;
 --gallery-paragraph-spacing: 2.2em;
-/* v4.12.12: Intro Position Token */
 --intro-margin: 70vh; 
 }
 
@@ -40,7 +36,26 @@ BASE CSS & DYNAMIC TOKENS
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; -webkit-font-smoothing: antialiased; }
-html, body { scrollbar-width: none; -ms-overflow-style: none; user-select: none; height: 100%; margin: 0; padding: 0; }
+
+/* 4.12.14 Fix: Remove fixed height to enable Safari bar auto-hide */
+html { 
+    scrollbar-width: none; 
+    -ms-overflow-style: none; 
+    height: -webkit-fill-available;
+}
+body { 
+    margin: 0; padding: 0;
+    user-select: none; 
+    min-height: 100vh;
+    min-height: 100dvh; /* Dynamic viewport height */
+    font-family: var(--fl-font-fallback);
+    background: var(--fl-bg);
+    color: var(--fl-text);
+    overflow-x: hidden;
+    line-height: 1.4;
+    transition: background-color 0.25s ease-out;
+}
+
 html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
 @media (min-width: 769px) {
@@ -50,18 +65,8 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
     body:not(.is-loading) img { cursor: none !important; }
 }
 
-body {
-font-family: var(--fl-font-fallback);
-background: var(--fl-bg);
-color: var(--fl-text);
-overflow-x: hidden;
-line-height: 1.4;
-transition: background-color 0.25s ease-out;
-}
+body.is-loading { overflow: hidden; height: 100dvh; }
 
-body.is-loading { overflow: hidden; }
-
-/* CUSTOM CURSOR */
 .fl-cursor {
     position: fixed; top: 0; left: 0;
     width: 100vw; height: 100vh;
@@ -86,12 +91,10 @@ body.is-loading { overflow: hidden; }
     will-change: transform;
     transform: translate3d(0, 0, 0);
     backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
 }
 .fl-cursor__v { width: 1px; height: 100vh; top: 0; left: 0; }
 .fl-cursor__h { height: 1px; width: 100vw; left: 0; top: 0; }
 
-/* GLOBAL DECORATION GRID */
 .fl-global-grid {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     z-index: 2; pointer-events: none; opacity: 0;
@@ -101,7 +104,6 @@ body.is-loading { overflow: hidden; }
 }
 body:not(.is-loading) .fl-global-grid { opacity: 1; }
 
-/* SPLASH */
 .fl-splash {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     z-index: 9999; display: flex; align-items: center; justify-content: center;
@@ -125,7 +127,6 @@ body:not(.is-loading) .fl-global-grid { opacity: 1; }
 .fl-splash.is-finished .fl-splash__bg { filter: blur(40px); opacity: 1; transform: scale(1.1); }
 .fl-splash.is-finished .fl-splash__text { opacity: 0 !important; visibility: hidden; }
 
-/* LANDING HERO */
 .fl-landing-hero {
     position: fixed; z-index: 50; pointer-events: none !important;
     overflow: hidden; opacity: 0; 
@@ -135,17 +136,6 @@ body:not(.is-loading) .fl-global-grid { opacity: 1; }
 }
 .fl-landing-hero img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
 
-/* PC SPECIAL TEXT */
-.fl-pc-special-text {
-    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    z-index: 2000; 
-    pointer-events: none; font-size: var(--gallery-fs);
-    font-weight: var(--gallery-fw); color: var(--fl-text);
-    opacity: 0; filter: blur(10px); transition: opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease);
-    will-change: opacity, filter;
-}
-
-/* Hero Special Text */
 .fl-hero-special-text {
     position: fixed; 
     z-index: 2000; 
@@ -157,10 +147,8 @@ body:not(.is-loading) .fl-global-grid { opacity: 1; }
     overflow: hidden;
     white-space: nowrap;
 }
-
 body.is-focus-mode .fl-hero-special-text.is-active { opacity: 1; filter: blur(0px); }
 
-/* HEADER & NAV */
 .fl-logo__gif-wrap { position: fixed; top: 0; left: 4px; height: var(--fl-nav-h); display: flex; align-items: center; z-index: 1001; transition: transform 0.4s var(--fl-ease), opacity 0.6s var(--fl-ease), filter 0.6s var(--fl-ease); will-change: transform, opacity; }
 .fl-logo__gif { height: var(--logo-size-pc); width: auto; opacity: 0; transition: opacity 0.3s var(--fl-ease); cursor: pointer; will-change: opacity; }
 .fl-header { position: fixed; width: 100%; z-index: 1000; display: flex; justify-content: space-between; align-items: center; padding: 0 4px; height: var(--fl-nav-h); top: 0; mix-blend-mode: difference; transition: transform 0.4s var(--fl-ease); will-change: transform; }
@@ -168,31 +156,27 @@ body.is-focus-mode .fl-hero-special-text.is-active { opacity: 1; filter: blur(0p
 .fl-nav { display: flex; gap: 40px; }
 .fl-nav__link { font-size: var(--header-fs); font-weight: var(--header-fw); color: #fff; text-decoration: none; transition: opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease); }
 
-/* CONTENT LAYOUT */
 .fl-grid {
     position: relative; 
     display: grid; 
     grid-template-columns: repeat(12, 1fr);
     gap: var(--fl-gutter); 
     margin: var(--fl-margin);
-    min-height: calc(100vh - (var(--fl-margin) * 2)); 
+    min-height: calc(100dvh - (var(--fl-margin) * 2)); 
     align-content: end; 
     padding: 80px 0 0; 
     z-index: 5; 
     pointer-events: none; 
 }
 @media (min-width: 769px) {
-    /* v4.12.12: Bind to variable with transition */
     .fl-grid.is-intro { 
         margin-top: var(--intro-margin); 
         transition: margin-top 0.8s var(--fl-ease);
         will-change: margin-top;
     }
 }
-
 .fl-grid > * { pointer-events: auto; }
 
-/* FOCUS EFFECT */
 body.is-focus-mode .fl-nav__link:not(:hover),
 body.is-focus-mode .fl-gallery-link:not(:hover),
 body.is-focus-mode .fl-logo__gif-wrap:not(:hover) { opacity: 0.2; filter: blur(8px); }
@@ -200,7 +184,6 @@ body.is-focus-mode .fl-landing-hero.is-active { opacity: 1 !important; filter: n
 body.is-focus-mode .fl-grid .fl-gallery-text { filter: blur(8px); transition: filter 0.6s var(--fl-ease); }
 .fl-nav__link:hover, .fl-gallery-link:hover, .fl-logo__gif-wrap:hover { opacity: 1 !important; filter: blur(0px) !important; }
 
-/* REVEAL ANIMATION */
 .fl-reveal {
     opacity: 0; 
     transform: translateY(var(--fl-reveal-dist));
@@ -209,9 +192,7 @@ body.is-focus-mode .fl-grid .fl-gallery-text { filter: blur(8px); transition: fi
 }
 .fl-reveal.is-visible { opacity: 1; transform: translateY(0); }
 
-/* GALLERY WRAPPER */
 .fl-item-wrapper { position: relative; display: flex; flex-direction: column; margin-bottom: 0; }
-
 .fl-gallery-text { 
     font-size: var(--gallery-fs); 
     font-weight: var(--gallery-fw); 
@@ -226,7 +207,6 @@ body.is-focus-mode .fl-grid .fl-gallery-text { filter: blur(8px); transition: fi
     word-break: break-word;
 }
 
-/* CONTACT COMPONENT */
 .fl-footer-contact {
     grid-column: span 12;
     padding: 0;
@@ -256,7 +236,6 @@ body.is-focus-mode .fl-grid .fl-gallery-text { filter: blur(8px); transition: fi
     white-space: nowrap;
 }
 
-/* WECHAT OVERLAY */
 .fl-wechat-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
@@ -265,19 +244,18 @@ body.is-focus-mode .fl-grid .fl-gallery-text { filter: blur(8px); transition: fi
     will-change: opacity, visibility;
 }
 .fl-wechat-overlay.is-active { opacity: 1; visibility: visible; }
-.fl-wechat-card { width: 320px; background: #fff; padding: 40px; text-align: center; transform: translateY(20px); transition: transform 0.5s var(--fl-ease); will-change: transform; }
+.fl-wechat-card { width: 320px; background: #fff; padding: 40px; text-align: center; transform: translateY(20px); transition: transform 0.5s var(--fl-ease); }
 .fl-wechat-overlay.is-active .fl-wechat-card { transform: translateY(0px); }
 .fl-wechat-qr { width: 100%; aspect-ratio: 1; margin-bottom: 24px; display: flex; align-items: center; justify-content: center; }
 .fl-wechat-qr img { width: 100%; height: 100%; object-fit: contain; }
 .fl-wechat-id { font-family: var(--fl-font-fallback); font-size: 16px; color: #000; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
 
-/* MOBILE ADAPTATION */
 @media (max-width: 768px) {
   :root { --gallery-paragraph-spacing: 0px; }
   .fl-grid { 
     min-height: auto !important;
     align-content: start; 
-    padding: 4px 0 120px !important; 
+    padding: 4px 0 160px !important; 
     z-index: 10;
     pointer-events: auto;
     margin-top: 0 !important;
@@ -286,15 +264,21 @@ body.is-focus-mode .fl-grid .fl-gallery-text { filter: blur(8px); transition: fi
   .fl-gallery-text { width: 100%; }
   .fl-pc-special-text, .fl-hero-special-text { display: none; }
   
-  /* Mobile Header Patch - Precise Transparency Logic */
+  /* 4.12.14: Mobile Header Patch with Safe Area compensation */
   .fl-header {
-    top: auto !important; bottom: 24px !important; left: 32px !important; width: calc(100% - 64px) !important;
-    height: 44px !important; padding: 0 16px !important; border-radius: 12px !important;
+    top: auto !important; 
+    bottom: calc(24px + env(safe-area-inset-bottom)) !important; 
+    left: 20px !important; 
+    width: calc(100% - 40px) !important;
+    height: 48px !important; 
+    padding: 0 20px !important; 
+    border-radius: 14px !important;
     mix-blend-mode: normal !important; 
     background: rgba(255, 255, 255, 0.2) !important;
     backdrop-filter: blur(16px) saturate(160%) !important;
     -webkit-backdrop-filter: blur(16px) saturate(160%) !important;
-    border: 0.5px solid rgba(0, 0, 0, 0.1) !important; z-index: 1002;
+    border: 0.5px solid rgba(0, 0, 0, 0.1) !important; 
+    z-index: 1002;
   }
   @media (prefers-color-scheme: dark) { 
     .fl-header { 
@@ -303,12 +287,19 @@ body.is-focus-mode .fl-grid .fl-gallery-text { filter: blur(8px); transition: fi
     } 
   }
 
-  .fl-logo__gif-wrap { top: auto !important; bottom: 24px !important; left: 48px !important; height: 44px !important; z-index: 1003; opacity: 1 !important; filter: none !important; }
+  .fl-logo__gif-wrap { 
+    top: auto !important; 
+    bottom: calc(24px + env(safe-area-inset-bottom)) !important; 
+    left: 40px !important; 
+    height: 48px !important; 
+    z-index: 1003; 
+    opacity: 1 !important; filter: none !important; 
+  }
   .fl-nav__link { font-size: var(--header-fs-m) !important; color: var(--fl-text) !important; opacity: 1 !important; filter: none !important; }
   .fl-logo__gif { height: var(--logo-size-m) !important; opacity: 1 !important; }
   .fl-nav { gap: 20px !important; }
-  .is-nav-hidden { transform: translateY(150%) !important; }
-  .fl-footer-contact { padding: 0 0 100px; height: auto; margin-top: 20px; padding-bottom: 100px; }
+  .is-nav-hidden { transform: translateY(180%) !important; }
+  .fl-footer-contact { padding: 0 0 140px; height: auto; margin-top: 20px; }
   .fl-contact-row { gap: clamp(10px, 4vw, 20px); justify-content: flex-start; }
   .fl-gallery-link { font-size: clamp(12px, 3.5vw, 18px) !important; opacity: 1 !important; filter: none !important; }
 }
@@ -322,7 +313,6 @@ body.is-focus-mode .fl-grid .fl-gallery-text { filter: blur(8px); transition: fi
 </div>
 
 <div class="fl-global-grid" id="ui-grid-wrapper"></div>
-
 <div id="ui-pc-special-container"></div>
 
 <div class="fl-landing-hero" id="ui-landing-hero">
@@ -335,12 +325,12 @@ body.is-focus-mode .fl-grid .fl-gallery-text { filter: blur(8px); transition: fi
 </div>
 
 <div class="fl-logo__gif-wrap" id="ui-logo-gif-wrap">
-<img class="fl-logo__gif" id="ui-logo-gif" alt="Logo" draggable="false">
+    <img class="fl-logo__gif" id="ui-logo-gif" alt="Logo" draggable="false">
 </div>
 
 <header class="fl-header" id="ui-header">
-<a href="https://neuepoor.com" class="fl-logo-text" id="ui-logo-text">Foo</a>
-<nav class="fl-nav" id="ui-nav"></nav>
+    <a href="https://neuepoor.com" class="fl-logo-text" id="ui-logo-text">Foo</a>
+    <nav class="fl-nav" id="ui-nav"></nav>
 </header>
 
 <main class="fl-grid is-intro" id="ui-main-grid">
@@ -356,41 +346,32 @@ body.is-focus-mode .fl-grid .fl-gallery-text { filter: blur(8px); transition: fi
 
 <script>
 const CONFIG = {
-version: "Home 4.12.13",
+version: "Home 4.12.14",
 seo: { title: "Foo", favicon: "https://folio.neuepoor.com/favicon.webp" },
-splash: {
-    text: "Folio",
-    bg: "https://folio.neuepoor.com/fo.gif"
-},
+splash: { text: "Folio", bg: "https://folio.neuepoor.com/fo.gif" },
 typography: {
-header: { font: "Arial, sans-serif", weight: "700", sizePC: "32px", sizeMobile: "21px" },
-gallery: { font: "Arial, sans-serif", weight: "700", sizePC: "32px", sizeMobile: "21px" }
+    header: { font: "Arial, sans-serif", weight: "700", sizePC: "32px", sizeMobile: "21px" },
+    gallery: { font: "Arial, sans-serif", weight: "700", sizePC: "32px", sizeMobile: "21px" }
 },
 header: {
-logo: { 
-    gif: "https://folio.neuepoor.com/logo.gif", 
-    link: "https://neuepoor.com", 
-    text: "Foo", 
-    sizePC: "32px", 
-    sizeMobile: "18px",
-    heroSpecialText: "Hi, I'm Fo" 
-},
-nav: [
-{ name: 'Works', link: 'https://works.neuepoor.com' },
-{ name: '(Play)', link: 'https://play.neuepoor.com' },
-{ name: 'Me', link: 'https://Me.neuepoor.com' }
-]
+    logo: { 
+        gif: "https://folio.neuepoor.com/logo.gif", link: "https://neuepoor.com", text: "Foo", 
+        sizePC: "32px", sizeMobile: "18px", heroSpecialText: "Hi, I'm Fo" 
+    },
+    nav: [
+        { name: 'Works', link: 'https://works.neuepoor.com' },
+        { name: '(Play)', link: 'https://play.neuepoor.com' },
+        { name: 'Me', link: 'https://Me.neuepoor.com' }
+    ]
 },
 gallery: {
-items: [
-    { 
-        span: 12, 
-        type: "text", 
-        content: "I'm a multi-disciplinary designer with focus on Graphic&Illustration,Creative Direction, Branding,Visual Identities, Packaging, Website, and Print& Editorial Design.<br><br>If you are looking for a designer who excles in BrandStrategy/Visual Direction/Print Works/Products/IP/Curatorial/Grid Layout/Website design/Typeface Customization.<br><br>Please contact me.", 
-        isLast: true,
-        isCombined: true
-    }
-]
+    items: [
+        { 
+            span: 12, type: "text", 
+            content: "I'm a multi-disciplinary designer with focus on Graphic&Illustration,Creative Direction, Branding,Visual Identities, Packaging, Website, and Print& Editorial Design.<br><br>If you are looking for a designer who excles in BrandStrategy/Visual Direction/Print Works/Products/IP/Curatorial/Grid Layout/Website design/Typeface Customization.<br><br>Please contact me.", 
+            isLast: true, isCombined: true
+        }
+    ]
 },
 contact: {
     links: [
@@ -453,9 +434,7 @@ buildContent() {
     const grid = document.getElementById('ui-main-grid');
     const footer = document.getElementById('ui-footer-contact');
     const isM = this.isMobile();
-    let galleryHTML = '';
-    
-    galleryHTML += CONFIG.gallery.items.map(item => {
+    let galleryHTML = CONFIG.gallery.items.map(item => {
         let classes = `fl-item-wrapper fl-reveal`;
         if (!isM && item.isCombined) classes += ' combined-text';
         let inlineStyle = `grid-column: span ${item.span || 12};`;
@@ -481,15 +460,13 @@ initFocusMode() {
     document.addEventListener('mouseover', (e) => {
         if (body.classList.contains('is-loading')) return;
         const trigger = e.target.closest(focusTriggerSelectors);
-        if (trigger) {
-            body.classList.add('is-focus-mode');
-        }
+        if (trigger) body.classList.add('is-focus-mode');
     });
     document.addEventListener('mouseout', (e) => {
         const related = e.relatedTarget;
         if (!related || !related.closest(focusTriggerSelectors)) {
             body.classList.remove('is-focus-mode');
-            document.querySelectorAll('.fl-pc-special-text, .fl-hero-special-text').forEach(el => el.classList.remove('is-active'));
+            document.querySelectorAll('.fl-hero-special-text').forEach(el => el.classList.remove('is-active'));
         }
     });
 },
@@ -515,14 +492,9 @@ initLandingHero() {
     const logoGifWrap = document.getElementById('ui-logo-gif-wrap');
     const logoGif = document.getElementById('ui-logo-gif');
     const heroText = document.getElementById('ui-hero-special-text');
-    const root = document.documentElement; // v4.12.12
+    const root = document.documentElement; 
     if (!hero || !logoGifWrap) return;
     
-    const toggleHero = () => {
-        if (hero.classList.contains('is-active')) hideHero();
-        else showHero(true); 
-    };
-
     const showHero = (withAnimation = false) => {
         const mobile = this.isMobile();
         const duration = withAnimation ? '1.2s' : '0s';
@@ -541,76 +513,42 @@ initLandingHero() {
             const unit = window.innerWidth / 12;
             const targetWidth = unit * 10 - 4; 
             const targetHeight = targetWidth * 0.56;
-            
             hero.style.width = `${targetWidth}px`; 
             hero.style.height = `${targetHeight}px`;
             hero.style.top = '50%'; 
             hero.style.left = `${unit * 10}px`; 
             hero.style.transform = `translate3d(-50%, -50%, 0)`;
-
-            // v4.12.12: Push gallery down when hero expands
             root.style.setProperty('--intro-margin', '70vh');
-
             if (heroText) {
                 document.body.classList.add('is-focus-mode');
                 heroText.classList.add('is-active');
-                heroText.style.left = '4px';
-                heroText.style.top = '50%';
-                heroText.style.width = 'auto'; 
-                heroText.style.height = 'auto'; 
-                heroText.style.transform = `translateY(-50%)`; 
-                heroText.style.opacity = '1';
+                heroText.style.left = '4px'; heroText.style.top = '50%';
+                heroText.style.transform = `translateY(-50%)`; heroText.style.opacity = '1';
             }
         }
-        hero.style.opacity = "1";
-        hero.classList.add('is-active');
+        hero.style.opacity = "1"; hero.classList.add('is-active');
     };
 
     const hideHero = () => {
         const logoRect = this.logoPosCache || logoGifWrap.getBoundingClientRect();
         const duration = '0.8s';
         hero.style.transition = `all ${duration} var(--fl-ease)`; 
-        if (heroText) heroText.style.transition = `all ${duration} var(--fl-ease), opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease)`;
-
         const targetX = logoRect.left + logoRect.width/2;
         const targetY = logoRect.top + logoRect.height/2;
-
-        hero.style.top = `${targetY}px`;
-        hero.style.left = `${targetX}px`;
-        hero.style.width = '0px'; 
-        hero.style.height = '0px'; 
-        hero.style.opacity = '0';
+        hero.style.top = `${targetY}px`; hero.style.left = `${targetX}px`;
+        hero.style.width = '0px'; hero.style.height = '0px'; hero.style.opacity = '0';
         hero.style.transform = 'translate3d(-50%, -50%, 0) scale(0)';
         hero.classList.remove('is-active');
-
-        // v4.12.12: Pull gallery up when hero shrinks
-        if (!this.isMobile()) {
-            root.style.setProperty('--intro-margin', '0px');
-        }
-
+        if (!this.isMobile()) root.style.setProperty('--intro-margin', '0px');
         if (heroText) {
-            heroText.style.top = `${targetY}px`;
-            heroText.style.left = `${targetX}px`;
-            heroText.style.width = '0px';
-            heroText.style.height = '0px';
-            heroText.style.opacity = '0';
-            heroText.style.transform = 'translateY(-50%) scale(0)';
-            heroText.classList.remove('is-active');
-            
-            const hoveredTrigger = document.querySelector('.fl-nav__link:hover, .fl-gallery-link:hover');
-            if (!hoveredTrigger) document.body.classList.remove('is-focus-mode');
+            heroText.style.opacity = '0'; heroText.classList.remove('is-active');
+            if (!document.querySelector('.fl-nav__link:hover')) document.body.classList.remove('is-focus-mode');
         }
     };
 
-    logoGif.onclick = (e) => { e.stopPropagation(); toggleHero(); };
-    if (!this.isMobile()) {
-        logoGifWrap.onmouseenter = () => showHero(true);
-        logoGifWrap.onmouseleave = hideHero;
-    }
-    this.animateHeroEntrance = () => {
-        showHero(false); 
-        setTimeout(hideHero, 2000); 
-    };
+    logoGif.onclick = (e) => { e.stopPropagation(); hero.classList.contains('is-active') ? hideHero() : showHero(true); };
+    if (!this.isMobile()) { logoGifWrap.onmouseenter = () => showHero(true); logoGifWrap.onmouseleave = hideHero; }
+    this.animateHeroEntrance = () => { showHero(false); setTimeout(hideHero, 2000); };
     this.updateLogoCache();
 },
 initScrollInteraction() {
@@ -623,7 +561,7 @@ initScrollInteraction() {
             window.clearTimeout(isScrolling);
             isScrolling = setTimeout(() => { 
                 header.classList.remove('is-nav-hidden'); logoWrap.classList.remove('is-nav-hidden'); 
-            }, 250);
+            }, 300);
         }
     }, { passive: true });
 },
@@ -641,28 +579,21 @@ initWeChatTrigger() {
         overlay.onclick = () => overlay.classList.remove('is-active'); 
     }
 },
-
 drawGlobalGrid() {
     const wrapper = document.getElementById('ui-grid-wrapper');
     if (!wrapper) return;
     const style = getComputedStyle(document.documentElement);
-    const lineColor = style.getPropertyValue('--grid-color').trim();
-    const sqColor = style.getPropertyValue('--grid-square-color').trim();
     const unit = 60;
     const canvas = document.createElement('canvas');
     canvas.width = unit; canvas.height = unit;
     const ctx = canvas.getContext('2d');
-    ctx.strokeStyle = lineColor;
+    ctx.strokeStyle = style.getPropertyValue('--grid-color').trim();
     ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(0, 0); ctx.lineTo(unit, 0);
-    ctx.moveTo(0, 0); ctx.lineTo(0, unit);
-    ctx.stroke();
-    ctx.fillStyle = sqColor;
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(unit, 0); ctx.moveTo(0, 0); ctx.lineTo(0, unit); ctx.stroke();
+    ctx.fillStyle = style.getPropertyValue('--grid-square-color').trim();
     ctx.fillRect(0, 0, 2, 2);
     canvas.toBlob((blob) => {
-        const url = URL.createObjectURL(blob);
-        wrapper.style.backgroundImage = `url(${url})`;
+        wrapper.style.backgroundImage = `url(${URL.createObjectURL(blob)})`;
     }, 'image/png');
 },
 initSplash() {
@@ -670,38 +601,32 @@ initSplash() {
     const splashBg = document.getElementById('ui-splash-bg');
     const splashText = document.getElementById('ui-splash-text');
     const body = document.body;
-
     if (splashText) splashText.innerText = CONFIG.splash.text;
     if (splashBg) splashBg.style.backgroundImage = `url(${CONFIG.splash.bg})`;
-
     const dismiss = () => { 
         if (!body.classList.contains('is-loading')) return;
-        splash.classList.add('is-finished'); 
-        body.classList.remove('is-loading'); 
+        splash.classList.add('is-finished'); body.classList.remove('is-loading'); 
         sessionStorage.setItem('fl_visited', 'true');
-        if (this.animateHeroEntrance) { requestAnimationFrame(() => this.animateHeroEntrance()); }
+        if (this.animateHeroEntrance) requestAnimationFrame(() => this.animateHeroEntrance());
     };
-    const hasVisited = sessionStorage.getItem('fl_visited');
-    if (hasVisited) {
+    if (sessionStorage.getItem('fl_visited')) {
         body.classList.remove('is-loading'); splash.classList.add('is-finished');
         setTimeout(() => this.animateHeroEntrance && this.animateHeroEntrance(), 500);
         return;
     }
-    setTimeout(dismiss, 3000); 
-    splash.onclick = dismiss;
+    setTimeout(dismiss, 3000); splash.onclick = dismiss;
 },
 start() { 
     this.initSEO(); this.applyTypography(); this.renderHeader(); 
     this.buildContent(); this.drawGlobalGrid(); this.initFocusMode();
     this.initCustomCursor(); this.initScrollInteraction(); 
     this.initLandingHero(); this.initSplash();
-    const handleResize = this.debounce(() => {
+    window.addEventListener('resize', this.debounce(() => {
         if (Math.abs(window.innerWidth - this.lastWidth) > 5) {
             this.lastWidth = window.innerWidth;
             this.updateLogoCache(); this.buildContent(); this.drawGlobalGrid(); 
         }
-    }, 200);
-    window.addEventListener('resize', handleResize, { passive: true });
+    }, 200), { passive: true });
 }
 };
 window.onload = () => ENGINE.start();
