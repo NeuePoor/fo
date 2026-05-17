@@ -107,7 +107,7 @@ body.is-loading { overflow: hidden; }
     position: fixed; z-index: 1001; pointer-events: none;
     overflow: hidden; opacity: 0; transform: translate3d(0,0,0);
     will-change: transform, opacity, width, height, top, left, filter;
-    transition: filter 0.6s var(--fl-ease), opacity 0.6s var(--fl-ease);
+    transition: filter 0.6s var(--fl-ease), opacity 0.6s var(--fl-ease), transform 0.4s var(--fl-ease);
 }
 .fl-landing-hero.is-active { pointer-events: auto; } 
 .fl-landing-hero img { width: 100%; height: 100%; object-fit: cover; }
@@ -293,7 +293,7 @@ body.is-loading { overflow: hidden; }
         border-radius: 12px !important;
         z-index: 1000 !important;
         pointer-events: none;
-        transition: height 0.6s var(--fl-ease) !important;
+        transition: height 0.6s var(--fl-ease), transform 0.4s var(--fl-ease) !important;
     }
     
     /* 2. MEDIA VISUAL CONTENT LAYER */
@@ -366,6 +366,16 @@ body.is-loading { overflow: hidden; }
     }
     .fl-nav__link { font-size: 21px !important; color: var(--fl-text) !important; opacity: 1 !important; filter: none !important; }
     .fl-logo-text { opacity: 0 !important; }
+
+    /* SCROLL INTERACTION & NAVIGATION HIDING STYLES */
+    .fl-header.is-nav-hidden,
+    .fl-logo__gif-wrap.is-nav-hidden,
+    .fl-header__bg.is-nav-hidden,
+    .fl-logo-panel.is-nav-hidden .fl-hero-special-text,
+    .fl-logo-panel.is-nav-hidden .fl-contact-row,
+    .fl-landing-hero.is-nav-hidden {
+        transform: translateY(120px) !important;
+    }
 }
 </style>
 </head>
@@ -717,6 +727,10 @@ const ENGINE = {
             };
         }
         
+        // Expose layout actions to ENGINE for dynamic/synchronized adjustment
+        ENGINE.showHero = showHero;
+        ENGINE.hideHero = hideHero;
+        
         ENGINE.animateHeroEntrance = () => { showHero(false); requestAnimationFrame(() => hideHero()); };
         ENGINE.handleResizeReset = () => {
             const currentIsMobile = ENGINE.isMobile();
@@ -819,15 +833,30 @@ const ENGINE = {
     initScrollInteraction() {
         const h = document.getElementById('ui-header'); 
         const lw = document.getElementById('ui-logo-gif-wrap'); 
+        const bg = document.getElementById('ui-header-bg');
+        const lp = document.getElementById('ui-logo-panel');
+        const lh = document.getElementById('ui-landing-hero');
         let timer;
         window.addEventListener('scroll', () => {
             if (ENGINE.isMobile()) {
+                // Prevent scroll hiding when the active hero panel menu is open on mobile
+                if (lh && lh.classList.contains('is-active')) {
+                    return;
+                }
+
                 h.classList.add('is-nav-hidden'); 
                 lw.classList.add('is-nav-hidden');
+                if (bg) bg.classList.add('is-nav-hidden');
+                if (lp) lp.classList.add('is-nav-hidden');
+                if (lh) lh.classList.add('is-nav-hidden');
+
                 clearTimeout(timer); 
                 timer = setTimeout(() => { 
                     h.classList.remove('is-nav-hidden'); 
                     lw.classList.remove('is-nav-hidden'); 
+                    if (bg) bg.classList.remove('is-nav-hidden');
+                    if (lp) lp.classList.remove('is-nav-hidden');
+                    if (lh) lh.classList.remove('is-nav-hidden');
                 }, 250);
             }
         }, { passive: true });
@@ -867,13 +896,25 @@ const ENGINE = {
         ENGINE.initLandingHero(); 
         ENGINE.initSplash();
         
+        ENGINE.lastHeight = window.innerHeight;
+        
         window.addEventListener('resize', () => {
-            if (Math.abs(window.innerWidth - ENGINE.lastWidth) > 5) {
+            const widthChanged = Math.abs(window.innerWidth - ENGINE.lastWidth) > 5;
+            const heightChanged = window.innerHeight !== ENGINE.lastHeight;
+            
+            if (widthChanged) {
                 ENGINE.lastWidth = window.innerWidth;
                 ENGINE.updateLogoCache();
                 ENGINE.buildContent();
                 if (ENGINE.handleResizeReset) ENGINE.handleResizeReset();
+            } else if (heightChanged && ENGINE.isMobile()) {
+                // Adapt to Safari address bar shrinking/growing dynamically
+                const h = document.getElementById('ui-landing-hero');
+                if (h && h.classList.contains('is-active') && typeof ENGINE.showHero === 'function') {
+                    ENGINE.showHero(true);
+                }
             }
+            ENGINE.lastHeight = window.innerHeight;
         }, { passive: true });
     }
 };
