@@ -8,46 +8,48 @@
 <link id="favicon" rel="icon" type="image/webp" href="https://folio.neuepoor.com/favicon.webp">
 
 <style>
+/* ==========================================================================
+   DYNAMIC DESIGN TOKENS (CSS VARIABLES)
+   ========================================================================== */
 :root {
---fl-bg: #ffffff;
---fl-text: #000000;
---fl-gutter: 4px;
---fl-margin: 4px;
---fl-nav-h: 60px;
---fl-nav-h-m: 35px;
---fl-ease: cubic-bezier(0.23, 1, 0.32, 1);
---fl-reveal-dist: 30px;
---fl-reveal-dur: 1.2s;
---fl-font-fallback: "Arial", "Helvetica", sans-serif;
---grid-color: rgba(0, 0, 0, 0.08);
---grid-square-color: rgba(0, 0, 0, 0.3);
---splash-fs: 32px;
---gallery-paragraph-spacing: 2.2em;
---intro-margin: 70vh; 
+    --fl-bg: #ffffff;
+    --fl-text: #000000;
+    --fl-gutter: 4px;
+    --fl-margin: 4px;
+    --fl-nav-h: 60px;
+    --fl-nav-h-m: 44px;
+    --fl-ease: cubic-bezier(0.23, 1, 0.32, 1);
+    --fl-reveal-dist: 30px;
+    --fl-reveal-dur: 1.2s;
+    --fl-font-fallback: "Arial", "Helvetica", sans-serif;
+    --splash-fs: 32px;
+    --gallery-paragraph-spacing: 2.2em;
+    --intro-margin: 70vh; 
 }
 
 @media (prefers-color-scheme: dark) {
-:root {
---fl-bg: #000000;
---fl-text: #ffffff;
---grid-color: rgba(255, 255, 255, 0.08);
---grid-square-color: rgba(255, 255, 255, 0.3);
-}
+    :root {
+        --fl-bg: #000000;
+        --fl-text: #ffffff;
+    }
 }
 
+/* ==========================================================================
+   GLOBAL RESET & CURSOR RULES
+   ========================================================================== */
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; -webkit-font-smoothing: antialiased; }
+html, body { scrollbar-width: none; -ms-overflow-style: none; user-select: none; height: 100%; margin: 0; padding: 0; }
+html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
-/* 4.12.14 Fix: Remove fixed height to enable Safari bar auto-hide */
-html { 
-    scrollbar-width: none; 
-    -ms-overflow-style: none; 
-    height: -webkit-fill-available;
+/* Pointer Logic */
+@media (min-width: 769px) {
+    body:not(.is-loading) { cursor: none; }
+    body:not(.is-loading) a, 
+    body:not(.is-loading) button, 
+    body:not(.is-loading) img { cursor: none !important; }
 }
-body { 
-    margin: 0; padding: 0;
-    user-select: none; 
-    min-height: 100vh;
-    min-height: 100dvh; /* Dynamic viewport height */
+
+body {
     font-family: var(--fl-font-fallback);
     background: var(--fl-bg);
     color: var(--fl-text);
@@ -56,54 +58,27 @@ body {
     transition: background-color 0.25s ease-out;
 }
 
-html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+body.is-loading { overflow: hidden; }
 
-@media (min-width: 769px) {
-    body:not(.is-loading) { cursor: none; }
-    body:not(.is-loading) a, 
-    body:not(.is-loading) button, 
-    body:not(.is-loading) img { cursor: none !important; }
-}
-
-body.is-loading { overflow: hidden; height: 100dvh; }
-
+/* ==========================================================================
+   CUSTOM CURSOR
+   ========================================================================== */
 .fl-cursor {
-    position: fixed; top: 0; left: 0;
-    width: 100vw; height: 100vh;
-    pointer-events: none; z-index: 99999;
-    mix-blend-mode: difference;
-    opacity: 0; 
-    transition: opacity 0.5s ease;
-    display: none;
-    isolation: isolate; 
-    contain: strict;
-    perspective: 1000px;
-    -webkit-perspective: 1000px;
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    pointer-events: none; z-index: 99999; mix-blend-mode: difference;
+    opacity: 0; transition: opacity 0.5s ease; display: none;
 }
 @media (min-width: 769px) and (pointer: fine) {
     .fl-cursor { display: block; }
     body:not(.is-loading) .fl-cursor { opacity: 1; }
 }
-
-.fl-cursor__v, .fl-cursor__h { 
-    position: absolute; 
-    background: #fff; 
-    will-change: transform;
-    transform: translate3d(0, 0, 0);
-    backface-visibility: hidden;
-}
+.fl-cursor__v, .fl-cursor__h { position: absolute; background: #fff; will-change: transform; }
 .fl-cursor__v { width: 1px; height: 100vh; top: 0; left: 0; }
 .fl-cursor__h { height: 1px; width: 100vw; left: 0; top: 0; }
 
-.fl-global-grid {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    z-index: 2; pointer-events: none; opacity: 0;
-    transition: opacity 2s var(--fl-ease), filter 0.6s var(--fl-ease);
-    background-repeat: repeat;
-    will-change: opacity;
-}
-body:not(.is-loading) .fl-global-grid { opacity: 1; }
-
+/* ==========================================================================
+   SPLASH LOAD SCREEN
+   ========================================================================== */
 .fl-splash {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     z-index: 9999; display: flex; align-items: center; justify-content: center;
@@ -114,7 +89,6 @@ body:not(.is-loading) .fl-global-grid { opacity: 1; }
     background: url('https://folio.neuepoor.com/fo.gif') center/cover no-repeat;
     transition: filter 1.8s var(--fl-ease), opacity 1.8s var(--fl-ease), transform 1.8s var(--fl-ease);
     z-index: 1; opacity: 1;
-    will-change: transform, filter, opacity;
 }
 .fl-splash__text {
     position: relative; z-index: 3;
@@ -122,201 +96,287 @@ body:not(.is-loading) .fl-global-grid { opacity: 1; }
     mix-blend-mode: difference; opacity: 1; pointer-events: none;
     transition: opacity 0.5s var(--fl-ease);
 }
-
 .fl-splash.is-finished { pointer-events: none; background: transparent; z-index: 1; }
 .fl-splash.is-finished .fl-splash__bg { filter: blur(40px); opacity: 1; transform: scale(1.1); }
 .fl-splash.is-finished .fl-splash__text { opacity: 0 !important; visibility: hidden; }
 
+/* ==========================================================================
+   DECOUPLED LAYER 1: LANDING HERO MEDIA
+   ========================================================================== */
 .fl-landing-hero {
-    position: fixed; z-index: 50; pointer-events: none !important;
-    overflow: hidden; opacity: 0; 
-    transform: translate3d(0,0,0);
-    will-change: transform, opacity, width, height, top, left;
-    display: flex; align-items: center; justify-content: center;
+    position: fixed; z-index: 1001; pointer-events: none;
+    overflow: hidden; opacity: 0; transform: translate3d(0,0,0);
+    will-change: transform, opacity, width, height, top, left, filter;
+    transition: filter 0.6s var(--fl-ease), opacity 0.6s var(--fl-ease);
 }
-.fl-landing-hero img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+.fl-landing-hero.is-active { pointer-events: auto; } 
+.fl-landing-hero img { width: 100%; height: 100%; object-fit: cover; }
 
-.fl-hero-special-text {
-    position: fixed; 
-    z-index: 2000; 
-    pointer-events: none; font-size: var(--gallery-fs);
-    font-weight: var(--gallery-fw); color: var(--fl-text);
-    opacity: 0; filter: blur(10px); 
-    will-change: opacity, filter, transform, top, left, width, height;
-    display: flex; align-items: center;
-    overflow: hidden;
-    white-space: nowrap;
+/* ==========================================================================
+   DECOUPLED LAYER 2: LOGO INTERACTIVE TRIGGER
+   ========================================================================== */
+.fl-logo__gif-wrap { 
+    position: fixed; top: 0; left: 4px; height: var(--fl-nav-h); 
+    display: flex; align-items: center; z-index: 3001; 
+    transition: transform 0.4s var(--fl-ease), opacity 0.6s var(--fl-ease); 
 }
-body.is-focus-mode .fl-hero-special-text.is-active { opacity: 1; filter: blur(0px); }
+.fl-logo__gif { height: var(--logo-size-pc); width: auto; opacity: 0; transition: opacity 0.3s var(--fl-ease); cursor: pointer; }
 
-.fl-logo__gif-wrap { position: fixed; top: 0; left: 4px; height: var(--fl-nav-h); display: flex; align-items: center; z-index: 1001; transition: transform 0.4s var(--fl-ease), opacity 0.6s var(--fl-ease), filter 0.6s var(--fl-ease); will-change: transform, opacity; }
-.fl-logo__gif { height: var(--logo-size-pc); width: auto; opacity: 0; transition: opacity 0.3s var(--fl-ease); cursor: pointer; will-change: opacity; }
-.fl-header { position: fixed; width: 100%; z-index: 1000; display: flex; justify-content: space-between; align-items: center; padding: 0 4px; height: var(--fl-nav-h); top: 0; mix-blend-mode: difference; transition: transform 0.4s var(--fl-ease); will-change: transform; }
-.fl-logo-text { text-decoration: none; color: #fff; font-size: var(--header-fs); font-weight: var(--header-fw); opacity: 0; pointer-events: none; }
-.fl-nav { display: flex; gap: 40px; }
-.fl-nav__link { font-size: var(--header-fs); font-weight: var(--header-fw); color: #fff; text-decoration: none; transition: opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease); }
-
-.fl-grid {
-    position: relative; 
-    display: grid; 
-    grid-template-columns: repeat(12, 1fr);
-    gap: var(--fl-gutter); 
-    margin: var(--fl-margin);
-    min-height: calc(100dvh - (var(--fl-margin) * 2)); 
-    align-content: end; 
-    padding: 80px 0 0; 
-    z-index: 5; 
+/* ==========================================================================
+   DECOUPLED LAYER 3: MAIN NAVIGATION HEADER (PC Difference Mode Layer)
+   ========================================================================== */
+.fl-header { 
+    position: fixed; width: 100%; z-index: 3000; display: flex; 
+    justify-content: space-between; align-items: center; padding: 0 4px; 
+    height: var(--fl-nav-h); top: 0; 
+    mix-blend-mode: difference;
+    transition: transform 0.4s var(--fl-ease); 
+}
+.fl-logo-text { 
+    text-decoration: none; 
+    color: #fff; 
+    font-size: var(--header-fs); 
+    font-weight: var(--header-fw); 
+    opacity: 0; 
     pointer-events: none; 
 }
+.fl-nav { display: flex; gap: 40px; }
+.fl-nav__link { 
+    font-size: var(--header-fs); 
+    font-weight: var(--header-fw); 
+    color: #fff; 
+    text-decoration: none; 
+    transition: opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease); 
+}
+
+/* ==========================================================================
+   DECOUPLED LAYER 4: MOBILE EXCLUSIVE BACKGROUND CONTAINER (Bottom of Mobile Stack)
+   ========================================================================== */
+.fl-header__bg {
+    display: none; 
+}
+
+/* ==========================================================================
+   PAGE GRID LAYOUT
+   ========================================================================== */
+.fl-grid {
+    position: relative; display: grid; grid-template-columns: repeat(12, 1fr);
+    gap: var(--fl-gutter); margin: var(--fl-margin);
+    min-height: calc(100vh - (var(--fl-margin) * 2)); 
+    align-content: start; padding: 80px 0 100px; 
+    z-index: 10; 
+}
 @media (min-width: 769px) {
-    .fl-grid.is-intro { 
-        margin-top: var(--intro-margin); 
-        transition: margin-top 0.8s var(--fl-ease);
-        will-change: margin-top;
-    }
+    .fl-grid.is-intro { margin-top: var(--intro-margin); transition: margin-top 0.8s var(--fl-ease); }
 }
-.fl-grid > * { pointer-events: auto; }
 
-body.is-focus-mode .fl-nav__link:not(:hover),
-body.is-focus-mode .fl-gallery-link:not(:hover),
-body.is-focus-mode .fl-logo__gif-wrap:not(:hover) { opacity: 0.2; filter: blur(8px); }
-body.is-focus-mode .fl-landing-hero.is-active { opacity: 1 !important; filter: none !important; } 
-body.is-focus-mode .fl-grid .fl-gallery-text { filter: blur(8px); transition: filter 0.6s var(--fl-ease); }
-.fl-nav__link:hover, .fl-gallery-link:hover, .fl-logo__gif-wrap:hover { opacity: 1 !important; filter: blur(0px) !important; }
-
-.fl-reveal {
-    opacity: 0; 
-    transform: translateY(var(--fl-reveal-dist));
-    transition: opacity var(--fl-reveal-dur) var(--fl-ease), transform var(--fl-reveal-dur) var(--fl-ease);
-    will-change: transform, opacity;
-}
+.fl-reveal { opacity: 0; transform: translateY(var(--fl-reveal-dist)); transition: opacity var(--fl-reveal-dur) var(--fl-ease), transform var(--fl-reveal-dur) var(--fl-ease), filter 0.6s var(--fl-ease); will-change: opacity, transform; }
 .fl-reveal.is-visible { opacity: 1; transform: translateY(0); }
 
-.fl-item-wrapper { position: relative; display: flex; flex-direction: column; margin-bottom: 0; }
-.fl-gallery-text { 
-    font-size: var(--gallery-fs); 
-    font-weight: var(--gallery-fw); 
-    color: var(--fl-text); 
-    line-height: 1.15; 
-    padding-top: 0; 
-    margin-bottom: var(--gallery-paragraph-spacing);
-    will-change: filter; 
-    width: clamp(320px, 75%, 850px); 
-    max-width: 100%;
-    text-wrap: wrap; 
-    word-break: break-word;
+.fl-gallery-text { font-size: var(--gallery-fs); font-weight: var(--gallery-fw); color: var(--fl-text); line-height: 1.15; width: clamp(320px, 75%, 850px); max-width: 100%; margin-bottom: var(--gallery-paragraph-spacing); }
+
+/* ==========================================================================
+   DECOUPLED LAYER 5: LOGO PANEL (TEXT & CONTACT LINKS)
+   ========================================================================== */
+.fl-logo-panel { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2000; }
+.fl-logo-panel.is-panel-pinned { pointer-events: auto; }
+
+.fl-hero-special-text, .fl-contact-row {
+    position: fixed; 
+    opacity: 0; 
+    filter: blur(15px); 
+    pointer-events: none; 
+    visibility: hidden; 
+    transition: opacity 0.5s var(--fl-ease), filter 0.5s var(--fl-ease), transform 0.8s var(--fl-ease), visibility 0.5s var(--fl-ease);
 }
 
-.fl-footer-contact {
-    grid-column: span 12;
-    padding: 0;
-    margin-top: calc(var(--gallery-paragraph-spacing) - 0.15em); 
-    padding-bottom: 8px;  
-    height: auto;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
+/* Active Panel Triggers */
+#ui-landing-hero.is-active ~ #ui-logo-panel .fl-hero-special-text,
+#ui-landing-hero.is-active ~ #ui-logo-panel .fl-contact-row {
+    opacity: 1; 
+    filter: blur(0px); 
+    pointer-events: auto;
+    visibility: visible; 
 }
 
-.fl-contact-row { 
-    display: flex; 
-    flex-wrap: nowrap; 
-    gap: 40px; 
-    justify-content: flex-start;
-    align-items: center;
+.fl-hero-special-text { font-size: var(--gallery-fs); font-weight: var(--gallery-fw); color: var(--fl-text); white-space: nowrap; }
+.fl-contact-row { display: flex; gap: 40px; align-items: center; }
+.fl-gallery-link { font-size: var(--gallery-fs); font-weight: var(--gallery-fw); color: var(--fl-text); text-decoration: none; transition: opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease); }
+
+/* ==========================================================================
+   FOCUS INTERACTION SCHEME & DUAL-STATE PC FOCUS (DESKTOP ONLY)
+   ========================================================================== */
+@media (min-width: 769px) {
+    /* Transitions for PC focus animation smoothing */
+    .fl-nav__link, 
+    .fl-logo__gif-wrap, 
+    .fl-reveal, 
+    .fl-hero-special-text, 
+    .fl-contact-row, 
+    .fl-landing-hero {
+        transition: opacity 0.6s var(--fl-ease), filter 0.6s var(--fl-ease), transform 0.8s var(--fl-ease), visibility 0.5s var(--fl-ease) !important;
+    }
+
+    /* STATE A: Panel NOT Active Focus Mode */
+    body.has-focus-hover .fl-nav__link:not(.is-hovered-target),
+    body.has-focus-hover .fl-logo__gif-wrap:not(.is-hovered-target),
+    body.has-focus-hover .fl-reveal:not(.is-hovered-target) {
+        opacity: 0.2; 
+        filter: blur(8px);
+    }
+
+    /* Keep grid background blurred while panel is active */
+    #ui-landing-hero.is-active ~ #ui-main-grid .fl-reveal {
+        opacity: 0.2;
+        filter: blur(8px);
+    }
+
+    /* STATE B: Panel ACTIVE (Opened) Focus Mode */
+    /* When hovering any element in active panel state, unfocused elements blur */
+    body.has-panel-focus-hover #ui-landing-hero:not(.is-hovered-target),
+    body.has-panel-focus-hover .fl-logo__gif-wrap:not(.is-hovered-target),
+    body.has-panel-focus-hover .fl-nav__link:not(.is-hovered-target),
+    body.has-panel-focus-hover .fl-hero-special-text:not(.is-hovered-target),
+    body.has-panel-focus-hover .fl-gallery-link:not(.is-hovered-target) {
+        opacity: 0.2 !important; 
+        filter: blur(8px) !important;
+    }
+
+    /* Active hover target styling */
+    body.has-panel-focus-hover .is-hovered-target {
+        opacity: 1 !important;
+        filter: blur(0px) !important;
+    }
 }
 
-.fl-gallery-link {
-    font-size: var(--gallery-fs);
-    font-weight: var(--gallery-fw);
-    color: var(--fl-text);
-    text-decoration: none;
-    transition: opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease);
-    display: inline-block;
-    white-space: nowrap;
-}
-
+/* ==========================================================================
+   WECHAT LAYER
+   ========================================================================== */
 .fl-wechat-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-    z-index: 10000; display: flex; align-items: center; justify-content: center;
+    z-index: 11000; display: flex; align-items: center; justify-content: center;
     opacity: 0; visibility: hidden; transition: 0.4s var(--fl-ease);
-    will-change: opacity, visibility;
 }
 .fl-wechat-overlay.is-active { opacity: 1; visibility: visible; }
-.fl-wechat-card { width: 320px; background: #fff; padding: 40px; text-align: center; transform: translateY(20px); transition: transform 0.5s var(--fl-ease); }
-.fl-wechat-overlay.is-active .fl-wechat-card { transform: translateY(0px); }
-.fl-wechat-qr { width: 100%; aspect-ratio: 1; margin-bottom: 24px; display: flex; align-items: center; justify-content: center; }
+.fl-wechat-card { width: 320px; background: #fff; padding: 40px; text-align: center; }
+.fl-wechat-qr { width: 100%; aspect-ratio: 1; margin-bottom: 24px; }
 .fl-wechat-qr img { width: 100%; height: 100%; object-fit: contain; }
-.fl-wechat-id { font-family: var(--fl-font-fallback); font-size: 16px; color: #000; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
 
+/* ==========================================================================
+   MOBILE ECOSYSTEM & DECOUPLING PARADIGM (<= 768px Viewport)
+   ========================================================================== */
 @media (max-width: 768px) {
-  :root { --gallery-paragraph-spacing: 0px; }
-  .fl-grid { 
-    min-height: auto !important;
-    align-content: start; 
-    padding: 4px 0 160px !important; 
-    z-index: 10;
-    pointer-events: auto;
-    margin-top: 0 !important;
-  }
-  .fl-item-wrapper { margin-bottom: 24px; }
-  .fl-gallery-text { width: 100%; }
-  .fl-pc-special-text, .fl-hero-special-text { display: none; }
-  
-  /* 4.12.14: Mobile Header Patch with Safe Area compensation */
-  .fl-header {
-    top: auto !important; 
-    bottom: calc(24px + env(safe-area-inset-bottom)) !important; 
-    left: 20px !important; 
-    width: calc(100% - 40px) !important;
-    height: 48px !important; 
-    padding: 0 20px !important; 
-    border-radius: 14px !important;
-    mix-blend-mode: normal !important; 
-    background: rgba(255, 255, 255, 0.2) !important;
-    backdrop-filter: blur(16px) saturate(160%) !important;
-    -webkit-backdrop-filter: blur(16px) saturate(160%) !important;
-    border: 0.5px solid rgba(0, 0, 0, 0.1) !important; 
-    z-index: 1002;
-  }
-  @media (prefers-color-scheme: dark) { 
-    .fl-header { 
-        background: rgba(28, 28, 30, 0.45) !important; 
-        border: 0.5px solid rgba(255, 255, 255, 0.1) !important;
-    } 
-  }
+    /* 
+       Z-INDEX PHYSICAL LAYOUT CHAIN (MOBILE ONLY):
+       1. [z-index: 1000] - .fl-header__bg (Bottom-most blur overlay)
+       2. [z-index: 1001] - .fl-landing-hero (Visual cover illustration)
+       3. [z-index: 1004] - .fl-logo-panel (Text descriptions & active interactive panel)
+       4. [z-index: 1005] - .fl-header (Topmost text navigator - completely transparent background)
+       5. [z-index: 1006] - .fl-logo__gif-wrap (GIF interactive trigger)
+    */
 
-  .fl-logo__gif-wrap { 
-    top: auto !important; 
-    bottom: calc(24px + env(safe-area-inset-bottom)) !important; 
-    left: 40px !important; 
-    height: 48px !important; 
-    z-index: 1003; 
-    opacity: 1 !important; filter: none !important; 
-  }
-  .fl-nav__link { font-size: var(--header-fs-m) !important; color: var(--fl-text) !important; opacity: 1 !important; filter: none !important; }
-  .fl-logo__gif { height: var(--logo-size-m) !important; opacity: 1 !important; }
-  .fl-nav { gap: 20px !important; }
-  .is-nav-hidden { transform: translateY(180%) !important; }
-  .fl-footer-contact { padding: 0 0 140px; height: auto; margin-top: 20px; }
-  .fl-contact-row { gap: clamp(10px, 4vw, 20px); justify-content: flex-start; }
-  .fl-gallery-link { font-size: clamp(12px, 3.5vw, 18px) !important; opacity: 1 !important; filter: none !important; }
+    .fl-grid { padding: 4px 0 160px !important; margin-top: 0 !important; }
+    
+    /* 1. BACKGROUND CONTAINER LAYER (Bottom of Mobile Stack) */
+    .fl-header__bg {
+        display: block;
+        position: fixed;
+        bottom: 24px;
+        left: 32px;
+        width: calc(100% - 64px);
+        height: 44px;
+        background: rgba(255, 255, 255, 0.2) !important; 
+        backdrop-filter: blur(16px) saturate(160%) !important;
+        -webkit-backdrop-filter: blur(16px) saturate(160%) !important;
+        border: 0.5px solid rgba(0, 0, 0, 0.1) !important; 
+        border-radius: 12px !important;
+        z-index: 1000 !important;
+        pointer-events: none;
+        transition: height 0.6s var(--fl-ease) !important;
+    }
+    
+    /* 2. MEDIA VISUAL CONTENT LAYER */
+    .fl-landing-hero {
+        z-index: 1001 !important;
+    }
+    .fl-landing-hero img {
+        border-radius: 8px !important;
+    }
+    
+    /* 3. LOGO LABELS & SOCIAL LINK TOUCH LAYER */
+    .fl-logo-panel {
+        z-index: 1004 !important;
+    }
+    .fl-hero-special-text {
+        font-family: "Arial", sans-serif !important;
+        font-size: 21px !important;
+        font-weight: 700 !important;
+        line-height: 1 !important;
+        width: calc(50% - 24px) !important;
+        white-space: normal !important;
+    }
+    .fl-contact-row {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 0px !important; /* Cancelled spacing completely for vertical elegance */
+        width: calc(50% - 24px) !important;
+    }
+    .fl-contact-row .fl-gallery-link {
+        font-family: "Arial", sans-serif !important;
+        font-size: 21px !important;
+        font-weight: 700 !important;
+        line-height: 1.05 !important; /* Adjusted line-height for seamless zero-gap stacking */
+    }
+
+    /* 4. STRUCTURAL NAVIGATION HEADER LAYER */
+    .fl-header {
+        top: auto !important; bottom: 24px !important; 
+        left: 32px !important; width: calc(100% - 64px) !important;
+        height: 44px !important; padding: 0 16px !important; border-radius: 12px !important;
+        background: transparent !important; 
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        border: none !important; 
+        z-index: 1005 !important; mix-blend-mode: normal !important;
+        transition: transform 0.4s var(--fl-ease) !important;
+    }
+    
+    /* 5. INTERACTIVE LAUNCHER TRIGGER (Top of Stack) */
+    .fl-logo__gif-wrap { 
+        top: auto !important; 
+        bottom: 24px !important; 
+        left: 48px !important; 
+        height: 44px !important; 
+        z-index: 1006 !important; 
+    }
+    .fl-logo__gif { height: 18px !important; opacity: 1 !important; }
+    
+    /* FIXED POSITION MENU BAR - IMMUNE TO CONTAINER EXPANSION */
+    .fl-nav { 
+        position: absolute !important;
+        bottom: 0 !important;
+        right: 16px !important;
+        height: 44px !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 20px !important; 
+        z-index: 2;
+    }
+    .fl-nav__link { font-size: 21px !important; color: var(--fl-text) !important; opacity: 1 !important; filter: none !important; }
+    .fl-logo-text { opacity: 0 !important; }
 }
 </style>
 </head>
 <body class="is-loading">
 
+<!-- ==========================================================================
+   ROOT DOM STRUCTURE (KEEP SIBLINGS FOR STACKING CONTEXT SANITY)
+   ========================================================================== -->
 <div class="fl-cursor" id="ui-cursor">
     <div class="fl-cursor__v" id="ui-cursor-v"></div>
     <div class="fl-cursor__h" id="ui-cursor-h"></div>
-</div>
-
-<div class="fl-global-grid" id="ui-grid-wrapper"></div>
-<div id="ui-pc-special-container"></div>
-
-<div class="fl-landing-hero" id="ui-landing-hero">
-    <img src="https://folio.neuepoor.com/landing.gif" alt="Landing Animation">
 </div>
 
 <div class="fl-splash" id="ui-splash">
@@ -324,311 +384,500 @@ body.is-focus-mode .fl-grid .fl-gallery-text { filter: blur(8px); transition: fi
     <div class="fl-splash__text" id="ui-splash-text"></div>
 </div>
 
+<!-- Decoupled Background Box (Only loads on mobile context) -->
+<div class="fl-header__bg" id="ui-header-bg"></div>
+
+<!-- Core Creative Content Assets -->
+<div class="fl-landing-hero" id="ui-landing-hero">
+    <img src="" alt="Landing" id="ui-hero-img">
+</div>
+
+<div class="fl-logo-panel" id="ui-logo-panel">
+    <div class="fl-hero-special-text" id="ui-hero-special-text"></div>
+    <div class="fl-contact-row" id="ui-contact-row"></div>
+</div>
+
+<!-- Interactive GIF Button -->
 <div class="fl-logo__gif-wrap" id="ui-logo-gif-wrap">
     <img class="fl-logo__gif" id="ui-logo-gif" alt="Logo" draggable="false">
 </div>
 
+<!-- Header Navigation Wrapper -->
 <header class="fl-header" id="ui-header">
     <a href="https://neuepoor.com" class="fl-logo-text" id="ui-logo-text">Foo</a>
     <nav class="fl-nav" id="ui-nav"></nav>
 </header>
 
-<main class="fl-grid is-intro" id="ui-main-grid">
-    <footer class="fl-footer-contact fl-reveal" id="ui-footer-contact"></footer>
-</main>
+<main class="fl-grid is-intro" id="ui-main-grid"></main>
 
 <div class="fl-wechat-overlay" id="ui-wechat-overlay">
     <div class="fl-wechat-card">
-        <div class="fl-wechat-qr"><img src="https://folio.neuepoor.com/wechatsuckboyz.svg" alt="WeChat QR"></div>
+        <div class="fl-wechat-qr"><img src="https://folio.neuepoor.com/wechatsuckboyz.svg" alt="WeChat"></div>
         <div class="fl-wechat-id">WeChat: NeuePoor</div>
     </div>
 </div>
 
 <script>
+/* ==========================================================================
+   APPLICATION CONFIGURATION
+   ========================================================================== */
 const CONFIG = {
-version: "Home 4.12.14",
-seo: { title: "Foo", favicon: "https://folio.neuepoor.com/favicon.webp" },
-splash: { text: "Folio", bg: "https://folio.neuepoor.com/fo.gif" },
-typography: {
-    header: { font: "Arial, sans-serif", weight: "700", sizePC: "32px", sizeMobile: "21px" },
-    gallery: { font: "Arial, sans-serif", weight: "700", sizePC: "32px", sizeMobile: "21px" }
-},
-header: {
-    logo: { 
-        gif: "https://folio.neuepoor.com/logo.gif", link: "https://neuepoor.com", text: "Foo", 
-        sizePC: "32px", sizeMobile: "18px", heroSpecialText: "Hi, I'm Fo" 
+    version: "Home 4.13.23",
+    seo: { title: "Foo", favicon: "https://folio.neuepoor.com/favicon.webp" },
+    splash: { text: "Folio", bg: "https://folio.neuepoor.com/fo.gif" },
+    typography: {
+        header: { font: "Arial, sans-serif", weight: "700", sizePC: "32px", sizeMobile: "21px" },
+        gallery: { font: "Arial, sans-serif", weight: "700", sizePC: "32px", sizeMobile: "21px" }
     },
-    nav: [
-        { name: 'Works', link: 'https://works.neuepoor.com' },
-        { name: '(Play)', link: 'https://play.neuepoor.com' },
-        { name: 'Me', link: 'https://Me.neuepoor.com' }
-    ]
-},
-gallery: {
-    items: [
-        { 
-            span: 12, type: "text", 
-            content: "I'm a multi-disciplinary designer with focus on Graphic&Illustration,Creative Direction, Branding,Visual Identities, Packaging, Website, and Print& Editorial Design.<br><br>If you are looking for a designer who excles in BrandStrategy/Visual Direction/Print Works/Products/IP/Curatorial/Grid Layout/Website design/Typeface Customization.<br><br>Please contact me.", 
-            isLast: true, isCombined: true
-        }
-    ]
-},
-contact: {
-    links: [
-        { name: "Email", link: "mailto:poorleaglguy@qq.com" },
-        { name: "Instagram", link: "https://www.instagram.com/neuepoor" },
-        { name: "Github", link: "https://github.com/NeuePoor" },
-        { name: "小红书", link: "https://xhslink.com/m/9qPnrun1Dh9" },
-        { name: "WeChat", link: "#", isWeChat: true }
-    ]
-}
+    header: {
+        logo: { gif: "https://folio.neuepoor.com/logo.gif", text: "Foo", sizePC: "32px", sizeMobile: "18px" },
+        nav: [
+            { name: 'Works', link: 'https://works.neuepoor.com' },
+            { name: '(Play)', link: 'https://play.neuepoor.com' },
+            { name: 'Me', link: 'https://Me.neuepoor.com' }
+        ]
+    },
+    logoPanel: {
+        heroImg: "https://folio.neuepoor.com/landing.gif",
+        specialText: "Hi, I'm Fo",
+        contact: [
+            { name: "Email", link: "mailto:poorleaglguy@qq.com" },
+            { name: "Instagram", link: "https://www.instagram.com/neuepoor" },
+            { name: "Github", link: "https://github.com/NeuePoor" },
+            { name: "小红书", link: "https://xhslink.com/m/9qPnrun1Dh9" },
+            { name: "WeChat", link: "#", isWeChat: true }
+        ]
+    },
+    gallery: { 
+        items: [{ 
+            span: 12, 
+            content: "I'm a multi-disciplinary designer with focus on Graphic&Illustration,Creative Direction, Branding,Visual Identities, Packaging, Website, and Print& Editorial Design.<br><br>If you are looking for a designer who excles in BrandStrategy/Visual Direction/Print Works/Products/IP/Curatorial/Grid Layout/Website design/Typeface Customization.<br><br>Please contact me." 
+        }] 
+    }
 };
 
+/* ==========================================================================
+   APPLICATION ENGINE
+   ========================================================================== */
 const ENGINE = {
-lastWidth: window.innerWidth,
-logoPosCache: null, 
-debounce(func, wait) {
-    let timeout;
-    return function(...args) {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => func.apply(this, args), wait);
-    };
-},
-isMobile() { return window.innerWidth <= 768; },
-initSEO() { document.title = CONFIG.seo.title; const fav = document.getElementById('favicon'); if (fav) fav.href = CONFIG.seo.favicon; },
-applyTypography() {
-    const root = document.documentElement;
-    const t = CONFIG.typography; const l = CONFIG.header.logo;
-    const props = {
-        '--header-font': t.header.font, '--header-fw': t.header.weight, '--header-fs': t.header.sizePC, '--header-fs-m': t.header.sizeMobile,
-        '--gallery-font': t.gallery.font, '--gallery-fw': t.gallery.weight, '--gallery-fs': t.gallery.sizePC, '--gallery-fs-m': t.gallery.sizeMobile,
-        '--logo-size-pc': l.sizePC, '--logo-size-m': l.sizeMobile
-    };
-    Object.entries(props).forEach(([k, v]) => root.style.setProperty(k, v));
-},
-renderHeader() {
-    const gif = document.getElementById('ui-logo-gif');
-    const text = document.getElementById('ui-logo-text');
-    const nav = document.getElementById('ui-nav');
-    const pcSpecialContainer = document.getElementById('ui-pc-special-container');
-    text.innerText = CONFIG.header.logo.text;
-    gif.src = CONFIG.header.logo.gif;
-    gif.onload = () => { 
-        gif.style.opacity = "1"; 
-        text.style.opacity = "0"; 
-        this.updateLogoCache(); 
-    };
-    nav.innerHTML = CONFIG.header.nav.map(n => `<a href="${n.link}" class="fl-nav__link" data-nav-name="${n.name}">${n.name}</a>`).join('');
+    lastWidth: window.innerWidth,
+    lastIsMobile: window.innerWidth <= 768,
+    logoPosCache: null,
     
-    let specialHTML = '';
-    if (!this.isMobile()) {
-        specialHTML = `<div class="fl-hero-special-text" id="ui-hero-special-text">${CONFIG.header.logo.heroSpecialText}</div>`;
-    }
-    pcSpecialContainer.innerHTML = specialHTML;
-},
-updateLogoCache() {
-    const wrap = document.getElementById('ui-logo-gif-wrap');
-    if (wrap) this.logoPosCache = wrap.getBoundingClientRect();
-},
-buildContent() {
-    const grid = document.getElementById('ui-main-grid');
-    const footer = document.getElementById('ui-footer-contact');
-    const isM = this.isMobile();
-    let galleryHTML = CONFIG.gallery.items.map(item => {
-        let classes = `fl-item-wrapper fl-reveal`;
-        if (!isM && item.isCombined) classes += ' combined-text';
-        let inlineStyle = `grid-column: span ${item.span || 12};`;
-        if (item.isLast) {
-            const bottomSpacing = isM ? '48px' : '0px'; 
-            inlineStyle += ` margin-bottom: ${bottomSpacing};`;
-        } else { inlineStyle += ` margin-bottom: 0;`; }
-        return `<div class="${classes}" style="${inlineStyle}"><div class="fl-gallery-text">${item.content}</div></div>`;
-    }).join('');
-    grid.innerHTML = galleryHTML;
-    grid.appendChild(footer); 
-    if (CONFIG.contact) {
-        footer.innerHTML = `<div class="fl-contact-row">${CONFIG.contact.links.map(l => `<a href="${l.link}" class="fl-gallery-link" ${l.isWeChat ? 'id="trigger-wechat"' : 'target="_blank"'}>${l.name}</a>`).join('')}</div>`;
-    }
-    this.initReveal();
-    this.initWeChatTrigger();
-},
-
-initFocusMode() {
-    const body = document.body;
-    const focusTriggerSelectors = '.fl-nav__link, .fl-gallery-link, .fl-logo__gif-wrap'; 
-    if (this.isMobile()) return;
-    document.addEventListener('mouseover', (e) => {
-        if (body.classList.contains('is-loading')) return;
-        const trigger = e.target.closest(focusTriggerSelectors);
-        if (trigger) body.classList.add('is-focus-mode');
-    });
-    document.addEventListener('mouseout', (e) => {
-        const related = e.relatedTarget;
-        if (!related || !related.closest(focusTriggerSelectors)) {
-            body.classList.remove('is-focus-mode');
-            document.querySelectorAll('.fl-hero-special-text').forEach(el => el.classList.remove('is-active'));
-        }
-    });
-},
-initCustomCursor() {
-    if (this.isMobile()) return;
-    const v = document.getElementById('ui-cursor-v');
-    const h = document.getElementById('ui-cursor-h');
-    let ticking = false;
-    window.addEventListener('mousemove', (e) => {
-        if (document.body.classList.contains('is-loading')) return;
-        if (!ticking) {
-            requestAnimationFrame(() => {
-                v.style.transform = `translate3d(${e.clientX}px, 0, 0)`;
-                h.style.transform = `translate3d(0, ${e.clientY}px, 0)`;
-                ticking = false;
-            });
-            ticking = true;
-        }
-    }, { passive: true });
-},
-initLandingHero() {
-    const hero = document.getElementById('ui-landing-hero');
-    const logoGifWrap = document.getElementById('ui-logo-gif-wrap');
-    const logoGif = document.getElementById('ui-logo-gif');
-    const heroText = document.getElementById('ui-hero-special-text');
-    const root = document.documentElement; 
-    if (!hero || !logoGifWrap) return;
+    isMobile() { 
+        return window.innerWidth <= 768; 
+    },
     
-    const showHero = (withAnimation = false) => {
-        const mobile = this.isMobile();
-        const duration = withAnimation ? '1.2s' : '0s';
-        hero.style.transition = `all ${duration} var(--fl-ease)`;
-        if (heroText) heroText.style.transition = `all ${duration} var(--fl-ease), opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease)`;
+    initSEO() { 
+        document.title = CONFIG.seo.title; 
+        const f = document.getElementById('favicon'); 
+        if (f) f.href = CONFIG.seo.favicon; 
+    },
+    
+    applyTypography() {
+        const r = document.documentElement; 
+        const t = CONFIG.typography; 
+        const l = CONFIG.header.logo;
+        const p = { 
+            '--header-font': t.header.font, 
+            '--header-fw': t.header.weight, 
+            '--header-fs': t.header.sizePC, 
+            '--header-fs-m': t.header.sizeMobile, 
+            '--gallery-font': t.gallery.font, 
+            '--gallery-fw': t.gallery.weight, 
+            '--gallery-fs': t.gallery.sizePC, 
+            '--gallery-fs-m': t.gallery.sizeMobile, 
+            '--logo-size-pc': l.sizePC, 
+            '--logo-size-m': l.sizeMobile 
+        };
+        Object.entries(p).forEach(([k, v]) => r.style.setProperty(k, v));
+    },
+    
+    renderHeader() {
+        const g = document.getElementById('ui-logo-gif');
+        const t = document.getElementById('ui-logo-text');
+        const n = document.getElementById('ui-nav');
+        t.innerText = CONFIG.header.logo.text; 
+        g.src = CONFIG.header.logo.gif;
+        g.onload = () => { 
+            g.style.opacity = "1"; 
+            ENGINE.updateLogoCache(); 
+        };
+        n.innerHTML = CONFIG.header.nav.map(i => `<a href="${i.link}" class="fl-nav__link">${i.name}</a>`).join('');
+    },
+    
+    renderLogoPanel() {
+        const st = document.getElementById('ui-hero-special-text');
+        const cr = document.getElementById('ui-contact-row');
+        const hi = document.getElementById('ui-hero-img');
+        hi.src = CONFIG.logoPanel.heroImg;
+        st.innerText = CONFIG.logoPanel.specialText;
+        cr.innerHTML = CONFIG.logoPanel.contact.map(l => `<a href="${l.link}" class="fl-gallery-link" ${l.isWeChat ? 'id="trigger-wechat"' : 'target="_blank"'}>${l.name}</a>`).join('');
+        ENGINE.initWeChatTrigger();
+    },
+    
+    updateLogoCache() { 
+        const w = document.getElementById('ui-logo-gif-wrap'); 
+        if (w) ENGINE.logoPosCache = w.getBoundingClientRect(); 
+    },
+    
+    buildContent() {
+        const g = document.getElementById('ui-main-grid');
+        g.innerHTML = CONFIG.gallery.items.map(i => `<div class="fl-item-wrapper fl-reveal" style="grid-column: span ${i.span || 12};"><div class="fl-gallery-text">${i.content}</div></div>`).join('');
+        ENGINE.initReveal();
+    },
+    
+    initLandingHero() {
+        const h = document.getElementById('ui-landing-hero');
+        const p = document.getElementById('ui-logo-panel');
+        const st = document.getElementById('ui-hero-special-text');
+        const cr = document.getElementById('ui-contact-row');
+        const lw = document.getElementById('ui-logo-gif-wrap');
+        const lg = document.getElementById('ui-logo-gif');
+        const bg = document.getElementById('ui-header-bg');
+        const b = document.body;
+        const root = document.documentElement;
 
-        if (mobile) {
-            const targetWidth = window.innerWidth * 2; 
-            const targetHeight = targetWidth * 0.56;
-            hero.style.width = `${targetWidth}px`; 
-            hero.style.height = `${targetHeight}px`;
-            hero.style.top = '50%'; 
-            hero.style.left = '50%';
-            hero.style.transform = `translate3d(-50%, -50%, 0)`; 
-        } else {
-            const unit = window.innerWidth / 12;
-            const targetWidth = unit * 10 - 4; 
-            const targetHeight = targetWidth * 0.56;
-            hero.style.width = `${targetWidth}px`; 
-            hero.style.height = `${targetHeight}px`;
-            hero.style.top = '50%'; 
-            hero.style.left = `${unit * 10}px`; 
-            hero.style.transform = `translate3d(-50%, -50%, 0)`;
-            root.style.setProperty('--intro-margin', '70vh');
-            if (heroText) {
-                document.body.classList.add('is-focus-mode');
-                heroText.classList.add('is-active');
-                heroText.style.left = '4px'; heroText.style.top = '50%';
-                heroText.style.transform = `translateY(-50%)`; heroText.style.opacity = '1';
+        const showHero = (isPin = false) => {
+            const isM = ENGINE.isMobile(); 
+            const dur = '1.2s';
+            h.style.transition = `all ${dur} var(--fl-ease), filter 0.6s var(--fl-ease)`;
+            st.style.transition = cr.style.transition = `all ${dur} var(--fl-ease), opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease)`;
+            
+            if (isM) {
+                // Symmetrical spatial mapping & temporary scale neutralization for accurate bounding rects
+                const prevStTransform = st.style.transform;
+                const prevCrTransform = cr.style.transform;
+                st.style.transform = 'none';
+                cr.style.transform = 'none';
+                
+                const origOpacity = st.style.opacity;
+                const origVisibility = st.style.visibility;
+                
+                // Temporarily expose nodes to compute exact dimensions
+                st.style.opacity = '0';
+                st.style.visibility = 'visible';
+                cr.style.opacity = '0';
+                cr.style.visibility = 'visible';
+                
+                const vh = window.innerHeight;
+                const stHeight = st.getBoundingClientRect().height || 21;
+                const crHeight = cr.getBoundingClientRect().height || 105; // Perfect 105px calculation without gaps
+                
+                // Restore styles
+                st.style.opacity = origOpacity;
+                st.style.visibility = origVisibility;
+                cr.style.opacity = origOpacity;
+                cr.style.visibility = origVisibility;
+                st.style.transform = prevStTransform;
+                cr.style.transform = prevCrTransform;
+
+                // DYNAMIC DUAL-ALIGN ENGINE
+                const topPadding = 24;      // Space at top matches spacing at bottom for pure symmetry
+                const rowGap = 24;          // 24px vertical row interval between Special Text and Contact list
+                const bottomSafety = 56;    // Height of bottom nav bar + extra spacing
+                
+                // Calculated dynamic total height for the background panel
+                const bgHeight = topPadding + stHeight + rowGap + crHeight + bottomSafety;
+                const bgTop = vh - 24 - bgHeight; // 24px bottom screen margin
+                
+                const stTop = bgTop + topPadding;
+                const crTop = stTop + stHeight + rowGap;
+                
+                // Align Hero GIF vertically to the absolute center line of the Contact list
+                const crCenterY = crTop + (crHeight / 2);
+                const hHeight = 110;        // Beautiful independent classic size for Hero GIF
+
+                st.style.top = `${stTop}px`;
+                st.style.left = '48px';
+                st.style.transform = 'none';
+                st.style.bottom = 'auto';
+
+                cr.style.top = `${crTop}px`;
+                cr.style.left = '48px';
+                cr.style.bottom = 'auto';
+                cr.style.transform = 'none';
+
+                h.style.left = 'auto';
+                h.style.right = '48px';
+                h.style.top = `${crCenterY - (hHeight / 2)}px`; // Perfectly centered with Contact list vertical axis
+                h.style.bottom = 'auto';
+                h.style.width = `${hHeight}px`;
+                h.style.height = `${hHeight}px`;
+                h.style.transform = 'none';
+
+                if (isPin) {
+                    p.classList.add('is-panel-pinned');
+                }
+                if (bg) {
+                    bg.style.height = `${bgHeight}px`;
+                    bg.classList.add('is-expanded');
+                }
+            } else {
+                // PC layout logic (Unchanged to completely preserve PC state A & B functionality)
+                const u = window.innerWidth / 12; 
+                const tw = u * 10 - 4;
+                h.style.width = `${tw}px`; 
+                h.style.height = `${tw * 0.56}px`;
+                h.style.top = '50%'; 
+                h.style.left = `${u * 10}px`; 
+                h.style.right = 'auto';
+                h.style.bottom = 'auto';
+                h.style.transform = `translate3d(-50%, -50%, 0)`;
+                root.style.setProperty('--intro-margin', '70vh');
+                st.style.left = '4px'; 
+                st.style.top = '50%'; 
+                st.style.bottom = 'auto';
+                st.style.transform = 'translateY(-50%)';
+                cr.style.left = '4px'; 
+                cr.style.bottom = '12px'; 
+                cr.style.top = 'auto'; 
+                cr.style.transform = 'none';
+                
+                if (isPin) {
+                    p.classList.add('is-panel-pinned');
+                    b.classList.add('is-pin-action');
+                }
             }
-        }
-        hero.style.opacity = "1"; hero.classList.add('is-active');
-    };
+            h.style.opacity = "1"; 
+            h.classList.add('is-active');
+        };
 
-    const hideHero = () => {
-        const logoRect = this.logoPosCache || logoGifWrap.getBoundingClientRect();
-        const duration = '0.8s';
-        hero.style.transition = `all ${duration} var(--fl-ease)`; 
-        const targetX = logoRect.left + logoRect.width/2;
-        const targetY = logoRect.top + logoRect.height/2;
-        hero.style.top = `${targetY}px`; hero.style.left = `${targetX}px`;
-        hero.style.width = '0px'; hero.style.height = '0px'; hero.style.opacity = '0';
-        hero.style.transform = 'translate3d(-50%, -50%, 0) scale(0)';
-        hero.classList.remove('is-active');
-        if (!this.isMobile()) root.style.setProperty('--intro-margin', '0px');
-        if (heroText) {
-            heroText.style.opacity = '0'; heroText.classList.remove('is-active');
-            if (!document.querySelector('.fl-nav__link:hover')) document.body.classList.remove('is-focus-mode');
-        }
-    };
+        const hideHero = () => {
+            const r = ENGINE.logoPosCache || lw.getBoundingClientRect(); 
+            const dur = '0.8s';
+            h.style.transition = st.style.transition = cr.style.transition = `all ${dur} var(--fl-ease)`;
+            const tx = r.left + r.width/2; 
+            const ty = r.top + r.height/2;
+            
+            // Collapses elements flawlessly back into the Logo button's exact center
+            h.style.top = `${ty}px`; 
+            h.style.left = `${tx}px`;
+            h.style.right = 'auto';
+            h.style.bottom = 'auto';
+            h.style.width = h.style.height = '0px'; 
+            h.style.opacity = '0';
+            h.style.transform = 'translate3d(-50%, -50%, 0) scale(0)';
+            h.classList.remove('is-active');
+            
+            st.style.top = cr.style.top = `${ty}px`;
+            st.style.left = cr.style.left = `${tx}px`;
+            st.style.bottom = 'auto';
+            st.style.transform = 'translate(-50%, -50%) scale(0)';
+            
+            if (!ENGINE.isMobile()) {
+                root.style.setProperty('--intro-margin', '0px');
+                b.classList.remove('is-pin-action');
+                p.classList.remove('is-panel-pinned');
+                b.classList.remove('has-panel-focus-hover');
+                document.querySelectorAll('.is-hovered-target').forEach(el => el.classList.remove('is-hovered-target'));
+            } else {
+                p.classList.remove('is-panel-pinned');
+            }
+            
+            if (bg) {
+                bg.style.height = ''; // Clear inline dynamic height to allow clean CSS transition collapse
+                bg.classList.remove('is-expanded');
+            }
+        };
 
-    logoGif.onclick = (e) => { e.stopPropagation(); hero.classList.contains('is-active') ? hideHero() : showHero(true); };
-    if (!this.isMobile()) { logoGifWrap.onmouseenter = () => showHero(true); logoGifWrap.onmouseleave = hideHero; }
-    this.animateHeroEntrance = () => { showHero(false); setTimeout(hideHero, 2000); };
-    this.updateLogoCache();
-},
-initScrollInteraction() {
-    const header = document.getElementById('ui-header');
-    const logoWrap = document.getElementById('ui-logo-gif-wrap');
-    let isScrolling;
-    window.addEventListener('scroll', () => {
-        if (this.isMobile()) {
-            header.classList.add('is-nav-hidden'); logoWrap.classList.add('is-nav-hidden');
-            window.clearTimeout(isScrolling);
-            isScrolling = setTimeout(() => { 
-                header.classList.remove('is-nav-hidden'); logoWrap.classList.remove('is-nav-hidden'); 
-            }, 300);
+        p.onclick = (e) => {
+            if (e.target === p && p.classList.contains('is-panel-pinned')) {
+                hideHero();
+            }
+        };
+
+        lg.onclick = (e) => { 
+            e.stopPropagation(); 
+            const isM = ENGINE.isMobile();
+            if (isM) {
+                if (h.classList.contains('is-active')) {
+                    hideHero();
+                } else {
+                    showHero(true);
+                }
+            } else {
+                if (h.classList.contains('is-active') && p.classList.contains('is-panel-pinned')) {
+                    hideHero();
+                } else {
+                    showHero(true);
+                }
+            }
+        };
+        
+        if (!ENGINE.isMobile()) { 
+            lw.onmouseenter = () => showHero(false); 
+            lw.onmouseleave = () => { if (!p.classList.contains('is-panel-pinned')) hideHero(); }; 
+            
+            h.onmouseenter = () => {
+                h.classList.add('is-hovered');
+            };
+            h.onmouseleave = () => {
+                h.classList.remove('is-hovered');
+            };
         }
-    }, { passive: true });
-},
-initReveal() {
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('is-visible'); observer.unobserve(entry.target); } });
-    }, { threshold: 0.05 });
-    document.querySelectorAll('.fl-reveal').forEach(el => observer.observe(el));
-},
-initWeChatTrigger() {
-    const trigger = document.getElementById('trigger-wechat');
-    const overlay = document.getElementById('ui-wechat-overlay');
-    if (trigger && overlay) { 
-        trigger.onclick = (e) => { e.preventDefault(); overlay.classList.add('is-active'); };
-        overlay.onclick = () => overlay.classList.remove('is-active'); 
-    }
-},
-drawGlobalGrid() {
-    const wrapper = document.getElementById('ui-grid-wrapper');
-    if (!wrapper) return;
-    const style = getComputedStyle(document.documentElement);
-    const unit = 60;
-    const canvas = document.createElement('canvas');
-    canvas.width = unit; canvas.height = unit;
-    const ctx = canvas.getContext('2d');
-    ctx.strokeStyle = style.getPropertyValue('--grid-color').trim();
-    ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(unit, 0); ctx.moveTo(0, 0); ctx.lineTo(0, unit); ctx.stroke();
-    ctx.fillStyle = style.getPropertyValue('--grid-square-color').trim();
-    ctx.fillRect(0, 0, 2, 2);
-    canvas.toBlob((blob) => {
-        wrapper.style.backgroundImage = `url(${URL.createObjectURL(blob)})`;
-    }, 'image/png');
-},
-initSplash() {
-    const splash = document.getElementById('ui-splash');
-    const splashBg = document.getElementById('ui-splash-bg');
-    const splashText = document.getElementById('ui-splash-text');
-    const body = document.body;
-    if (splashText) splashText.innerText = CONFIG.splash.text;
-    if (splashBg) splashBg.style.backgroundImage = `url(${CONFIG.splash.bg})`;
-    const dismiss = () => { 
-        if (!body.classList.contains('is-loading')) return;
-        splash.classList.add('is-finished'); body.classList.remove('is-loading'); 
-        sessionStorage.setItem('fl_visited', 'true');
-        if (this.animateHeroEntrance) requestAnimationFrame(() => this.animateHeroEntrance());
-    };
-    if (sessionStorage.getItem('fl_visited')) {
-        body.classList.remove('is-loading'); splash.classList.add('is-finished');
-        setTimeout(() => this.animateHeroEntrance && this.animateHeroEntrance(), 500);
-        return;
-    }
-    setTimeout(dismiss, 3000); splash.onclick = dismiss;
-},
-start() { 
-    this.initSEO(); this.applyTypography(); this.renderHeader(); 
-    this.buildContent(); this.drawGlobalGrid(); this.initFocusMode();
-    this.initCustomCursor(); this.initScrollInteraction(); 
-    this.initLandingHero(); this.initSplash();
-    window.addEventListener('resize', this.debounce(() => {
-        if (Math.abs(window.innerWidth - this.lastWidth) > 5) {
-            this.lastWidth = window.innerWidth;
-            this.updateLogoCache(); this.buildContent(); this.drawGlobalGrid(); 
+        
+        ENGINE.animateHeroEntrance = () => { showHero(false); requestAnimationFrame(() => hideHero()); };
+        ENGINE.handleResizeReset = () => {
+            const currentIsMobile = ENGINE.isMobile();
+            if (currentIsMobile !== ENGINE.lastIsMobile) {
+                ENGINE.lastIsMobile = currentIsMobile;
+                hideHero();
+            }
+        };
+    },
+    
+    initSplash() {
+        const s = document.getElementById('ui-splash');
+        const st = document.getElementById('ui-splash-text');
+        const sb = document.getElementById('ui-splash-bg');
+        const b = document.body;
+        st.innerText = CONFIG.splash.text;
+        sb.style.backgroundImage = `url(${CONFIG.splash.bg})`;
+        const d = () => {
+            if (!b.classList.contains('is-loading')) return;
+            s.classList.add('is-finished'); 
+            b.classList.remove('is-loading');
+            sessionStorage.setItem('fl_visited', 'true');
+            if (ENGINE.animateHeroEntrance) requestAnimationFrame(() => ENGINE.animateHeroEntrance());
+        };
+        if (sessionStorage.getItem('fl_visited')) {
+            b.classList.remove('is-loading'); 
+            s.classList.add('is-finished');
+            setTimeout(() => ENGINE.animateHeroEntrance && ENGINE.animateHeroEntrance(), 100);
+            return;
         }
-    }, 200), { passive: true });
-}
+        setTimeout(d, 1800); 
+        s.onclick = d;
+    },
+    
+    initFocusMode() {
+        if (ENGINE.isMobile()) return;
+        
+        const b = document.body; 
+        const hero = document.getElementById('ui-landing-hero');
+        
+        // Match Target Schemes for State A (Standard Grid Focus) and State B (Logo Panel Focus)
+        const selectorA = '.fl-nav__link, .fl-logo__gif-wrap, .fl-reveal';
+        const selectorB = '.fl-nav__link, .fl-logo__gif-wrap, #ui-landing-hero, #ui-hero-special-text, .fl-gallery-link';
+
+        document.addEventListener('mouseover', (e) => { 
+            if (b.classList.contains('is-loading')) return;
+            
+            const isPanelActive = hero && hero.classList.contains('is-active');
+            
+            if (isPanelActive) {
+                // STATE B focus trigger
+                const target = e.target.closest(selectorB);
+                if (target) {
+                    document.querySelectorAll('.is-hovered-target').forEach(el => el.classList.remove('is-hovered-target'));
+                    b.classList.remove('has-focus-hover');
+                    
+                    b.classList.add('has-panel-focus-hover');
+                    target.classList.add('is-hovered-target');
+                }
+            } else {
+                // STATE A focus trigger
+                const target = e.target.closest(selectorA);
+                if (target) {
+                    document.querySelectorAll('.is-hovered-target').forEach(el => el.classList.remove('is-hovered-target'));
+                    b.classList.remove('has-panel-focus-hover');
+                    
+                    b.classList.add('has-focus-hover');
+                    target.classList.add('is-hovered-target');
+                }
+            }
+        });
+
+        document.addEventListener('mouseout', (e) => { 
+            if (b.classList.contains('is-loading')) return;
+            
+            const isPanelActive = hero && hero.classList.contains('is-active');
+            const activeSelector = isPanelActive ? selectorB : selectorA;
+            
+            // Clean up states when exiting the active interactive group
+            if (!e.relatedTarget || !e.relatedTarget.closest(activeSelector)) {
+                b.classList.remove('has-focus-hover', 'has-panel-focus-hover');
+                document.querySelectorAll('.is-hovered-target').forEach(el => el.classList.remove('is-hovered-target'));
+            }
+        });
+    },
+    
+    initCustomCursor() {
+        if (ENGINE.isMobile()) return;
+        const v = document.getElementById('ui-cursor-v'); 
+        const h = document.getElementById('ui-cursor-h');
+        window.addEventListener('mousemove', (e) => {
+            if (document.body.classList.contains('is-loading')) return;
+            requestAnimationFrame(() => { 
+                v.style.transform = `translate3d(${e.clientX}px, 0, 0)`; 
+                h.style.transform = `translate3d(0, ${e.clientY}px, 0)`; 
+            });
+        }, { passive: true });
+    },
+    
+    initScrollInteraction() {
+        const h = document.getElementById('ui-header'); 
+        const lw = document.getElementById('ui-logo-gif-wrap'); 
+        let timer;
+        window.addEventListener('scroll', () => {
+            if (ENGINE.isMobile()) {
+                h.classList.add('is-nav-hidden'); 
+                lw.classList.add('is-nav-hidden');
+                clearTimeout(timer); 
+                timer = setTimeout(() => { 
+                    h.classList.remove('is-nav-hidden'); 
+                    lw.classList.remove('is-nav-hidden'); 
+                }, 250);
+            }
+        }, { passive: true });
+    },
+    
+    initReveal() {
+        const o = new IntersectionObserver((es) => es.forEach(e => { 
+            if (e.isIntersecting) { 
+                e.target.classList.add('is-visible'); 
+                o.unobserve(e.target); 
+            } 
+        }), { threshold: 0.05 });
+        document.querySelectorAll('.fl-reveal').forEach(el => o.observe(el));
+    },
+    
+    initWeChatTrigger() {
+        const t = document.getElementById('trigger-wechat'); 
+        const o = document.getElementById('ui-wechat-overlay');
+        if (t && o) { 
+            t.onclick = (e) => { 
+                e.preventDefault(); 
+                o.classList.add('is-active'); 
+            }; 
+            o.onclick = () => o.classList.remove('is-active'); 
+        }
+    },
+    
+    start() {
+        ENGINE.initSEO(); 
+        ENGINE.applyTypography(); 
+        ENGINE.renderHeader(); 
+        ENGINE.renderLogoPanel();
+        ENGINE.buildContent(); 
+        ENGINE.initFocusMode(); 
+        ENGINE.initCustomCursor();
+        ENGINE.initScrollInteraction(); 
+        ENGINE.initLandingHero(); 
+        ENGINE.initSplash();
+        
+        window.addEventListener('resize', () => {
+            if (Math.abs(window.innerWidth - ENGINE.lastWidth) > 5) {
+                ENGINE.lastWidth = window.innerWidth;
+                ENGINE.updateLogoCache();
+                ENGINE.buildContent();
+                if (ENGINE.handleResizeReset) ENGINE.handleResizeReset();
+            }
+        }, { passive: true });
+    }
 };
+
 window.onload = () => ENGINE.start();
 </script>
 </body>
