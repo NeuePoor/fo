@@ -24,7 +24,6 @@
     --fl-font-fallback: "Arial", "Helvetica", sans-serif;
     --splash-fs: 32px;
     --gallery-paragraph-spacing: 2.2em;
-    --intro-margin: 70vh; 
 }
 
 @media (prefers-color-scheme: dark) {
@@ -101,15 +100,17 @@ body.is-loading { overflow: hidden; }
 .fl-splash.is-finished .fl-splash__text { opacity: 0 !important; visibility: hidden; }
 
 /* ==========================================================================
-   DECOUPLED LAYER 1: LANDING HERO MEDIA
+   DECOUPLED LAYER 1: LANDING HERO MEDIA (NO PHYSICAL MOTION TRANSITIONS)
    ========================================================================== */
 .fl-landing-hero {
     position: fixed; z-index: 1001; pointer-events: none;
     overflow: hidden; opacity: 0; transform: translate3d(0,0,0);
-    will-change: transform, opacity, width, height, top, left, filter;
-    transition: filter 0.6s var(--fl-ease), opacity 0.6s var(--fl-ease), transform 0.4s var(--fl-ease);
+    visibility: hidden;
+    will-change: opacity, filter;
+    /* 彻底移除了 width, height, top, left, transform 过渡，仅保留纯透明度和可见性过渡 */
+    transition: opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease), visibility 0.4s var(--fl-ease);
 }
-.fl-landing-hero.is-active { pointer-events: auto; } 
+.fl-landing-hero.is-active { pointer-events: auto; opacity: 1; visibility: visible; } 
 .fl-landing-hero img { width: 100%; height: 100%; object-fit: cover; }
 
 /* ==========================================================================
@@ -142,7 +143,7 @@ body.is-loading { overflow: hidden; }
 }
 .fl-nav { display: flex; gap: 40px; }
 .fl-nav__link { 
-    font-size: var(--header-fs); 
+    font-size: var(--nav-fs); 
     font-weight: var(--header-fw); 
     color: #fff; 
     text-decoration: none; 
@@ -167,13 +168,14 @@ body.is-loading { overflow: hidden; }
     z-index: 10; 
 }
 @media (min-width: 769px) {
-    .fl-grid.is-intro { margin-top: var(--intro-margin); transition: margin-top 0.8s var(--fl-ease); }
+    /* 彻底清除了 margin-top 随面板 Hover 交互而发生上下移动的动画，保持在初始加载位置 0px 不动 */
+    .fl-grid.is-intro { margin-top: 0px; } 
 }
 
 .fl-reveal { opacity: 0; transform: translateY(var(--fl-reveal-dist)); transition: opacity var(--fl-reveal-dur) var(--fl-ease), transform var(--fl-reveal-dur) var(--fl-ease), filter 0.6s var(--fl-ease); will-change: opacity, transform; }
 .fl-reveal.is-visible { opacity: 1; transform: translateY(0); }
 
-.fl-gallery-text { font-size: var(--gallery-fs); font-weight: var(--gallery-fw); color: var(--fl-text); line-height: 1.15; width: clamp(320px, 75%, 850px); max-width: 100%; margin-bottom: var(--gallery-paragraph-spacing); }
+.fl-gallery-text { font-size: var(--gallery-content-fs); font-weight: var(--gallery-fw); color: var(--fl-text); line-height: 1.15; width: clamp(320px, 75%, 850px); max-width: 100%; margin-bottom: var(--gallery-paragraph-spacing); }
 
 /* ==========================================================================
    DECOUPLED LAYER 5: LOGO PANEL (TEXT & CONTACT LINKS)
@@ -187,7 +189,8 @@ body.is-loading { overflow: hidden; }
     filter: blur(15px); 
     pointer-events: none; 
     visibility: hidden; 
-    transition: opacity 0.5s var(--fl-ease), filter 0.5s var(--fl-ease), transform 0.8s var(--fl-ease), visibility 0.5s var(--fl-ease);
+    /* 彻底移除了 transform 物理位移过渡，专注于纯粹原地 0-100% 透明度与可见性的呼吸过渡 */
+    transition: opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease), visibility 0.4s var(--fl-ease);
 }
 
 /* Active Panel Triggers */
@@ -199,9 +202,9 @@ body.is-loading { overflow: hidden; }
     visibility: visible; 
 }
 
-.fl-hero-special-text { font-size: var(--gallery-fs); font-weight: var(--gallery-fw); color: var(--fl-text); white-space: nowrap; }
+.fl-hero-special-text { font-size: var(--special-text-fs); font-weight: var(--gallery-fw); color: var(--fl-text); white-space: nowrap; }
 .fl-contact-row { display: flex; gap: 40px; align-items: center; }
-.fl-gallery-link { font-size: var(--gallery-fs); font-weight: var(--gallery-fw); color: var(--fl-text); text-decoration: none; transition: opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease); }
+.fl-gallery-link { font-size: var(--contact-fs); font-weight: var(--gallery-fw); color: var(--fl-text); text-decoration: none; transition: opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease); }
 
 /* ==========================================================================
    FOCUS INTERACTION SCHEME & DUAL-STATE PC FOCUS (DESKTOP ONLY)
@@ -214,7 +217,8 @@ body.is-loading { overflow: hidden; }
     .fl-hero-special-text, 
     .fl-contact-row, 
     .fl-landing-hero {
-        transition: opacity 0.6s var(--fl-ease), filter 0.6s var(--fl-ease), transform 0.8s var(--fl-ease), visibility 0.5s var(--fl-ease) !important;
+        /* PC 端 Focus 过渡，移除了不必要的 transform 物理形变干扰 */
+        transition: opacity 0.6s var(--fl-ease), filter 0.6s var(--fl-ease), visibility 0.5s var(--fl-ease) !important;
     }
 
     /* STATE A: Panel NOT Active Focus Mode */
@@ -232,7 +236,6 @@ body.is-loading { overflow: hidden; }
     }
 
     /* STATE B: Panel ACTIVE (Opened) Focus Mode */
-    /* When hovering any element in active panel state, unfocused elements blur */
     body.has-panel-focus-hover #ui-landing-hero:not(.is-hovered-target),
     body.has-panel-focus-hover .fl-logo__gif-wrap:not(.is-hovered-target),
     body.has-panel-focus-hover .fl-nav__link:not(.is-hovered-target),
@@ -267,8 +270,7 @@ body.is-loading { overflow: hidden; }
    MOBILE ECOSYSTEM & DECOUPLING PARADIGM (<= 768px Viewport)
    ========================================================================== */
 @media (max-width: 768px) {
-    /* 
-       Z-INDEX PHYSICAL LAYOUT CHAIN (MOBILE ONLY):
+    /* Z-INDEX PHYSICAL LAYOUT CHAIN (MOBILE ONLY):
        1. [z-index: 1000] - .fl-header__bg (Bottom-most blur overlay)
        2. [z-index: 1001] - .fl-landing-hero (Visual cover illustration)
        3. [z-index: 1004] - .fl-logo-panel (Text descriptions & active interactive panel)
@@ -277,6 +279,7 @@ body.is-loading { overflow: hidden; }
     */
 
     .fl-grid { padding: 4px 0 160px !important; margin-top: 0 !important; }
+    .fl-gallery-text { font-size: var(--gallery-content-fs-m) !important; }
     
     /* 1. BACKGROUND CONTAINER LAYER (Bottom of Mobile Stack) */
     .fl-header__bg {
@@ -310,7 +313,7 @@ body.is-loading { overflow: hidden; }
     }
     .fl-hero-special-text {
         font-family: "Arial", sans-serif !important;
-        font-size: 21px !important;
+        font-size: var(--special-text-fs-m) !important;
         font-weight: 700 !important;
         line-height: 1 !important;
         width: calc(50% - 24px) !important;
@@ -325,7 +328,7 @@ body.is-loading { overflow: hidden; }
     }
     .fl-contact-row .fl-gallery-link {
         font-family: "Arial", sans-serif !important;
-        font-size: 21px !important;
+        font-size: var(--contact-fs-m) !important;
         font-weight: 700 !important;
         line-height: 1.05 !important; /* Adjusted line-height for seamless zero-gap stacking */
     }
@@ -364,7 +367,7 @@ body.is-loading { overflow: hidden; }
         gap: 20px !important; 
         z-index: 2;
     }
-    .fl-nav__link { font-size: 21px !important; color: var(--fl-text) !important; opacity: 1 !important; filter: none !important; }
+    .fl-nav__link { font-size: var(--nav-fs-m) !important; color: var(--fl-text) !important; opacity: 1 !important; filter: none !important; }
     .fl-logo-text { opacity: 0 !important; }
 
     /* SCROLL INTERACTION & NAVIGATION HIDING STYLES */
@@ -432,15 +435,23 @@ body.is-loading { overflow: hidden; }
    APPLICATION CONFIGURATION
    ========================================================================== */
 const CONFIG = {
-    version: "Home 4.13.23",
+    version: "Home 4.14.4",
     seo: { title: "Foo", favicon: "https://folio.neuepoor.com/favicon.webp" },
     splash: { text: "Folio", bg: "https://folio.neuepoor.com/fo.gif" },
     typography: {
         header: { font: "Arial, sans-serif", weight: "700", sizePC: "32px", sizeMobile: "21px" },
-        gallery: { font: "Arial, sans-serif", weight: "700", sizePC: "32px", sizeMobile: "21px" }
+        nav: { sizePC: "32px", sizeMobile: "21px" }, // Control Nav
+        specialText: { sizePC: "32px", sizeMobile: "21px" }, // Control Special Text
+        contact: { sizePC: "10px", sizeMobile: "10px" }, // Control Contact Links
+        gallery: { font: "Arial, sans-serif", weight: "700", sizePC: "32px", sizeMobile: "21px" },
+        galleryContent: { sizePC: "32px", sizeMobile: "21px" } // Control Gallery Content
+    },
+    heroImage: {
+        sizePC: "200px",    // 修改此值控制电脑端 Logo 图片大小
+        sizeMobile: "140px" // 修改此值控制手机端 Logo 图片大小 (当前设定为理想的 140px)
     },
     header: {
-        logo: { gif: "https://folio.neuepoor.com/logo.gif", text: "Foo", sizePC: "32px", sizeMobile: "18px" },
+        logo: { gif: "https://folio.neuepoor.com/logo.gif", text: "Foo", sizePC: "32px", sizeMobile: "21px" },
         nav: [
             { name: 'Works', link: 'https://works.neuepoor.com' },
             { name: '(Play)', link: 'https://play.neuepoor.com' },
@@ -487,18 +498,34 @@ const ENGINE = {
     applyTypography() {
         const r = document.documentElement; 
         const t = CONFIG.typography; 
+        const h = CONFIG.heroImage;
         const l = CONFIG.header.logo;
         const p = { 
             '--header-font': t.header.font, 
             '--header-fw': t.header.weight, 
             '--header-fs': t.header.sizePC, 
             '--header-fs-m': t.header.sizeMobile, 
+
+            // Dynamic sizes driven by CONFIG
+            '--nav-fs': t.nav.sizePC,
+            '--nav-fs-m': t.nav.sizeMobile,
+            '--special-text-fs': t.specialText.sizePC,
+            '--special-text-fs-m': t.specialText.sizeMobile,
+            '--contact-fs': t.contact.sizePC,
+            '--contact-fs-m': t.contact.sizeMobile,
+            '--gallery-content-fs': t.galleryContent.sizePC,
+            '--gallery-content-fs-m': t.galleryContent.sizeMobile,
+
             '--gallery-font': t.gallery.font, 
             '--gallery-fw': t.gallery.weight, 
             '--gallery-fs': t.gallery.sizePC, 
             '--gallery-fs-m': t.gallery.sizeMobile, 
             '--logo-size-pc': l.sizePC, 
-            '--logo-size-m': l.sizeMobile 
+            '--logo-size-m': l.sizeMobile,
+            
+            // Dynamic hero sizes
+            '--hero-size-pc': h.sizePC,
+            '--hero-size-mb': h.sizeMobile
         };
         Object.entries(p).forEach(([k, v]) => r.style.setProperty(k, v));
     },
@@ -546,16 +573,17 @@ const ENGINE = {
         const lg = document.getElementById('ui-logo-gif');
         const bg = document.getElementById('ui-header-bg');
         const b = document.body;
-        const root = document.documentElement;
 
         const showHero = (isPin = false) => {
             const isM = ENGINE.isMobile(); 
-            const dur = '1.2s';
-            h.style.transition = `all ${dur} var(--fl-ease), filter 0.6s var(--fl-ease)`;
-            st.style.transition = cr.style.transition = `all ${dur} var(--fl-ease), opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease)`;
+            const dur = '0.4s'; // 统一原地 0-100% 淡入淡出持续时间
+            
+            // 锁定动画属性为纯透明度和可见性过渡，不改变物理形变与位移
+            h.style.transition = `opacity ${dur} var(--fl-ease), filter ${dur} var(--fl-ease), visibility ${dur} var(--fl-ease)`;
+            st.style.transition = cr.style.transition = `opacity ${dur} var(--fl-ease), filter ${dur} var(--fl-ease), visibility ${dur} var(--fl-ease)`;
             
             if (isM) {
-                // Symmetrical spatial mapping & temporary scale neutralization for accurate bounding rects
+                // 空间测绘前临时去除缩放与隐藏属性以获得真实的物理高度
                 const prevStTransform = st.style.transform;
                 const prevCrTransform = cr.style.transform;
                 st.style.transform = 'none';
@@ -564,7 +592,6 @@ const ENGINE = {
                 const origOpacity = st.style.opacity;
                 const origVisibility = st.style.visibility;
                 
-                // Temporarily expose nodes to compute exact dimensions
                 st.style.opacity = '0';
                 st.style.visibility = 'visible';
                 cr.style.opacity = '0';
@@ -572,9 +599,8 @@ const ENGINE = {
                 
                 const vh = window.innerHeight;
                 const stHeight = st.getBoundingClientRect().height || 21;
-                const crHeight = cr.getBoundingClientRect().height || 105; // Perfect 105px calculation without gaps
+                const crHeight = cr.getBoundingClientRect().height || 105; 
                 
-                // Restore styles
                 st.style.opacity = origOpacity;
                 st.style.visibility = origVisibility;
                 cr.style.opacity = origOpacity;
@@ -582,21 +608,21 @@ const ENGINE = {
                 st.style.transform = prevStTransform;
                 cr.style.transform = prevCrTransform;
 
-                // DYNAMIC DUAL-ALIGN ENGINE
-                const topPadding = 24;      // Space at top matches spacing at bottom for pure symmetry
-                const rowGap = 24;          // 24px vertical row interval between Special Text and Contact list
-                const bottomSafety = 56;    // Height of bottom nav bar + extra spacing
+                // 手机端对称自适应定位
+                const topPadding = 24;      
+                const rowGap = 24;          
+                const bottomSafety = 56;    
                 
-                // Calculated dynamic total height for the background panel
                 const bgHeight = topPadding + stHeight + rowGap + crHeight + bottomSafety;
-                const bgTop = vh - 24 - bgHeight; // 24px bottom screen margin
+                const bgTop = vh - 24 - bgHeight; 
                 
                 const stTop = bgTop + topPadding;
                 const crTop = stTop + stHeight + rowGap;
                 
-                // Align Hero GIF vertically to the absolute center line of the Contact list
                 const crCenterY = crTop + (crHeight / 2);
-                const hHeight = 110;        // Beautiful independent classic size for Hero GIF
+                
+                // 从 CSS 变量获取手机端的动态设定大小 (CONFIG 驱动)
+                const hHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--hero-size-mb')) || 140;
 
                 st.style.top = `${stTop}px`;
                 st.style.left = '48px';
@@ -610,10 +636,10 @@ const ENGINE = {
 
                 h.style.left = 'auto';
                 h.style.right = '48px';
-                h.style.top = `${crCenterY - (hHeight / 2)}px`; // Perfectly centered with Contact list vertical axis
+                h.style.top = `${crCenterY - (hHeight / 2)}px`; 
                 h.style.bottom = 'auto';
-                h.style.width = `${hHeight}px`;
-                h.style.height = `${hHeight}px`;
+                h.style.width = 'var(--hero-size-mb)';
+                h.style.height = 'var(--hero-size-mb)';
                 h.style.transform = 'none';
 
                 if (isPin) {
@@ -624,17 +650,17 @@ const ENGINE = {
                     bg.classList.add('is-expanded');
                 }
             } else {
-                // PC layout logic (Unchanged to completely preserve PC state A & B functionality)
-                const u = window.innerWidth / 12; 
-                const tw = u * 10 - 4;
-                h.style.width = `${tw}px`; 
-                h.style.height = `${tw * 0.56}px`;
+                // PC 端的经典绝对定位与配置化尺寸，保持 4.14.1 完美的淡入位置
+                h.style.width = 'var(--hero-size-pc)'; 
+                h.style.height = 'var(--hero-size-pc)';
                 h.style.top = '50%'; 
+                
+                const u = window.innerWidth / 12; 
                 h.style.left = `${u * 10}px`; 
                 h.style.right = 'auto';
                 h.style.bottom = 'auto';
                 h.style.transform = `translate3d(-50%, -50%, 0)`;
-                root.style.setProperty('--intro-margin', '70vh');
+                
                 st.style.left = '4px'; 
                 st.style.top = '50%'; 
                 st.style.bottom = 'auto';
@@ -654,29 +680,13 @@ const ENGINE = {
         };
 
         const hideHero = () => {
-            const r = ENGINE.logoPosCache || lw.getBoundingClientRect(); 
-            const dur = '0.8s';
-            h.style.transition = st.style.transition = cr.style.transition = `all ${dur} var(--fl-ease)`;
-            const tx = r.left + r.width/2; 
-            const ty = r.top + r.height/2;
+            const dur = '0.4s'; 
+            h.style.transition = st.style.transition = cr.style.transition = `opacity ${dur} var(--fl-ease), filter ${dur} var(--fl-ease), visibility ${dur} var(--fl-ease)`;
             
-            // Collapses elements flawlessly back into the Logo button's exact center
-            h.style.top = `${ty}px`; 
-            h.style.left = `${tx}px`;
-            h.style.right = 'auto';
-            h.style.bottom = 'auto';
-            h.style.width = h.style.height = '0px'; 
             h.style.opacity = '0';
-            h.style.transform = 'translate3d(-50%, -50%, 0) scale(0)';
             h.classList.remove('is-active');
             
-            st.style.top = cr.style.top = `${ty}px`;
-            st.style.left = cr.style.left = `${tx}px`;
-            st.style.bottom = 'auto';
-            st.style.transform = 'translate(-50%, -50%) scale(0)';
-            
             if (!ENGINE.isMobile()) {
-                root.style.setProperty('--intro-margin', '0px');
                 b.classList.remove('is-pin-action');
                 p.classList.remove('is-panel-pinned');
                 b.classList.remove('has-panel-focus-hover');
@@ -686,7 +696,7 @@ const ENGINE = {
             }
             
             if (bg) {
-                bg.style.height = ''; // Clear inline dynamic height to allow clean CSS transition collapse
+                bg.style.height = ''; 
                 bg.classList.remove('is-expanded');
             }
         };
@@ -727,11 +737,9 @@ const ENGINE = {
             };
         }
         
-        // Expose layout actions to ENGINE for dynamic/synchronized adjustment
         ENGINE.showHero = showHero;
         ENGINE.hideHero = hideHero;
         
-        ENGINE.animateHeroEntrance = () => { showHero(false); requestAnimationFrame(() => hideHero()); };
         ENGINE.handleResizeReset = () => {
             const currentIsMobile = ENGINE.isMobile();
             if (currentIsMobile !== ENGINE.lastIsMobile) {
@@ -753,12 +761,10 @@ const ENGINE = {
             s.classList.add('is-finished'); 
             b.classList.remove('is-loading');
             sessionStorage.setItem('fl_visited', 'true');
-            if (ENGINE.animateHeroEntrance) requestAnimationFrame(() => ENGINE.animateHeroEntrance());
         };
         if (sessionStorage.getItem('fl_visited')) {
             b.classList.remove('is-loading'); 
             s.classList.add('is-finished');
-            setTimeout(() => ENGINE.animateHeroEntrance && ENGINE.animateHeroEntrance(), 100);
             return;
         }
         setTimeout(d, 1800); 
@@ -771,7 +777,6 @@ const ENGINE = {
         const b = document.body; 
         const hero = document.getElementById('ui-landing-hero');
         
-        // Match Target Schemes for State A (Standard Grid Focus) and State B (Logo Panel Focus)
         const selectorA = '.fl-nav__link, .fl-logo__gif-wrap, .fl-reveal';
         const selectorB = '.fl-nav__link, .fl-logo__gif-wrap, #ui-landing-hero, #ui-hero-special-text, .fl-gallery-link';
 
@@ -781,7 +786,6 @@ const ENGINE = {
             const isPanelActive = hero && hero.classList.contains('is-active');
             
             if (isPanelActive) {
-                // STATE B focus trigger
                 const target = e.target.closest(selectorB);
                 if (target) {
                     document.querySelectorAll('.is-hovered-target').forEach(el => el.classList.remove('is-hovered-target'));
@@ -791,7 +795,6 @@ const ENGINE = {
                     target.classList.add('is-hovered-target');
                 }
             } else {
-                // STATE A focus trigger
                 const target = e.target.closest(selectorA);
                 if (target) {
                     document.querySelectorAll('.is-hovered-target').forEach(el => el.classList.remove('is-hovered-target'));
@@ -809,7 +812,6 @@ const ENGINE = {
             const isPanelActive = hero && hero.classList.contains('is-active');
             const activeSelector = isPanelActive ? selectorB : selectorA;
             
-            // Clean up states when exiting the active interactive group
             if (!e.relatedTarget || !e.relatedTarget.closest(activeSelector)) {
                 b.classList.remove('has-focus-hover', 'has-panel-focus-hover');
                 document.querySelectorAll('.is-hovered-target').forEach(el => el.classList.remove('is-hovered-target'));
@@ -839,7 +841,6 @@ const ENGINE = {
         let timer;
         window.addEventListener('scroll', () => {
             if (ENGINE.isMobile()) {
-                // Prevent scroll hiding when the active hero panel menu is open on mobile
                 if (lh && lh.classList.contains('is-active')) {
                     return;
                 }
@@ -908,7 +909,6 @@ const ENGINE = {
                 ENGINE.buildContent();
                 if (ENGINE.handleResizeReset) ENGINE.handleResizeReset();
             } else if (heightChanged && ENGINE.isMobile()) {
-                // Adapt to Safari address bar shrinking/growing dynamically
                 const h = document.getElementById('ui-landing-hero');
                 if (h && h.classList.contains('is-active') && typeof ENGINE.showHero === 'function') {
                     ENGINE.showHero(true);
