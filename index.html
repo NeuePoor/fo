@@ -25,6 +25,9 @@
     --splash-fs: 32px;
     --gallery-paragraph-spacing: 2.2em;
     
+    /* 12栏网格中单栏宽度的流式动态测算公式 */
+    --grid-col-width: calc((100vw - (var(--fl-margin) * 2) - (var(--fl-gutter) * 11)) / 12);
+    
     /* Fallbacks for responsive component metrics */
     --cr-height: 105px;
     --st-height: 21px;
@@ -191,7 +194,6 @@ body.is-loading { overflow: hidden; }
 }
 
 .fl-paragraph {
-    /* 方案 1 与配置项结合：下限为 Mobile 设定值，上限为 PC 设定值，并在其中平滑无感缩放 */
     font-size: clamp(var(--gallery-content-fs-m), 1vw + 13px, var(--gallery-content-fs));
     font-weight: var(--gallery-fw);
     color: var(--fl-text);
@@ -303,7 +305,6 @@ body.is-loading { overflow: hidden; }
 
     .fl-grid { padding: 4px 0 160px !important; margin-top: 0 !important; }
     
-    /* 方案 3 的物理无溢出包络：在手机端强制锁定为 100% 自适应，绝不设置任何物理宽度下限 */
     .fl-gallery-text { width: 100% !important; max-width: 100% !important; }
     .fl-paragraph { 
         font-size: var(--gallery-content-fs-m) !important; 
@@ -343,12 +344,12 @@ body.is-loading { overflow: hidden; }
         }
     }
     
-    /* 2. MEDIA VISUAL LAYER */
+    /* 2. MEDIA VISUAL LAYER (Driven dynamically by variables including configured offsets) */
     .fl-landing-hero {
         top: auto !important;
         left: auto !important;
-        right: 48px !important;
-        bottom: calc(80px + (var(--cr-height) / 2) - (var(--hero-size-mb) / 2)) !important;
+        right: var(--hero-right-mb, 48px) !important;
+        bottom: calc(var(--hero-bottom-base-mb, 80px) + (var(--cr-height) / 2) - (var(--hero-size-mb) / 2)) !important;
         width: var(--hero-size-mb) !important;
         height: var(--hero-size-mb) !important;
         transform: none !important;
@@ -496,7 +497,7 @@ body.is-loading { overflow: hidden; }
    APPLICATION CONFIGURATION
    ========================================================================== */
 const CONFIG = {
-    version: "Home 4.14.8",
+    version: "Home 4.14.10",
     seo: { title: "Foo", favicon: "https://folio.neuepoor.com/favicon.webp" },
     splash: { text: "Folio", bg: "https://folio.neuepoor.com/fo.gif" },
     typography: {
@@ -505,11 +506,22 @@ const CONFIG = {
         specialText: { sizePC: "32px", sizeMobile: "21px" }, 
         contact: { sizePC: "32px", sizeMobile: "21px" }, 
         gallery: { font: "Arial, sans-serif", weight: "700", sizePC: "32px", sizeMobile: "32px" },
-        galleryContent: { sizePC: "32px", sizeMobile: "21px" } 
+        galleryContent: { sizePC: "32px", sizeMobile: "32px" } 
     },
     heroImage: {
-        sizePC: "200px",    
-        sizeMobile: "140px" 
+        colSpanPC: 6.0,       // 电脑端占用网格栏数 (推荐 1.5 - 2.5 栏，流式自适应)
+        colSpanMobile: 5.0,    // 手机端占用网格栏数 (推荐 4.0 - 5.0 栏，完美比例自适应)
+        position: {
+            pc: {
+                anchorColumn: 10,  // 电脑端对齐的物理网格列 (1-12 栏)
+                top: "50%",        // 电脑端垂直中心对齐位置
+                transform: "translate3d(-50%, -50%, 0)" // 电脑端居中平移微调
+            },
+            mobile: {
+                right: "21px",     // 手机端横向右边边隙距离
+                bottomBase: "80px"  // 手机端对齐的底部基准线（与联系人列表对齐）
+            }
+        }
     },
     header: {
         logo: { gif: "https://folio.neuepoor.com/logo.gif", text: "Foo", sizePC: "32px", sizeMobile: "21px" },
@@ -533,7 +545,6 @@ const CONFIG = {
     gallery: { 
         items: [{ 
             span: 12, 
-            /* 方案 2 的语义化段落数组：更具维护性的段落切分结构，告别不可控的硬编码换行 */
             paragraphs: [
                 "I'm a multi-disciplinary designer with focus on Graphic&Illustration,Creative Direction, Branding,Visual Identities, Packaging, Website, and Print& Editorial Design.",
                 "If you are looking for a designer who excles in BrandStrategy/Visual Direction/Print Works/Products/IP/Curatorial/Grid Layout/Website design/Typeface Customization.",
@@ -585,8 +596,18 @@ const ENGINE = {
             '--gallery-fs-m': t.gallery.sizeMobile, 
             '--logo-size-pc': l.sizePC, 
             '--logo-size-m': l.sizeMobile,
-            '--hero-size-pc': h.sizePC,
-            '--hero-size-mb': h.sizeMobile
+            
+            // 将网格占比映射为 CSS 变量并进行流式计算
+            '--hero-col-span-pc': h.colSpanPC,
+            '--hero-col-span-mb': h.colSpanMobile,
+            '--hero-size-pc': `calc(var(--hero-col-span-pc) * var(--grid-col-width) + (var(--hero-col-span-pc) - 1) * var(--fl-gutter))`,
+            '--hero-size-mb': `calc(var(--hero-col-span-mb) * var(--grid-col-width) + (var(--hero-col-span-mb) - 1) * var(--fl-gutter))`,
+            
+            // 完美解耦：将 CONFIG 中的位置配置无缝传递给 CSS
+            '--hero-top-pc': h.position.pc.top,
+            '--hero-transform-pc': h.position.pc.transform,
+            '--hero-right-mb': h.position.mobile.right,
+            '--hero-bottom-base-mb': h.position.mobile.bottomBase
         };
         Object.entries(p).forEach(([k, v]) => r.style.setProperty(k, v));
     },
@@ -619,7 +640,6 @@ const ENGINE = {
     
     buildContent() {
         const g = document.getElementById('ui-main-grid');
-        /* 方案 2 渲染引擎适配：将配置段落无缝映射为标准 p 标签，利用 CSS 优雅控制空隙 */
         g.innerHTML = CONFIG.gallery.items.map(i => {
             const paras = i.paragraphs.map(p => `<p class="fl-paragraph">${p}</p>`).join('');
             return `<div class="fl-item-wrapper fl-reveal" style="grid-column: span ${i.span || 12};"><div class="fl-gallery-text">${paras}</div></div>`;
@@ -692,12 +712,14 @@ const ENGINE = {
 
         h.style.width = 'var(--hero-size-pc)'; 
         h.style.height = 'var(--hero-size-pc)';
-        h.style.top = '50%'; 
+        h.style.top = 'var(--hero-top-pc)'; 
         
+        // 动态读取 CONFIG 配置的电脑端网格锚定列
         const u = window.innerWidth / 12; 
-        h.style.left = `${u * 10}px`; 
+        const anchorCol = CONFIG.heroImage.position.pc.anchorColumn;
+        h.style.left = `${u * anchorCol}px`; 
         h.style.right = 'auto'; h.style.bottom = 'auto';
-        h.style.transform = `translate3d(-50%, -50%, 0)`;
+        h.style.transform = 'var(--hero-transform-pc)';
         
         st.style.left = '4px'; st.style.top = '50%'; st.style.bottom = 'auto';
         st.style.transform = 'translateY(-50%)';
