@@ -25,10 +25,7 @@
     --splash-fs: 32px;
     --gallery-paragraph-spacing: 2.2em;
     
-    /* 12栏网格中单栏宽度的流式动态测算公式 */
     --grid-col-width: calc((100vw - (var(--fl-margin) * 2) - (var(--fl-gutter) * 11)) / 12);
-    
-    /* Fallbacks for responsive component metrics */
     --cr-height: 105px;
     --st-height: 21px;
     --bg-height: 230px;
@@ -41,14 +38,10 @@
     }
 }
 
-/* ==========================================================================
-   GLOBAL RESET & CURSOR RULES
-   ========================================================================== */
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; -webkit-font-smoothing: antialiased; }
 html, body { scrollbar-width: none; -ms-overflow-style: none; user-select: none; height: 100%; margin: 0; padding: 0; }
 html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
-/* Pointer Logic */
 @media (min-width: 769px) {
     body:not(.is-loading) { cursor: none; }
     body:not(.is-loading) a, 
@@ -67,9 +60,6 @@ body {
 
 body.is-loading { overflow: hidden; }
 
-/* ==========================================================================
-   CUSTOM CURSOR
-   ========================================================================= */
 .fl-cursor {
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
     pointer-events: none; z-index: 99999; mix-blend-mode: difference;
@@ -83,9 +73,6 @@ body.is-loading { overflow: hidden; }
 .fl-cursor__v { width: 1px; height: 100vh; top: 0; left: 0; }
 .fl-cursor__h { height: 1px; width: 100vw; left: 0; top: 0; }
 
-/* ==========================================================================
-   SPLASH LOAD SCREEN
-   ========================================================================== */
 .fl-splash {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     z-index: 9999; display: flex; align-items: center; justify-content: center;
@@ -107,9 +94,6 @@ body.is-loading { overflow: hidden; }
 .fl-splash.is-finished .fl-splash__bg { filter: blur(40px); opacity: 1; transform: scale(1.1); }
 .fl-splash.is-finished .fl-splash__text { opacity: 0 !important; visibility: hidden; }
 
-/* ==========================================================================
-   DECOUPLED LAYER 1: LANDING HERO MEDIA
-   ========================================================================== */
 .fl-landing-hero {
     position: fixed; z-index: 1001; pointer-events: none;
     overflow: hidden; opacity: 0; transform: translate3d(0,0,0);
@@ -120,22 +104,14 @@ body.is-loading { overflow: hidden; }
 .fl-landing-hero.is-active { pointer-events: auto; opacity: 1; visibility: visible; } 
 .fl-landing-hero img { width: 100%; height: 100%; object-fit: cover; }
 
-/* ==========================================================================
-   DECOUPLED LAYER 2: LOGO INTERACTIVE TRIGGERS
-   ========================================================================== */
 .fl-logo__gif-wrap-pc { 
     position: fixed; top: 0; left: 4px; height: var(--fl-nav-h); 
     display: flex; align-items: center; z-index: 3001; 
     transition: transform 0.4s var(--fl-ease), opacity 0.6s var(--fl-ease); 
 }
-.fl-logo__gif-wrap-m { 
-    display: none; 
-}
+.fl-logo__gif-wrap-m { display: none; }
 .fl-logo__gif { height: var(--logo-size-pc); width: auto; opacity: 0; transition: opacity 0.3s var(--fl-ease); cursor: pointer; }
 
-/* ==========================================================================
-   DECOUPLED LAYER 3: MAIN NAVIGATION HEADER
-   ========================================================================== */
 .fl-header { 
     position: fixed; width: 100%; z-index: 3000; display: flex; 
     justify-content: space-between; align-items: center; padding: 0 4px; 
@@ -160,16 +136,8 @@ body.is-loading { overflow: hidden; }
     transition: opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease); 
 }
 
-/* ==========================================================================
-   DECOUPLED LAYER 4: MOBILE EXCLUSIVE BACKGROUND CONTAINER
-   ========================================================================== */
-.fl-header__bg {
-    display: none; 
-}
+.fl-header__bg { display: none; }
 
-/* ==========================================================================
-   PAGE GRID LAYOUT
-   ========================================================================== */
 .fl-grid {
     position: relative; display: grid; grid-template-columns: repeat(12, 1fr);
     gap: var(--fl-gutter); margin: var(--fl-margin);
@@ -177,20 +145,24 @@ body.is-loading { overflow: hidden; }
     align-content: start; padding: 80px 0 100px; 
     z-index: 10; 
 }
+
 @media (min-width: 769px) {
-    .fl-grid.is-intro { margin-top: 0px; } 
+    .fl-grid.is-intro { padding-top: calc(100vh - 280px); } 
 }
 
-.fl-reveal { opacity: 0; transform: translateY(var(--fl-reveal-dist)); transition: opacity var(--fl-reveal-dur) var(--fl-ease), transform var(--fl-reveal-dur) var(--fl-ease), filter 0.6s var(--fl-ease); will-change: opacity, transform; }
+.fl-reveal { 
+    opacity: 0; 
+    transform: translateY(var(--fl-reveal-dist)); 
+    transition: opacity var(--fl-reveal-dur) var(--fl-ease), transform var(--fl-reveal-dur) var(--fl-ease); 
+    will-change: opacity, transform; 
+}
 .fl-reveal.is-visible { opacity: 1; transform: translateY(0); }
 
-/* ==========================================================================
-   GALLERY TYPOGRAPHY & FLUID WRAP ENGINE
-   ========================================================================== */
-.fl-gallery-text { 
-    width: 100%; 
-    max-width: 850px; /* 限制 PC 最大阅读行宽 */
-    margin-bottom: 0; 
+.fl-gallery-text { width: 100%; max-width: 850px; margin-bottom: 0; }
+
+@media (min-width: 769px) {
+    .fl-gallery-text { max-width: 100% !important; }
+    .fl-reveal { --fl-reveal-dist: 100px; }
 }
 
 .fl-paragraph {
@@ -199,21 +171,14 @@ body.is-loading { overflow: hidden; }
     color: var(--fl-text);
     line-height: 1.35;
     margin: 0 0 var(--gallery-paragraph-spacing) 0;
-    
-    /* 现代排版防撕裂机制 */
-    text-wrap: pretty; /* 自动平衡每行字数，彻底消灭孤字换行 */
-    word-break: break-word; /* 避免长单词撑破外壳 */
+    text-wrap: pretty; 
+    word-break: break-word; 
     -webkit-hyphens: auto;
-    hyphens: auto; /* 在合适的位置自动加入断字符 */
+    hyphens: auto; 
 }
 
-.fl-paragraph:last-child {
-    margin-bottom: 0;
-}
+.fl-paragraph:last-child { margin-bottom: 0; }
 
-/* ==========================================================================
-   DECOUPLED LAYER 5: LOGO PANEL
-   ========================================================================== */
 .fl-logo-panel { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2000; }
 .fl-logo-panel.is-panel-pinned { pointer-events: auto; }
 
@@ -226,7 +191,6 @@ body.is-loading { overflow: hidden; }
     transition: opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease), visibility 0.4s var(--fl-ease);
 }
 
-/* Active Panel Triggers */
 #ui-landing-hero.is-active ~ #ui-logo-panel .fl-hero-special-text,
 #ui-landing-hero.is-active ~ #ui-logo-panel .fl-contact-row {
     opacity: 1; 
@@ -239,52 +203,25 @@ body.is-loading { overflow: hidden; }
 .fl-contact-row { display: flex; gap: 40px; align-items: center; }
 .fl-gallery-link { font-size: var(--contact-fs); font-weight: var(--gallery-fw); color: var(--fl-text); text-decoration: none; transition: opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease); }
 
-/* ==========================================================================
-   FOCUS INTERACTION SCHEME & DUAL-STATE PC FOCUS (DESKTOP ONLY)
-   ========================================================================== */
 @media (min-width: 769px) {
-    .fl-nav__link, 
-    .fl-logo__gif-wrap-pc, 
-    .fl-reveal, 
-    .fl-hero-special-text, 
-    .fl-contact-row, 
-    .fl-landing-hero {
-        transition: opacity 0.6s var(--fl-ease), filter 0.6s var(--fl-ease), visibility 0.5s var(--fl-ease) !important;
-    }
+    .fl-nav__link, .fl-logo__gif-wrap-pc, .fl-hero-special-text, .fl-contact-row, .fl-landing-hero { transition: opacity 0.6s var(--fl-ease), filter 0.6s var(--fl-ease), visibility 0.5s var(--fl-ease) !important; }
+    .fl-reveal { transition: opacity var(--fl-reveal-dur) var(--fl-ease), transform var(--fl-reveal-dur) var(--fl-ease), filter 0.6s var(--fl-ease) !important; }
 
-    /* STATE A: Panel NOT Active Focus Mode */
     body.has-focus-hover .fl-nav__link:not(.is-hovered-target),
     body.has-focus-hover .fl-logo__gif-wrap-pc:not(.is-hovered-target),
-    body.has-focus-hover .fl-reveal:not(.is-hovered-target) {
-        opacity: 0.2; 
-        filter: blur(8px);
-    }
+    body.has-focus-hover .fl-reveal:not(.is-hovered-target) { opacity: 0.2; filter: blur(8px); }
 
-    /* Keep grid background blurred while panel is active */
-    #ui-landing-hero.is-active ~ #ui-main-grid .fl-reveal {
-        opacity: 0.2;
-        filter: blur(8px);
-    }
+    #ui-landing-hero.is-active ~ #ui-main-grid .fl-reveal { opacity: 0.2; filter: blur(8px); }
 
-    /* STATE B: Panel ACTIVE (Opened) Focus Mode */
     body.has-panel-focus-hover #ui-landing-hero:not(.is-hovered-target),
     body.has-panel-focus-hover .fl-logo__gif-wrap-pc:not(.is-hovered-target),
     body.has-panel-focus-hover .fl-nav__link:not(.is-hovered-target),
     body.has-panel-focus-hover .fl-hero-special-text:not(.is-hovered-target),
-    body.has-panel-focus-hover .fl-gallery-link:not(.is-hovered-target) {
-        opacity: 0.2 !important; 
-        filter: blur(8px) !important;
-    }
+    body.has-panel-focus-hover .fl-gallery-link:not(.is-hovered-target) { opacity: 0.2 !important; filter: blur(8px) !important; }
 
-    body.has-panel-focus-hover .is-hovered-target {
-        opacity: 1 !important;
-        filter: blur(0px) !important;
-    }
+    body.has-panel-focus-hover .is-hovered-target { opacity: 1 !important; filter: blur(0px) !important; }
 }
 
-/* ==========================================================================
-   WECHAT LAYER
-   ========================================================================== */
 .fl-wechat-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
@@ -296,156 +233,80 @@ body.is-loading { overflow: hidden; }
 .fl-wechat-qr { width: 100%; aspect-ratio: 1; margin-bottom: 24px; }
 .fl-wechat-qr img { width: 100%; height: 100%; object-fit: contain; }
 
-/* ==========================================================================
-   MOBILE ECOSYSTEM (<= 768px Viewport)
-   ========================================================================== */
 @media (max-width: 768px) {
-    /* PHYSICALLY KILL DESKTOP TRIGGERS */
     .fl-logo__gif-wrap-pc { display: none !important; }
-
     .fl-grid { padding: 4px 0 160px !important; margin-top: 0 !important; }
-    
     .fl-gallery-text { width: 100% !important; max-width: 100% !important; }
-    .fl-paragraph { 
-        font-size: var(--gallery-content-fs-m) !important; 
-        margin-bottom: 1.8em !important; 
-    }
-    .fl-paragraph:last-child {
-        margin-bottom: 0 !important;
-    }
+    .fl-paragraph { font-size: var(--gallery-content-fs-m) !important; margin-bottom: 1.8em !important; }
+    .fl-paragraph:last-child { margin-bottom: 0 !important; }
     
-    /* 1. MOBILE EXCLUSIVE BACKGROUND OVERLAY */
     .fl-header__bg {
-        display: block;
-        position: fixed;
-        bottom: 24px;
-        left: 32px;
-        width: calc(100% - 64px);
-        height: 44px;
-        background: rgba(255, 255, 255, 0.2) !important; 
+        display: block; position: fixed; bottom: 24px; left: 32px; width: calc(100% - 64px);
+        height: 44px; background: rgba(255, 255, 255, 0.2) !important; 
         backdrop-filter: blur(16px) saturate(160%) !important;
-        -webkit-backdrop-filter: blur(16px) saturate(160%) !important;
-        border: 0.5px solid rgba(0, 0, 0, 0.1) !important; 
-        border-radius: 12px !important;
-        z-index: 1000 !important;
-        pointer-events: none;
+        border: 0.5px solid rgba(0, 0, 0, 0.1) !important; border-radius: 12px !important;
+        z-index: 1000 !important; pointer-events: none;
         transition: height 0.6s var(--fl-ease), transform 0.4s var(--fl-ease) !important;
     }
-    .fl-header__bg.is-expanded {
-        height: var(--bg-height) !important;
-    }
+    .fl-header__bg.is-expanded { height: var(--bg-height) !important; }
 
     @media (prefers-color-scheme: dark) {
         .fl-header__bg {
             background: rgba(28, 28, 30, 0.45) !important;
             border: 0.5px solid rgba(255, 255, 255, 0.1) !important;
-            backdrop-filter: blur(16px) !important;
-            -webkit-backdrop-filter: blur(16px) !important;
         }
     }
     
-    /* 2. MEDIA VISUAL LAYER (Driven dynamically by variables including configured offsets) */
     .fl-landing-hero {
-        top: auto !important;
-        left: auto !important;
-        right: var(--hero-right-mb, 48px) !important;
+        top: auto !important; left: auto !important; right: var(--hero-right-mb, 48px) !important;
         bottom: calc(var(--hero-bottom-base-mb, 80px) + (var(--cr-height) / 2) - (var(--hero-size-mb) / 2)) !important;
-        width: var(--hero-size-mb) !important;
-        height: var(--hero-size-mb) !important;
-        transform: none !important;
-        z-index: 1001 !important;
+        width: var(--hero-size-mb) !important; height: var(--hero-size-mb) !important;
+        transform: none !important; z-index: 1001 !important;
     }
     .fl-landing-hero img { border-radius: 8px !important; }
     
-    /* 3. SCALABLE LABELS LAYER */
     .fl-logo-panel { z-index: 1004 !important; }
     .fl-hero-special-text {
-        font-family: "Arial", sans-serif !important;
-        font-size: var(--special-text-fs-m) !important;
-        font-weight: 700 !important;
-        line-height: 1 !important;
-        width: calc(50% - 24px) !important;
-        white-space: normal !important;
-        top: auto !important;
-        bottom: calc(80px + var(--cr-height) + 24px) !important;
-        left: 48px !important;
-        transform: none !important;
+        font-family: "Arial", sans-serif !important; font-size: var(--special-text-fs-m) !important;
+        font-weight: 700 !important; line-height: 1 !important; width: calc(50% - 24px) !important;
+        white-space: normal !important; top: auto !important; bottom: calc(80px + var(--cr-height) + 24px) !important;
+        left: 48px !important; transform: none !important;
     }
     .fl-contact-row {
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        gap: 0px !important; 
-        width: calc(50% - 24px) !important;
-        top: auto !important;
-        bottom: 80px !important;
-        left: 48px !important;
-        transform: none !important;
+        display: flex !important; flex-direction: column !important; align-items: flex-start !important;
+        gap: 0px !important; width: calc(50% - 24px) !important; top: auto !important;
+        bottom: 80px !important; left: 48px !important; transform: none !important;
     }
     .fl-contact-row .fl-gallery-link {
-        font-family: "Arial", sans-serif !important;
-        font-size: var(--contact-fs-m) !important;
-        font-weight: 700 !important;
-        line-height: 1.05 !important; 
+        font-family: "Arial", sans-serif !important; font-size: var(--contact-fs-m) !important;
+        font-weight: 700 !important; line-height: 1.05 !important; 
     }
 
-    /* 4. STRUCTURAL NAV HEADER LAYER */
     .fl-header {
-        top: auto !important; bottom: 24px !important; 
-        left: 32px !important; width: calc(100% - 64px) !important;
+        top: auto !important; bottom: 24px !important; left: 32px !important; width: calc(100% - 64px) !important;
         height: 44px !important; padding: 0 16px !important; border-radius: 12px !important;
-        background: transparent !important; 
-        backdrop-filter: none !important;
-        -webkit-backdrop-filter: none !important;
-        border: none !important; 
+        background: transparent !important; backdrop-filter: none !important; border: none !important; 
         z-index: 1005 !important; mix-blend-mode: normal !important;
-        transition: transform 0.4s var(--fl-ease) !important;
     }
     
-    /* 5. MOBILE EXCLUSIVE INTERACTIVE TRIGGER */
     .fl-logo__gif-wrap-m { 
-        display: flex !important;
-        position: fixed; 
-        top: auto !important; 
-        bottom: 24px !important; 
-        left: 48px !important; 
-        height: 44px !important; 
-        align-items: center !important;
+        display: flex !important; position: fixed; top: auto !important; bottom: 24px !important; 
+        left: 48px !important; height: 44px !important; align-items: center !important;
         z-index: 1006 !important; 
-        transition: transform 0.4s var(--fl-ease), opacity 0.6s var(--fl-ease);
     }
     .fl-logo__gif-wrap-m .fl-logo__gif { height: 18px !important; opacity: 1 !important; }
     
     .fl-nav { 
-        position: absolute !important;
-        bottom: 0 !important;
-        right: 16px !important;
-        height: 44px !important;
-        display: flex !important;
-        align-items: center !important;
-        gap: 20px !important; 
-        z-index: 2;
+        position: absolute !important; bottom: 0 !important; right: 16px !important;
+        height: 44px !important; display: flex !important; align-items: center !important; gap: 20px !important; 
     }
     .fl-nav__link { font-size: var(--nav-fs-m) !important; color: var(--fl-text) !important; opacity: 1 !important; filter: none !important; }
     .fl-logo-text { opacity: 0 !important; }
-
-    /* HIDING BEHAVIORS */
-    .fl-header.is-nav-hidden,
-    .fl-logo__gif-wrap-m.is-nav-hidden,
-    .fl-header__bg.is-nav-hidden,
-    .fl-logo-panel.is-nav-hidden .fl-hero-special-text,
-    .fl-logo-panel.is-nav-hidden .fl-contact-row,
-    .fl-landing-hero.is-nav-hidden {
-        transform: translateY(120px) !important;
-    }
 }
 </style>
 </head>
 <body class="is-loading">
 
-<!-- ==========================================================================
-   ROOT DOM STRUCTURE
-   ========================================================================== -->
 <div class="fl-cursor" id="ui-cursor">
     <div class="fl-cursor__v" id="ui-cursor-v"></div>
     <div class="fl-cursor__h" id="ui-cursor-h"></div>
@@ -456,10 +317,8 @@ body.is-loading { overflow: hidden; }
     <div class="fl-splash__text" id="ui-splash-text"></div>
 </div>
 
-<!-- Mobile Exclusive Background Plate -->
 <div class="fl-header__bg" id="ui-header-bg"></div>
 
-<!-- Visual Engine Layer -->
 <div class="fl-landing-hero" id="ui-landing-hero">
     <img src="" alt="Landing" id="ui-hero-img">
 </div>
@@ -477,7 +336,6 @@ body.is-loading { overflow: hidden; }
     <img class="fl-logo__gif" id="ui-logo-gif-m" alt="Logo" draggable="false">
 </div>
 
-<!-- Header Navigator Structure -->
 <header class="fl-header" id="ui-header">
     <a href="https://neuepoor.com" class="fl-logo-text" id="ui-logo-text">Foo</a>
     <nav class="fl-nav" id="ui-nav"></nav>
@@ -493,56 +351,38 @@ body.is-loading { overflow: hidden; }
 </div>
 
 <script>
-/* ==========================================================================
-   APPLICATION CONFIGURATION
-   ========================================================================== */
 const CONFIG = {
-    version: "Home 4.14.10",
+    version: "Home 4.14.14",
     seo: { title: "Foo", favicon: "https://folio.neuepoor.com/favicon.webp" },
     splash: { text: "Folio", bg: "https://folio.neuepoor.com/fo.gif" },
-    typography: {
-        header: { font: "Arial, sans-serif", weight: "700", sizePC: "32px", sizeMobile: "21px" },
-        nav: { sizePC: "32px", sizeMobile: "21px" }, 
-        specialText: { sizePC: "32px", sizeMobile: "21px" }, 
-        contact: { sizePC: "32px", sizeMobile: "21px" }, 
-        gallery: { font: "Arial, sans-serif", weight: "700", sizePC: "32px", sizeMobile: "32px" },
-        galleryContent: { sizePC: "32px", sizeMobile: "32px" } 
-    },
-    heroImage: {
-        colSpanPC: 6.0,       // 电脑端占用网格栏数 (推荐 1.5 - 2.5 栏，流式自适应)
-        colSpanMobile: 5.0,    // 手机端占用网格栏数 (推荐 4.0 - 5.0 栏，完美比例自适应)
-        position: {
-            pc: {
-                anchorColumn: 10,  // 电脑端对齐的物理网格列 (1-12 栏)
-                top: "50%",        // 电脑端垂直中心对齐位置
-                transform: "translate3d(-50%, -50%, 0)" // 电脑端居中平移微调
-            },
-            mobile: {
-                right: "21px",     // 手机端横向右边边隙距离
-                bottomBase: "80px"  // 手机端对齐的底部基准线（与联系人列表对齐）
-            }
-        }
-    },
+    
     header: {
-        logo: { gif: "https://folio.neuepoor.com/logo.gif", text: "Foo", sizePC: "32px", sizeMobile: "21px" },
+        logo: { gif: "https://folio.neuepoor.com/logo.gif", text: "Foo", font: "Arial, sans-serif", weight: "700", sizePC: "32px", sizeMobile: "21px" },
         nav: [
-            { name: 'Works', link: 'https://works.neuepoor.com' },
-            { name: '(Play)', link: 'https://play.neuepoor.com' },
-            { name: 'Me', link: 'https://Me.neuepoor.com' }
+            { name: 'Works', link: 'https://works.neuepoor.com', sizePC: "32px", sizeMobile: "21px" },
+            { name: '(Play)', link: 'https://play.neuepoor.com', sizePC: "32px", sizeMobile: "21px" },
+            { name: 'Me', link: 'https://Me.neuepoor.com', sizePC: "32px", sizeMobile: "21px" }
         ]
     },
+    
     logoPanel: {
         heroImg: "https://folio.neuepoor.com/landing.gif",
-        specialText: "Hi, I'm Fo",
+        specialText: { text: "Hi, I'm Fo", sizePC: "32px", sizeMobile: "21px" },
         contact: [
             { name: "Email", link: "mailto:poorleaglguy@qq.com" },
             { name: "Instagram", link: "https://www.instagram.com/neuepoor" },
             { name: "Github", link: "https://github.com/NeuePoor" },
             { name: "小红书", link: "https://xhslink.com/m/9qPnrun1Dh9" },
             { name: "WeChat", link: "#", isWeChat: true }
-        ]
+        ],
+        contactStyles: { sizePC: "32px", sizeMobile: "21px" }
     },
+    
     gallery: { 
+        font: "Arial, sans-serif", 
+        weight: "700", 
+        paragraphSpacing: "2.2em",
+        contentStyles: { sizePC: "32px", sizeMobile: "21px" },
         items: [{ 
             span: 12, 
             paragraphs: [
@@ -551,63 +391,51 @@ const CONFIG = {
                 "Please contact me."
             ]
         }] 
+    },
+    
+    heroImage: {
+        colSpanPC: 6.0,
+        colSpanMobile: 5.0,
+        position: {
+            pc: { anchorColumn: 10, top: "50%", transform: "translate3d(-50%, -50%, 0)" },
+            mobile: { right: "21px", bottomBase: "80px" }
+        }
     }
 };
 
-/* ==========================================================================
-   APPLICATION ENGINE
-   ========================================================================== */
 const ENGINE = {
-    lastWidth: window.innerWidth,
-    lastIsMobile: window.innerWidth <= 768,
-    lastHeight: window.innerHeight,
-    
-    isMobile() { 
-        return window.innerWidth <= 768; 
-    },
-    
-    initSEO() { 
-        document.title = CONFIG.seo.title; 
-        const f = document.getElementById('favicon'); 
-        if (f) f.href = CONFIG.seo.favicon; 
-    },
-    
     applyTypography() {
         const r = document.documentElement; 
-        const t = CONFIG.typography; 
-        const h = CONFIG.heroImage;
-        const l = CONFIG.header.logo;
+        const c = CONFIG;
+        
         const p = { 
-            '--header-font': t.header.font, 
-            '--header-fw': t.header.weight, 
-            '--header-fs': t.header.sizePC, 
-            '--header-fs-m': t.header.sizeMobile, 
-            '--nav-fs': t.nav.sizePC,
-            '--nav-fs-m': t.nav.sizeMobile,
-            '--special-text-fs': t.specialText.sizePC,
-            '--special-text-fs-m': t.specialText.sizeMobile,
-            '--contact-fs': t.contact.sizePC,
-            '--contact-fs-m': t.contact.sizeMobile,
-            '--gallery-content-fs': t.galleryContent.sizePC,
-            '--gallery-content-fs-m': t.galleryContent.sizeMobile,
-            '--gallery-font': t.gallery.font, 
-            '--gallery-fw': t.gallery.weight, 
-            '--gallery-fs': t.gallery.sizePC, 
-            '--gallery-fs-m': t.gallery.sizeMobile, 
-            '--logo-size-pc': l.sizePC, 
-            '--logo-size-m': l.sizeMobile,
+            '--header-font': c.header.logo.font, 
+            '--header-fw': c.header.logo.weight, 
+            '--header-fs': c.header.logo.sizePC, 
+            '--header-fs-m': c.header.logo.sizeMobile, 
+            '--nav-fs': c.header.nav[0].sizePC,
+            '--nav-fs-m': c.header.nav[0].sizeMobile,
+            '--special-text-fs': c.logoPanel.specialText.sizePC,
+            '--special-text-fs-m': c.logoPanel.specialText.sizeMobile,
+            '--contact-fs': c.logoPanel.contactStyles.sizePC,
+            '--contact-fs-m': c.logoPanel.contactStyles.sizeMobile,
+            '--gallery-content-fs': c.gallery.contentStyles.sizePC,
+            '--gallery-content-fs-m': c.gallery.contentStyles.sizeMobile,
+            '--gallery-font': c.gallery.font, 
+            '--gallery-fw': c.gallery.weight, 
+            '--gallery-paragraph-spacing': c.gallery.paragraphSpacing,
+            '--logo-size-pc': c.header.logo.sizePC, 
+            '--logo-size-m': c.header.logo.sizeMobile,
             
-            // 将网格占比映射为 CSS 变量并进行流式计算
-            '--hero-col-span-pc': h.colSpanPC,
-            '--hero-col-span-mb': h.colSpanMobile,
+            '--hero-col-span-pc': c.heroImage.colSpanPC,
+            '--hero-col-span-mb': c.heroImage.colSpanMobile,
             '--hero-size-pc': `calc(var(--hero-col-span-pc) * var(--grid-col-width) + (var(--hero-col-span-pc) - 1) * var(--fl-gutter))`,
             '--hero-size-mb': `calc(var(--hero-col-span-mb) * var(--grid-col-width) + (var(--hero-col-span-mb) - 1) * var(--fl-gutter))`,
             
-            // 完美解耦：将 CONFIG 中的位置配置无缝传递给 CSS
-            '--hero-top-pc': h.position.pc.top,
-            '--hero-transform-pc': h.position.pc.transform,
-            '--hero-right-mb': h.position.mobile.right,
-            '--hero-bottom-base-mb': h.position.mobile.bottomBase
+            '--hero-top-pc': c.heroImage.position.pc.top,
+            '--hero-transform-pc': c.heroImage.position.pc.transform,
+            '--hero-right-mb': c.heroImage.position.mobile.right,
+            '--hero-bottom-base-mb': c.heroImage.position.mobile.bottomBase
         };
         Object.entries(p).forEach(([k, v]) => r.style.setProperty(k, v));
     },
@@ -618,13 +446,10 @@ const ENGINE = {
         const t = document.getElementById('ui-logo-text');
         const n = document.getElementById('ui-nav');
         t.innerText = CONFIG.header.logo.text; 
-        
         gPC.src = CONFIG.header.logo.gif;
         gM.src = CONFIG.header.logo.gif;
-        
         gPC.onload = () => gPC.style.opacity = "1";
         gM.onload = () => gM.style.opacity = "1";
-        
         n.innerHTML = CONFIG.header.nav.map(i => `<a href="${i.link}" class="fl-nav__link">${i.name}</a>`).join('');
     },
     
@@ -633,7 +458,7 @@ const ENGINE = {
         const cr = document.getElementById('ui-contact-row');
         const hi = document.getElementById('ui-hero-img');
         hi.src = CONFIG.logoPanel.heroImg;
-        st.innerText = CONFIG.logoPanel.specialText;
+        st.innerText = CONFIG.logoPanel.specialText.text;
         cr.innerHTML = CONFIG.logoPanel.contact.map(l => `<a href="${l.link}" class="fl-gallery-link" ${l.isWeChat ? 'id="trigger-wechat"' : 'target="_blank"'}>${l.name}</a>`).join('');
         ENGINE.initWeChatTrigger();
     },
@@ -644,25 +469,16 @@ const ENGINE = {
             const paras = i.paragraphs.map(p => `<p class="fl-paragraph">${p}</p>`).join('');
             return `<div class="fl-item-wrapper fl-reveal" style="grid-column: span ${i.span || 12};"><div class="fl-gallery-text">${paras}</div></div>`;
         }).join('');
-        ENGINE.initReveal();
     },
     
-    /* ==========================================================================
-       LOGICAL DECOUPLING: COMPLETE SEPARATION OF STATE MANAGEMENT
-       ========================================================================== */
     resetAllStates() {
         const h = document.getElementById('ui-landing-hero');
         const p = document.getElementById('ui-logo-panel');
         const bg = document.getElementById('ui-header-bg');
         const b = document.body;
-        
-        if (h) {
-            h.style.opacity = '0';
-            h.classList.remove('is-active');
-        }
+        if (h) { h.style.opacity = '0'; h.classList.remove('is-active'); }
         if (p) p.classList.remove('is-panel-pinned');
         if (bg) bg.classList.remove('is-expanded');
-        
         b.classList.remove('is-pin-action', 'has-focus-hover', 'has-panel-focus-hover');
         document.querySelectorAll('.is-hovered-target').forEach(el => el.classList.remove('is-hovered-target'));
     },
@@ -673,34 +489,13 @@ const ENGINE = {
         const st = document.getElementById('ui-hero-special-text');
         const cr = document.getElementById('ui-contact-row');
         const bg = document.getElementById('ui-header-bg');
-        
-        const prevStTransform = st.style.transform;
-        const prevCrTransform = cr.style.transform;
-        st.style.transform = 'none';
-        cr.style.transform = 'none';
-        
-        const origOpacity = st.style.opacity;
-        const origVisibility = st.style.visibility;
-        st.style.opacity = '0'; st.style.visibility = 'visible';
-        cr.style.opacity = '0'; cr.style.visibility = 'visible';
-        
         const stHeight = st.getBoundingClientRect().height || 21;
         const crHeight = cr.getBoundingClientRect().height || 105; 
-        
-        st.style.opacity = origOpacity; st.style.visibility = origVisibility;
-        cr.style.opacity = origOpacity; cr.style.visibility = origVisibility;
-        st.style.transform = prevStTransform; cr.style.transform = prevCrTransform;
-
-        const r = document.documentElement;
-        r.style.setProperty('--cr-height', `${crHeight}px`);
-        r.style.setProperty('--st-height', `${stHeight}px`);
-        r.style.setProperty('--bg-height', `${24 + stHeight + 24 + crHeight + 56}px`);
-
+        document.documentElement.style.setProperty('--cr-height', `${crHeight}px`);
+        document.documentElement.style.setProperty('--bg-height', `${24 + stHeight + 24 + crHeight + 56}px`);
         p.classList.add('is-panel-pinned');
         if (bg) bg.classList.add('is-expanded');
-        
-        h.style.opacity = "1"; 
-        h.classList.add('is-active');
+        h.style.opacity = "1"; h.classList.add('is-active');
     },
 
     showHeroPC(isPin = false) {
@@ -708,271 +503,92 @@ const ENGINE = {
         const p = document.getElementById('ui-logo-panel');
         const st = document.getElementById('ui-hero-special-text');
         const cr = document.getElementById('ui-contact-row');
-        const b = document.body;
-
-        h.style.width = 'var(--hero-size-pc)'; 
-        h.style.height = 'var(--hero-size-pc)';
+        h.style.width = 'var(--hero-size-pc)'; h.style.height = 'var(--hero-size-pc)';
         h.style.top = 'var(--hero-top-pc)'; 
-        
-        // 动态读取 CONFIG 配置的电脑端网格锚定列
         const u = window.innerWidth / 12; 
-        const anchorCol = CONFIG.heroImage.position.pc.anchorColumn;
-        h.style.left = `${u * anchorCol}px`; 
-        h.style.right = 'auto'; h.style.bottom = 'auto';
+        h.style.left = `${u * CONFIG.heroImage.position.pc.anchorColumn}px`; 
         h.style.transform = 'var(--hero-transform-pc)';
-        
-        st.style.left = '4px'; st.style.top = '50%'; st.style.bottom = 'auto';
-        st.style.transform = 'translateY(-50%)';
-        cr.style.left = '4px'; cr.style.bottom = '12px'; cr.style.top = 'auto'; 
-        cr.style.transform = 'none';
-        
-        if (isPin) {
-            p.classList.add('is-panel-pinned');
-            b.classList.add('is-pin-action');
-        }
-        h.style.opacity = "1"; 
-        h.classList.add('is-active');
+        st.style.left = '4px'; st.style.top = '50%'; st.style.transform = 'translateY(-50%)';
+        cr.style.left = '4px'; cr.style.bottom = '12px';
+        if (isPin) { p.classList.add('is-panel-pinned'); document.body.classList.add('is-pin-action'); }
+        h.style.opacity = "1"; h.classList.add('is-active');
     },
 
-    hideHero() {
-        ENGINE.resetAllStates();
-    },
+    hideHero() { ENGINE.resetAllStates(); },
 
     initTriggersAndInteractions() {
         const p = document.getElementById('ui-logo-panel');
         const hero = document.getElementById('ui-landing-hero');
-        
         const lwPC = document.getElementById('ui-logo-gif-wrap-pc');
         const gPC = document.getElementById('ui-logo-gif-pc');
-        
         if (lwPC && gPC) {
-            lwPC.onmouseenter = () => {
-                if (!ENGINE.isMobile() && !p.classList.contains('is-panel-pinned')) {
-                    ENGINE.showHeroPC(false);
-                }
-            };
-            lwPC.onmouseleave = () => {
-                if (!ENGINE.isMobile() && !p.classList.contains('is-panel-pinned')) {
-                    ENGINE.hideHero();
-                }
-            };
-            gPC.onclick = (e) => {
-                e.stopPropagation();
-                if (ENGINE.isMobile()) return; 
-                
-                if (hero.classList.contains('is-active') && p.classList.contains('is-panel-pinned')) {
-                    ENGINE.hideHero();
-                } else {
-                    ENGINE.showHeroPC(true);
-                }
-            };
+            lwPC.onmouseenter = () => { if (window.innerWidth > 768 && !p.classList.contains('is-panel-pinned')) ENGINE.showHeroPC(false); };
+            lwPC.onmouseleave = () => { if (window.innerWidth > 768 && !p.classList.contains('is-panel-pinned')) ENGINE.hideHero(); };
+            gPC.onclick = (e) => { e.stopPropagation(); if (window.innerWidth <= 768) return; if (hero.classList.contains('is-active') && p.classList.contains('is-panel-pinned')) ENGINE.hideHero(); else ENGINE.showHeroPC(true); };
         }
-
-        const lwM = document.getElementById('ui-logo-gif-wrap-m');
         const gM = document.getElementById('ui-logo-gif-m');
-        
-        if (lwM && gM) {
-            gM.onclick = (e) => {
-                e.stopPropagation();
-                if (!ENGINE.isMobile()) return; 
-                
-                if (hero.classList.contains('is-active')) {
-                    ENGINE.hideHero();
-                } else {
-                    ENGINE.showHeroMobile();
-                }
-            };
-        }
-
-        if (p) {
-            p.onclick = (e) => {
-                if (e.target === p && p.classList.contains('is-panel-pinned')) {
-                    ENGINE.hideHero();
-                }
-            };
-        }
+        if (gM) { gM.onclick = (e) => { e.stopPropagation(); if (window.innerWidth > 768) return; if (hero.classList.contains('is-active')) ENGINE.hideHero(); else ENGINE.showHeroMobile(); }; }
+        if (p) { p.onclick = (e) => { if (e.target === p && p.classList.contains('is-panel-pinned')) ENGINE.hideHero(); }; }
     },
     
     initSplash() {
         const s = document.getElementById('ui-splash');
         const st = document.getElementById('ui-splash-text');
         const sb = document.getElementById('ui-splash-bg');
-        const b = document.body;
         st.innerText = CONFIG.splash.text;
         sb.style.backgroundImage = `url(${CONFIG.splash.bg})`;
         const d = () => {
-            if (!b.classList.contains('is-loading')) return;
-            s.classList.add('is-finished'); 
-            b.classList.remove('is-loading');
+            if (!document.body.classList.contains('is-loading')) return;
+            s.classList.add('is-finished'); document.body.classList.remove('is-loading');
             sessionStorage.setItem('fl_visited', 'true');
+            ENGINE.initReveal();
         };
-        if (sessionStorage.getItem('fl_visited')) {
-            b.classList.remove('is-loading'); 
-            s.classList.add('is-finished');
-            return;
-        }
-        setTimeout(d, 1800); 
-        s.onclick = d;
+        if (sessionStorage.getItem('fl_visited')) { document.body.classList.remove('is-loading'); s.classList.add('is-finished'); ENGINE.initReveal(); return; }
+        setTimeout(d, 1800); s.onclick = d;
     },
     
     initFocusMode() {
-        if (ENGINE.isMobile()) return;
-        
-        const b = document.body; 
-        const hero = document.getElementById('ui-landing-hero');
-        
-        const selectorA = '.fl-nav__link, .fl-logo__gif-wrap-pc, .fl-reveal';
-        const selectorB = '.fl-nav__link, .fl-logo__gif-wrap-pc, #ui-landing-hero, #ui-hero-special-text, .fl-gallery-link';
-
+        if (window.innerWidth <= 768) return;
+        const b = document.body; const hero = document.getElementById('ui-landing-hero');
+        const selA = '.fl-nav__link, .fl-logo__gif-wrap-pc, .fl-reveal';
+        const selB = '.fl-nav__link, .fl-logo__gif-wrap-pc, #ui-landing-hero, #ui-hero-special-text, .fl-gallery-link';
         document.addEventListener('mouseover', (e) => { 
-            if (b.classList.contains('is-loading') || ENGINE.isMobile()) return;
-            
+            if (b.classList.contains('is-loading') || window.innerWidth <= 768) return;
             const isPanelActive = hero && hero.classList.contains('is-active');
-            
-            if (isPanelActive) {
-                const target = e.target.closest(selectorB);
-                if (target) {
-                    document.querySelectorAll('.is-hovered-target').forEach(el => el.classList.remove('is-hovered-target'));
-                    b.classList.remove('has-focus-hover');
-                    b.classList.add('has-panel-focus-hover');
-                    target.classList.add('is-hovered-target');
-                }
-            } else {
-                const target = e.target.closest(selectorA);
-                if (target) {
-                    document.querySelectorAll('.is-hovered-target').forEach(el => el.classList.remove('is-hovered-target'));
-                    b.classList.remove('has-panel-focus-hover');
-                    b.classList.add('has-focus-hover');
-                    target.classList.add('is-hovered-target');
-                }
+            const target = e.target.closest(isPanelActive ? selB : selA);
+            if (target) {
+                document.querySelectorAll('.is-hovered-target').forEach(el => el.classList.remove('is-hovered-target'));
+                b.classList.remove('has-focus-hover', 'has-panel-focus-hover');
+                b.classList.add(isPanelActive ? 'has-panel-focus-hover' : 'has-focus-hover');
+                target.classList.add('is-hovered-target');
             }
         });
-
         document.addEventListener('mouseout', (e) => { 
-            if (b.classList.contains('is-loading') || ENGINE.isMobile()) return;
-            
-            const isPanelActive = hero && hero.classList.contains('is-active');
-            const activeSelector = isPanelActive ? selectorB : selectorA;
-            
-            if (!e.relatedTarget || !e.relatedTarget.closest(activeSelector)) {
+            if (b.classList.contains('is-loading') || window.innerWidth <= 768) return;
+            const activeSel = (hero && hero.classList.contains('is-active')) ? selB : selA;
+            if (!e.relatedTarget || !e.relatedTarget.closest(activeSel)) {
                 b.classList.remove('has-focus-hover', 'has-panel-focus-hover');
                 document.querySelectorAll('.is-hovered-target').forEach(el => el.classList.remove('is-hovered-target'));
             }
         });
     },
     
-    initCustomCursor() {
-        if (ENGINE.isMobile()) return;
-        const v = document.getElementById('ui-cursor-v'); 
-        const h = document.getElementById('ui-cursor-h');
-        window.addEventListener('mousemove', (e) => {
-            if (document.body.classList.contains('is-loading')) return;
-            requestAnimationFrame(() => { 
-                v.style.transform = `translate3d(${e.clientX}px, 0, 0)`; 
-                h.style.transform = `translate3d(0, ${e.clientY}px, 0)`; 
-            });
-        }, { passive: true });
-    },
-    
-    initScrollInteraction() {
-        const h = document.getElementById('ui-header'); 
-        const lwM = document.getElementById('ui-logo-gif-wrap-m'); 
-        const bg = document.getElementById('ui-header-bg');
-        const lp = document.getElementById('ui-logo-panel');
-        const lh = document.getElementById('ui-landing-hero');
-        let timer;
-        window.addEventListener('scroll', () => {
-            if (ENGINE.isMobile()) {
-                if (lh && lh.classList.contains('is-active')) return;
-
-                h.classList.add('is-nav-hidden'); 
-                if (lwM) lwM.classList.add('is-nav-hidden');
-                if (bg) bg.classList.add('is-nav-hidden');
-                if (lp) lp.classList.add('is-nav-hidden');
-                if (lh) lh.classList.add('is-nav-hidden');
-
-                clearTimeout(timer); 
-                timer = setTimeout(() => { 
-                    h.classList.remove('is-nav-hidden'); 
-                    if (lwM) lwM.classList.remove('is-nav-hidden'); 
-                    if (bg) bg.classList.remove('is-nav-hidden');
-                    if (lp) lp.classList.remove('is-nav-hidden');
-                    if (lh) lh.classList.remove('is-nav-hidden');
-                }, 250);
-            }
-        }, { passive: true });
-    },
-    
     initReveal() {
-        const o = new IntersectionObserver((es) => es.forEach(e => { 
-            if (e.isIntersecting) { 
-                e.target.classList.add('is-visible'); 
-                o.unobserve(e.target); 
-            } 
-        }), { threshold: 0.05 });
+        const o = new IntersectionObserver((es) => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('is-visible'); o.unobserve(e.target); } }), { threshold: 0.05 });
         document.querySelectorAll('.fl-reveal').forEach(el => o.observe(el));
     },
     
     initWeChatTrigger() {
-        const t = document.getElementById('trigger-wechat'); 
-        const o = document.getElementById('ui-wechat-overlay');
-        if (t && o) { 
-            t.onclick = (e) => { 
-                e.preventDefault(); 
-                o.classList.add('is-active'); 
-            }; 
-            o.onclick = () => o.classList.remove('is-active'); 
-        }
+        const t = document.getElementById('trigger-wechat'); const o = document.getElementById('ui-wechat-overlay');
+        if (t && o) { t.onclick = (e) => { e.preventDefault(); o.classList.add('is-active'); }; o.onclick = () => o.classList.remove('is-active'); }
     },
     
     start() {
-        ENGINE.initSEO(); 
-        ENGINE.applyTypography(); 
-        ENGINE.renderHeader(); 
-        ENGINE.renderLogoPanel();
-        ENGINE.buildContent(); 
-        ENGINE.initFocusMode(); 
-        ENGINE.initCustomCursor();
-        ENGINE.initScrollInteraction(); 
-        ENGINE.initTriggersAndInteractions(); 
-        ENGINE.initSplash();
-        
-        window.addEventListener('resize', () => {
-            const currentIsMobile = ENGINE.isMobile();
-            const widthChanged = Math.abs(window.innerWidth - ENGINE.lastWidth) > 5;
-            const heightChanged = window.innerHeight !== ENGINE.lastHeight;
-            
-            if (currentIsMobile !== ENGINE.lastIsMobile) {
-                ENGINE.lastIsMobile = currentIsMobile;
-                ENGINE.lastWidth = window.innerWidth;
-                ENGINE.lastHeight = window.innerHeight;
-                
-                ENGINE.resetAllStates();
-                ENGINE.buildContent();
-                return;
-            }
-            
-            if (widthChanged) {
-                ENGINE.lastWidth = window.innerWidth;
-                ENGINE.buildContent();
-                if (!ENGINE.isMobile()) {
-                    const h = document.getElementById('ui-landing-hero');
-                    const p = document.getElementById('ui-logo-panel');
-                    if (h && h.classList.contains('is-active') && p.classList.contains('is-panel-pinned')) {
-                        ENGINE.showHeroPC(true);
-                    }
-                }
-            } else if (heightChanged && ENGINE.isMobile()) {
-                const h = document.getElementById('ui-landing-hero');
-                if (h && h.classList.contains('is-active')) {
-                    ENGINE.showHeroMobile();
-                }
-            }
-            ENGINE.lastHeight = window.innerHeight;
-        }, { passive: true });
+        ENGINE.applyTypography(); ENGINE.renderHeader(); ENGINE.renderLogoPanel();
+        ENGINE.buildContent(); ENGINE.initFocusMode(); ENGINE.initTriggersAndInteractions(); ENGINE.initSplash();
+        window.addEventListener('resize', () => { ENGINE.buildContent(); ENGINE.initReveal(); }, { passive: true });
     }
 };
-
 window.onload = () => ENGINE.start();
 </script>
 </body>
