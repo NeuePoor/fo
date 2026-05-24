@@ -25,6 +25,9 @@
     --splash-fs: 32px;
     --gallery-paragraph-spacing: 2.2em;
     
+    /* 开屏动画时长 CSS 变量（由 CONFIG 动态注入） */
+    --splash-dur: 1.2s;
+    
     --grid-col-width: calc((100vw - (var(--fl-margin) * 2) - (var(--fl-gutter) * 11)) / 12);
     --cr-height: 105px;
     --st-height: 21px;
@@ -73,15 +76,16 @@ body.is-loading { overflow: hidden; }
 .fl-cursor__v { width: 1px; height: 100vh; top: 0; left: 0; }
 .fl-cursor__h { height: 1px; width: 100vw; left: 0; top: 0; }
 
+/* 已经应用配置变量 --splash-dur */
 .fl-splash {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     z-index: 9999; display: flex; align-items: center; justify-content: center;
-    background: var(--fl-bg); transition: background 1.2s var(--fl-ease);
+    background: var(--fl-bg); transition: background var(--splash-dur) var(--fl-ease);
 }
 .fl-splash__bg {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     background: url('https://folio.neuepoor.com/fo.gif') center/cover no-repeat;
-    transition: filter 1.8s var(--fl-ease), opacity 1.8s var(--fl-ease), transform 1.8s var(--fl-ease);
+    transition: filter var(--splash-dur) var(--fl-ease), opacity var(--splash-dur) var(--fl-ease), transform var(--splash-dur) var(--fl-ease);
     z-index: 1; opacity: 1;
 }
 .fl-splash__text {
@@ -354,7 +358,14 @@ body.is-loading { overflow: hidden; }
 const CONFIG = {
     version: "Home 4.14.14",
     seo: { title: "Foo", favicon: "https://folio.neuepoor.com/favicon.webp" },
-    splash: { text: "Folio", bg: "https://folio.neuepoor.com/fo.gif" },
+    
+    // 开屏动画核心配置区（已成功进行时间控制解耦）
+    splash: { 
+        text: "Folio", 
+        bg: "https://folio.neuepoor.com/fo.gif",
+        holdTime: 1000,        // 动画未淡出前的纯粹停留时间（单位：毫秒）
+        transitionTime: 1000   // 开屏动画淡出消失的持续时间（单位：毫秒）
+    },
     
     header: {
         logo: { gif: "https://folio.neuepoor.com/logo.gif", text: "Foo", font: "Arial, sans-serif", weight: "700", sizePC: "32px", sizeMobile: "21px" },
@@ -375,7 +386,7 @@ const CONFIG = {
             { name: "小红书", link: "https://xhslink.com/m/9qPnrun1Dh9" },
             { name: "WeChat", link: "#", isWeChat: true }
         ],
-        contactStyles: { sizePC: "21px", sizeMobile: "10px" }
+        contactStyles: { sizePC: "32px", sizeMobile: "21px" }
     },
     
     gallery: { 
@@ -404,6 +415,23 @@ const CONFIG = {
 };
 
 const ENGINE = {
+    // 补回缺少的宽度与高度状态变量
+    lastWidth: window.innerWidth,
+    lastIsMobile: window.innerWidth <= 768,
+    lastHeight: window.innerHeight,
+    
+    // 补回缺少的 isMobile 方法判断
+    isMobile() { 
+        return window.innerWidth <= 768; 
+    },
+
+    // 恢复：1. 浏览器标题与 Favicon 的动态重绘
+    initSEO() { 
+        document.title = CONFIG.seo.title; 
+        const f = document.getElementById('favicon'); 
+        if (f) f.href = CONFIG.seo.favicon; 
+    },
+
     applyTypography() {
         const r = document.documentElement; 
         const c = CONFIG;
@@ -435,7 +463,10 @@ const ENGINE = {
             '--hero-top-pc': c.heroImage.position.pc.top,
             '--hero-transform-pc': c.heroImage.position.pc.transform,
             '--hero-right-mb': c.heroImage.position.mobile.right,
-            '--hero-bottom-base-mb': c.heroImage.position.mobile.bottomBase
+            '--hero-bottom-base-mb': c.heroImage.position.mobile.bottomBase,
+            
+            // 动态向全局注入配置中的过渡时间变量（格式化为毫秒级秒数，如 1200ms -> 1.2s）
+            '--splash-dur': `${c.splash.transitionTime}ms`
         };
         Object.entries(p).forEach(([k, v]) => r.style.setProperty(k, v));
     },
@@ -544,7 +575,10 @@ const ENGINE = {
             ENGINE.initReveal();
         };
         if (sessionStorage.getItem('fl_visited')) { document.body.classList.remove('is-loading'); s.classList.add('is-finished'); ENGINE.initReveal(); return; }
-        setTimeout(d, 1800); s.onclick = d;
+        
+        // 遵循第一性原则：使用 CONFIG.splash.holdTime 来控制自动淡出前的停留延迟
+        setTimeout(d, CONFIG.splash.holdTime); 
+        s.onclick = d;
     },
     
     initFocusMode() {
@@ -572,9 +606,59 @@ const ENGINE = {
             }
         });
     },
+
+    initCustomCursor() {
+        if (ENGINE.isMobile()) return;
+        const v = document.getElementById('ui-cursor-v'); 
+        const h = document.getElementById('ui-cursor-h');
+        window.addEventListener('mousemove', (e) => {
+            if (document.body.classList.contains('is-loading')) return;
+            requestAnimationFrame(() => { 
+                v.style.transform = `translate3d(${e.clientX}px, 0, 0)`; 
+                h.style.transform = `translate3d(0, ${e.clientY}px, 0)`; 
+            });
+        }, { passive: true });
+    },
+
+    initScrollInteraction() {
+        const h = document.getElementById('ui-header'); 
+        const lwM = document.getElementById('ui-logo-gif-wrap-m'); 
+        const bg = document.getElementById('ui-header-bg');
+        const lp = document.getElementById('ui-logo-panel');
+        const lh = document.getElementById('ui-landing-hero');
+        let timer;
+        window.addEventListener('scroll', () => {
+            if (ENGINE.isMobile()) {
+                if (lh && lh.classList.contains('is-active')) return;
+
+                h.classList.add('is-nav-hidden'); 
+                if (lwM) lwM.classList.add('is-nav-hidden');
+                if (bg) bg.classList.add('is-nav-hidden');
+                if (lp) lp.classList.add('is-nav-hidden');
+                if (lh) lh.classList.add('is-nav-hidden');
+
+                clearTimeout(timer); 
+                timer = setTimeout(() => { 
+                    h.classList.remove('is-nav-hidden'); 
+                    if (lwM) lwM.classList.remove('is-nav-hidden'); 
+                    if (bg) bg.classList.remove('is-nav-hidden');
+                    if (lp) lp.classList.remove('is-nav-hidden');
+                    if (lh) lh.classList.remove('is-nav-hidden');
+                }, 250);
+            }
+        }, { passive: true });
+    },
     
     initReveal() {
-        const o = new IntersectionObserver((es) => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('is-visible'); o.unobserve(e.target); } }), { threshold: 0.05 });
+        const o = new IntersectionObserver((es) => es.forEach(e => { 
+            if (e.isIntersecting) { 
+                e.target.classList.add('is-visible'); 
+                // 核心解耦优化：如果是移动端，立即退订当前元素，实现纯粹的单次触发
+                if (ENGINE.isMobile()) {
+                    o.unobserve(e.target); 
+                }
+            } 
+        }), { threshold: 0.05 });
         document.querySelectorAll('.fl-reveal').forEach(el => o.observe(el));
     },
     
@@ -584,9 +668,52 @@ const ENGINE = {
     },
     
     start() {
-        ENGINE.applyTypography(); ENGINE.renderHeader(); ENGINE.renderLogoPanel();
-        ENGINE.buildContent(); ENGINE.initFocusMode(); ENGINE.initTriggersAndInteractions(); ENGINE.initSplash();
-        window.addEventListener('resize', () => { ENGINE.buildContent(); ENGINE.initReveal(); }, { passive: true });
+        ENGINE.initSEO(); 
+        ENGINE.applyTypography(); 
+        ENGINE.renderHeader(); 
+        ENGINE.renderLogoPanel();
+        ENGINE.buildContent(); 
+        ENGINE.initFocusMode(); 
+        ENGINE.initCustomCursor();
+        ENGINE.initScrollInteraction();
+        ENGINE.initTriggersAndInteractions(); 
+        ENGINE.initSplash();
+
+        window.addEventListener('resize', () => {
+            const currentIsMobile = ENGINE.isMobile();
+            const widthChanged = Math.abs(window.innerWidth - ENGINE.lastWidth) > 5;
+            const heightChanged = window.innerHeight !== ENGINE.lastHeight;
+            
+            if (currentIsMobile !== ENGINE.lastIsMobile) {
+                ENGINE.lastIsMobile = currentIsMobile;
+                ENGINE.lastWidth = window.innerWidth;
+                ENGINE.lastHeight = window.innerHeight;
+                
+                ENGINE.resetAllStates();
+                ENGINE.buildContent();
+                ENGINE.initReveal(); 
+                return;
+            }
+            
+            if (widthChanged) {
+                ENGINE.lastWidth = window.innerWidth;
+                ENGINE.buildContent();
+                ENGINE.initReveal(); 
+                if (!ENGINE.isMobile()) {
+                    const h = document.getElementById('ui-landing-hero');
+                    const p = document.getElementById('ui-logo-panel');
+                    if (h && h.classList.contains('is-active') && p.classList.contains('is-panel-pinned')) {
+                        ENGINE.showHeroPC(true);
+                    }
+                }
+            } else if (heightChanged && ENGINE.isMobile()) {
+                const h = document.getElementById('ui-landing-hero');
+                if (h && h.classList.contains('is-active')) {
+                    ENGINE.showHeroMobile();
+                }
+            }
+            ENGINE.lastHeight = window.innerHeight;
+        }, { passive: true });
     }
 };
 window.onload = () => ENGINE.start();
