@@ -254,15 +254,6 @@ body.is-loading { overflow: hidden; }
 .fl-wechat-qr img { width: 100%; height: 100%; object-fit: contain; }
 
 @media (max-width: 768px) {
-    /* ==== 幽灵背景解耦：开屏动画结束后通过 JS 注入此 Class ==== */
-    body.has-phantom-bg { 
-        background-image: url('https://folio.neuepoor.com/fo.gif') !important;
-        background-size: cover !important;
-        background-position: center !important;
-        background-attachment: scroll !important; 
-        background-color: #1a1a1a !important; 
-    }
-
     .is-nav-hidden {
         opacity: 0 !important;
         transform: translateY(20px) !important;
@@ -413,7 +404,7 @@ body.is-loading { overflow: hidden; }
 
 <script>
 const CONFIG = {
-    version: "4.14.22",
+    version: "4.14.20",
     seo: { title: "Foo", favicon: "https://folio.neuepoor.com/favicon.webp" },
     
     splash: { 
@@ -635,16 +626,10 @@ const ENGINE = {
             s.classList.add('is-finished'); document.body.classList.remove('is-loading');
             sessionStorage.setItem('fl_visited', 'true');
             ENGINE.initReveal();
-            
-            // 核心解耦：等待动画淡出完毕后，再挂载幽灵背景，保全开屏模糊质感
-            setTimeout(() => {
-                document.body.classList.add('has-phantom-bg');
-            }, CONFIG.splash.transitionTime);
         };
         if (sessionStorage.getItem('fl_visited')) { 
             document.body.classList.remove('is-loading'); 
             s.classList.add('is-finished'); 
-            document.body.classList.add('has-phantom-bg'); // 已访问用户直接挂载
             ENGINE.initReveal(); 
             return; 
         }
