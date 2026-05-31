@@ -261,7 +261,14 @@ body.is-loading { overflow: hidden; }
     }
 
     .fl-logo__gif-wrap-pc { display: none !important; }
-    .fl-grid { padding: 4px 0 160px !important; margin-top: 0 !important; }
+    
+    /* 核心修改：安全距离保护 (防止顶部白色遮挡) + 临时 200vh 占位 (触发 Safari 沉浸式收缩) */
+    .fl-grid { 
+        padding: calc(env(safe-area-inset-top) + 12px) 0 160px !important; 
+        margin-top: 0 !important; 
+        min-height: 200vh !important;
+    }
+    
     .fl-gallery-text { width: 100% !important; max-width: 100% !important; }
     .fl-paragraph { font-size: var(--gallery-content-fs-m) !important; margin-bottom: 1.8em !important; }
     .fl-paragraph:last-child { margin-bottom: 0 !important; }
@@ -399,7 +406,7 @@ body.is-loading { overflow: hidden; }
 
 <script>
 const CONFIG = {
-    version: "4.14.16",
+    version: "4.14.17",
     seo: { title: "Foo", favicon: "https://folio.neuepoor.com/favicon.webp" },
     
     splash: { 
