@@ -254,6 +254,19 @@ body.is-loading { overflow: hidden; }
 .fl-wechat-qr img { width: 100%; height: 100%; object-fit: contain; }
 
 @media (max-width: 768px) {
+    /* ==== 核心逻辑：手机端解除 Fixed，将其化为普通顶部大容器，释放系统级限制 ==== */
+    .fl-splash.is-finished {
+        position: absolute !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        z-index: 1 !important; /* 完美垫底 */
+    }
+    
+    /* 剥离 CSS opacity 过渡控制，确保 JS 滑动透明度变化时不产生性能撕裂与卡顿 */
+    .fl-splash.is-scroll-ready .fl-splash__bg {
+        transition: transform var(--splash-dur) var(--fl-ease), filter var(--splash-dur) var(--fl-ease) !important;
+    }
+
     .is-nav-hidden {
         opacity: 0 !important;
         transform: translateY(20px) !important;
@@ -272,7 +285,7 @@ body.is-loading { overflow: hidden; }
         backdrop-filter: blur(16px) saturate(160%) !important;
         border: 0.5px solid rgba(0, 0, 0, 0.1) !important; border-radius: 12px !important;
         z-index: 1000 !important; pointer-events: none;
-        transition: height 0.6s var(--fl-ease), transform 0.4s var(--fl-ease), opacity 0.4s var(--fl-ease) !important;
+        transition: height 0.4s var(--fl-ease), transform 0.4s var(--fl-ease), opacity 0.4s var(--fl-ease) !important;
     }
     .fl-header__bg.is-expanded { height: var(--bg-height) !important; }
 
@@ -365,7 +378,6 @@ body.is-loading { overflow: hidden; }
     <div class="fl-hero-special-text" id="ui-hero-special-text"></div>
     <div class="fl-contact-row" id="ui-contact-row"></div>
     
-    <!-- SVG 关闭按钮，在 panel 打开时显现 -->
     <div class="fl-close-btn" id="ui-close-btn">
         <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -398,14 +410,17 @@ body.is-loading { overflow: hidden; }
 
 <script>
 const CONFIG = {
-    version: "4.14.16",
+    version: "4.14.27",
     seo: { title: "Foo", favicon: "https://folio.neuepoor.com/favicon.webp" },
     
     splash: { 
         text: "Folio", 
         bg: "https://folio.neuepoor.com/fo.gif",
         holdTime: 1000,
-        transitionTime: 1000
+        transitionTime: 1000,
+        // 控制手机端背景滑动渐隐的速度（系数）。
+        // 0.35 表示页面往下滑动相当于屏幕高度 35% 的距离时，背景就会完全变透明消失。值越小，消失越快。
+        scrollFadeRatio: 0.1
     },
     
     header: {
@@ -600,7 +615,6 @@ const ENGINE = {
         if (gM) { gM.onclick = (e) => { e.stopPropagation(); if (window.innerWidth > 768) return; if (hero.classList.contains('is-active')) ENGINE.hideHero(); else ENGINE.showHeroMobile(); }; }
         if (p) { p.onclick = (e) => { if (e.target === p && p.classList.contains('is-panel-pinned')) ENGINE.hideHero(); }; }
         
-        // 独立的关闭按钮逻辑绑定
         if (closeBtn) {
             closeBtn.onclick = (e) => {
                 e.stopPropagation();
@@ -615,16 +629,34 @@ const ENGINE = {
         const sb = document.getElementById('ui-splash-bg');
         st.innerText = CONFIG.splash.text;
         sb.style.backgroundImage = `url(${CONFIG.splash.bg})`;
+        
         const d = () => {
             if (!document.body.classList.contains('is-loading')) return;
             s.classList.add('is-finished'); document.body.classList.remove('is-loading');
             sessionStorage.setItem('fl_visited', 'true');
             ENGINE.initReveal();
+            
+            // 手机端核心逻辑：待 Splash CSS 层过渡结束（完全释放控制权），让 JS 接管透明度滑动
+            setTimeout(() => {
+                s.classList.add('is-scroll-ready');
+                if (ENGINE.isMobile()) {
+                    let fadeRatio = CONFIG.splash.scrollFadeRatio || 0.8;
+                    let op = 1 - (window.scrollY / (window.innerHeight * fadeRatio));
+                    sb.style.opacity = Math.max(0, Math.min(1, op));
+                }
+            }, CONFIG.splash.transitionTime);
         };
+        
         if (sessionStorage.getItem('fl_visited')) { 
             document.body.classList.remove('is-loading'); 
-            s.classList.add('is-finished'); 
+            s.classList.add('is-finished', 'is-scroll-ready'); 
             ENGINE.initReveal(); 
+            
+            if (ENGINE.isMobile()) {
+                let fadeRatio = CONFIG.splash.scrollFadeRatio || 0.8;
+                let op = 1 - (window.scrollY / (window.innerHeight * fadeRatio));
+                sb.style.opacity = Math.max(0, Math.min(1, op));
+            }
             return; 
         }
         
@@ -662,12 +694,20 @@ const ENGINE = {
         if (ENGINE.isMobile()) return;
         const v = document.getElementById('ui-cursor-v'); 
         const h = document.getElementById('ui-cursor-h');
+        
+        let ticking = false;
+        
         window.addEventListener('mousemove', (e) => {
             if (document.body.classList.contains('is-loading')) return;
-            requestAnimationFrame(() => { 
-                v.style.transform = `translate3d(${e.clientX}px, 0, 0)`; 
-                h.style.transform = `translate3d(0, ${e.clientY}px, 0)`; 
-            });
+            
+            if (!ticking) {
+                requestAnimationFrame(() => { 
+                    v.style.transform = `translate3d(${e.clientX}px, 0, 0)`; 
+                    h.style.transform = `translate3d(0, ${e.clientY}px, 0)`; 
+                    ticking = false;
+                });
+                ticking = true;
+            }
         }, { passive: true });
     },
 
@@ -677,33 +717,60 @@ const ENGINE = {
         const bg = document.getElementById('ui-header-bg');
         const lp = document.getElementById('ui-logo-panel');
         const lh = document.getElementById('ui-landing-hero');
+        const splash = document.getElementById('ui-splash');
+        const splashBg = document.getElementById('ui-splash-bg');
+        
         let timer;
         let lastScrollY = window.scrollY;
+        let ticking = false;
 
         window.addEventListener('scroll', () => {
             if (ENGINE.isMobile()) {
-                if (lh && lh.classList.contains('is-active')) return;
+                if (!ticking) {
+                    requestAnimationFrame(() => {
+                        const currentScrollY = window.scrollY;
+                        
+                        // 1. 核心滚动解耦：跟随页面滑动，动态减弱 fo.gif 透明度
+                        if (splash && splash.classList.contains('is-scroll-ready')) {
+                            let fadeRatio = CONFIG.splash.scrollFadeRatio || 0.8;
+                            let op = 1 - (currentScrollY / (window.innerHeight * fadeRatio));
+                            splashBg.style.opacity = Math.max(0, Math.min(1, op));
+                        }
 
-                const currentScrollY = window.scrollY;
-                const isScrollingDown = currentScrollY > lastScrollY;
-                lastScrollY = currentScrollY;
+                        // 2. 导航栏交互控制
+                        if (lh && lh.classList.contains('is-active')) {
+                            ticking = false;
+                            return;
+                        }
 
-                if (isScrollingDown && currentScrollY > 10) {
-                    h.classList.add('is-nav-hidden'); 
-                    if (lwM) lwM.classList.add('is-nav-hidden');
-                    if (bg) bg.classList.add('is-nav-hidden');
-                    if (lp) lp.classList.add('is-nav-hidden');
-                    if (lh) lh.classList.add('is-nav-hidden');
+                        const isScrollingDown = currentScrollY > lastScrollY;
+                        lastScrollY = currentScrollY;
+
+                        if (isScrollingDown && currentScrollY > 10) {
+                            if (!h.classList.contains('is-nav-hidden')) {
+                                h.classList.add('is-nav-hidden'); 
+                                if (lwM) lwM.classList.add('is-nav-hidden');
+                                if (bg) bg.classList.add('is-nav-hidden');
+                                if (lp) lp.classList.add('is-nav-hidden');
+                                if (lh) lh.classList.add('is-nav-hidden');
+                            }
+                        }
+
+                        clearTimeout(timer); 
+                        timer = setTimeout(() => { 
+                            if (h.classList.contains('is-nav-hidden')) {
+                                h.classList.remove('is-nav-hidden'); 
+                                if (lwM) lwM.classList.remove('is-nav-hidden'); 
+                                if (bg) bg.classList.remove('is-nav-hidden');
+                                if (lp) lp.classList.remove('is-nav-hidden');
+                                if (lh) lh.classList.remove('is-nav-hidden');
+                            }
+                        }, 350);
+                        
+                        ticking = false;
+                    });
+                    ticking = true;
                 }
-
-                clearTimeout(timer); 
-                timer = setTimeout(() => { 
-                    h.classList.remove('is-nav-hidden'); 
-                    if (lwM) lwM.classList.remove('is-nav-hidden'); 
-                    if (bg) bg.classList.remove('is-nav-hidden');
-                    if (lp) lp.classList.remove('is-nav-hidden');
-                    if (lh) lh.classList.remove('is-nav-hidden');
-                }, 350);
             }
         }, { passive: true });
     },
@@ -737,40 +804,44 @@ const ENGINE = {
         ENGINE.initTriggersAndInteractions(); 
         ENGINE.initSplash();
 
+        let resizeTicking = false;
         window.addEventListener('resize', () => {
-            const currentIsMobile = ENGINE.isMobile();
-            const widthChanged = Math.abs(window.innerWidth - ENGINE.lastWidth) > 5;
-            const heightChanged = window.innerHeight !== ENGINE.lastHeight;
-            
-            if (currentIsMobile !== ENGINE.lastIsMobile) {
-                ENGINE.lastIsMobile = currentIsMobile;
-                ENGINE.lastWidth = window.innerWidth;
-                ENGINE.lastHeight = window.innerHeight;
-                
-                ENGINE.resetAllStates();
-                ENGINE.buildContent();
-                ENGINE.initReveal(); 
-                return;
-            }
-            
-            if (widthChanged) {
-                ENGINE.lastWidth = window.innerWidth;
-                ENGINE.buildContent();
-                ENGINE.initReveal(); 
-                if (!ENGINE.isMobile()) {
-                    const h = document.getElementById('ui-landing-hero');
-                    const p = document.getElementById('ui-logo-panel');
-                    if (h && h.classList.contains('is-active') && p.classList.contains('is-panel-pinned')) {
-                        ENGINE.showHeroPC(true);
+            if (!resizeTicking) {
+                requestAnimationFrame(() => {
+                    const currentIsMobile = ENGINE.isMobile();
+                    const widthChanged = Math.abs(window.innerWidth - ENGINE.lastWidth) > 5;
+                    const heightChanged = window.innerHeight !== ENGINE.lastHeight;
+                    
+                    if (currentIsMobile !== ENGINE.lastIsMobile) {
+                        ENGINE.lastIsMobile = currentIsMobile;
+                        ENGINE.lastWidth = window.innerWidth;
+                        ENGINE.lastHeight = window.innerHeight;
+                        
+                        ENGINE.resetAllStates();
+                        ENGINE.buildContent();
+                        ENGINE.initReveal(); 
+                    } else if (widthChanged) {
+                        ENGINE.lastWidth = window.innerWidth;
+                        ENGINE.buildContent();
+                        ENGINE.initReveal(); 
+                        if (!ENGINE.isMobile()) {
+                            const h = document.getElementById('ui-landing-hero');
+                            const p = document.getElementById('ui-logo-panel');
+                            if (h && h.classList.contains('is-active') && p.classList.contains('is-panel-pinned')) {
+                                ENGINE.showHeroPC(true);
+                            }
+                        }
+                    } else if (heightChanged && ENGINE.isMobile()) {
+                        const h = document.getElementById('ui-landing-hero');
+                        if (h && h.classList.contains('is-active')) {
+                            ENGINE.showHeroMobile();
+                        }
                     }
-                }
-            } else if (heightChanged && ENGINE.isMobile()) {
-                const h = document.getElementById('ui-landing-hero');
-                if (h && h.classList.contains('is-active')) {
-                    ENGINE.showHeroMobile();
-                }
+                    ENGINE.lastHeight = window.innerHeight;
+                    resizeTicking = false;
+                });
+                resizeTicking = true;
             }
-            ENGINE.lastHeight = window.innerHeight;
         }, { passive: true });
     }
 };
