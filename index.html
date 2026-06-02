@@ -274,7 +274,14 @@ body.is-loading { overflow: hidden; }
     }
 
     .fl-logo__gif-wrap-pc { display: none !important; }
-    .fl-grid { padding: 4px 0 160px !important; margin-top: 0 !important; }
+    
+    /* 补丁：增加 min-height: 200vh，强制撑开页面触发 Safari 沉浸式工具栏 */
+    .fl-grid { 
+        padding: 4px 0 160px !important; 
+        margin-top: 0 !important; 
+        min-height: 200vh !important; 
+    }
+    
     .fl-gallery-text { width: 100% !important; max-width: 100% !important; }
     .fl-paragraph { font-size: var(--gallery-content-fs-m) !important; margin-bottom: 1.8em !important; }
     .fl-paragraph:last-child { margin-bottom: 0 !important; }
@@ -410,7 +417,7 @@ body.is-loading { overflow: hidden; }
 
 <script>
 const CONFIG = {
-    version: "4.14.27",
+    version: "4.14.29",
     seo: { title: "Foo", favicon: "https://folio.neuepoor.com/favicon.webp" },
     
     splash: { 
@@ -419,7 +426,7 @@ const CONFIG = {
         holdTime: 1000,
         transitionTime: 1000,
         // 控制手机端背景滑动渐隐的速度（系数）。
-        // 0.35 表示页面往下滑动相当于屏幕高度 35% 的距离时，背景就会完全变透明消失。值越小，消失越快。
+        // 0.1 表示页面往下滑动相当于屏幕高度 10% 的距离时，背景就会完全变透明消失。值越小，消失越快。
         scrollFadeRatio: 0.1
     },
     
@@ -605,6 +612,7 @@ const ENGINE = {
         const lwPC = document.getElementById('ui-logo-gif-wrap-pc');
         const gPC = document.getElementById('ui-logo-gif-pc');
         const closeBtn = document.getElementById('ui-close-btn');
+        const navContainer = document.getElementById('ui-nav');
 
         if (lwPC && gPC) {
             lwPC.onmouseenter = () => { if (window.innerWidth > 768 && !p.classList.contains('is-panel-pinned')) ENGINE.showHeroPC(false); };
@@ -620,6 +628,27 @@ const ENGINE = {
                 e.stopPropagation();
                 ENGINE.hideHero();
             };
+        }
+
+        // ==== 点击导航劫持并延迟收回逻辑 ====
+        if (navContainer) {
+            navContainer.addEventListener('click', (e) => {
+                const link = e.target.closest('.fl-nav__link');
+                if (!link) return; // 如果点的不是 a 标签则不管
+                
+                // 【核心锁】：仅当是手机端、且面板在开启状态时才执行动画拦截
+                if (ENGINE.isMobile() && p && p.classList.contains('is-panel-pinned')) {
+                    e.preventDefault(); // 阻断原生的瞬间跳转
+                    
+                    const targetHref = link.href;
+                    ENGINE.hideHero();  // 触发 CSS 收拢动画
+                    
+                    // 精准等待 400ms（与 CSS transition 0.4s 保持对齐）
+                    setTimeout(() => {
+                        window.location.href = targetHref;
+                    }, 400);
+                }
+            });
         }
     },
     
