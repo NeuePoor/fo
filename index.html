@@ -7,6 +7,8 @@
 <title>Foo</title>
 <link id="favicon" rel="icon" type="image/webp" href="https://folio.neuepoor.com/favicon.webp">
 
+<link rel="preload" as="image" href="https://folio.neuepoor.com/fo.gif">
+
 <style>
 /* ==========================================================================
    DYNAMIC DESIGN TOKENS (CSS VARIABLES)
@@ -24,8 +26,6 @@
     --fl-font-fallback: "Arial", "Helvetica", sans-serif;
     --splash-fs: 32px;
     --gallery-paragraph-spacing: 2.2em;
-    
-    /* 开屏动画时长 CSS 变量（由 CONFIG 动态注入） */
     --splash-dur: 1.2s;
     
     --grid-col-width: calc((100vw - (var(--fl-margin) * 2) - (var(--fl-gutter) * 11)) / 12);
@@ -76,7 +76,6 @@ body.is-loading { overflow: hidden; }
 .fl-cursor__v { width: 1px; height: 100vh; top: 0; left: 0; }
 .fl-cursor__h { height: 1px; width: 100vw; left: 0; top: 0; }
 
-/* 已经应用配置变量 --splash-dur */
 .fl-splash {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     z-index: 9999; display: flex; align-items: center; justify-content: center;
@@ -87,12 +86,15 @@ body.is-loading { overflow: hidden; }
     background: url('https://folio.neuepoor.com/fo.gif') center/cover no-repeat;
     transition: filter var(--splash-dur) var(--fl-ease), opacity var(--splash-dur) var(--fl-ease), transform var(--splash-dur) var(--fl-ease);
     z-index: 1; opacity: 1;
+    transform: translateZ(0); 
 }
 .fl-splash__text {
     position: relative; z-index: 3;
     font-size: var(--splash-fs); font-weight: 700; color: #fff;
     mix-blend-mode: difference; opacity: 1; pointer-events: none;
     transition: opacity 0.5s var(--fl-ease);
+    transform: translateZ(0); 
+    will-change: opacity, transform;
 }
 .fl-splash.is-finished { pointer-events: none; background: transparent; z-index: 1; }
 .fl-splash.is-finished .fl-splash__bg { filter: blur(40px); opacity: 1; transform: scale(1.1); }
@@ -123,14 +125,24 @@ body.is-loading { overflow: hidden; }
     mix-blend-mode: difference;
     transition: transform 0.4s var(--fl-ease); 
 }
+
 .fl-logo-text { 
     text-decoration: none; 
     color: #fff; 
     font-size: var(--header-fs); 
     font-weight: var(--header-fw); 
     opacity: 0; 
-    pointer-events: none; 
+    cursor: pointer;
+    pointer-events: auto; 
+    transition: opacity 0.3s var(--fl-ease);
 }
+
+.fl-logo-text.is-replaced {
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
 .fl-nav { display: flex; gap: 40px; }
 .fl-nav__link { 
     font-size: var(--nav-fs); 
@@ -208,7 +220,6 @@ body.is-loading { overflow: hidden; }
 .fl-contact-row { display: flex; gap: 40px; align-items: center; }
 .fl-gallery-link { font-size: var(--contact-fs); font-weight: var(--gallery-fw); color: var(--fl-text); text-decoration: none; transition: opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease); }
 
-/* SVG Close Button 基础(PC)层级设计 */
 .fl-close-btn { 
     position: absolute; 
     right: 24px; 
@@ -223,17 +234,19 @@ body.is-loading { overflow: hidden; }
 }
 
 @media (min-width: 769px) {
-    .fl-nav__link, .fl-logo__gif-wrap-pc, .fl-hero-special-text, .fl-contact-row, .fl-close-btn, .fl-landing-hero { transition: opacity 0.6s var(--fl-ease), filter 0.6s var(--fl-ease), visibility 0.5s var(--fl-ease) !important; }
+    .fl-nav__link, .fl-logo__gif-wrap-pc, .fl-hero-special-text, .fl-contact-row, .fl-close-btn, .fl-landing-hero, .fl-logo-text { transition: opacity 0.6s var(--fl-ease), filter 0.6s var(--fl-ease), visibility 0.5s var(--fl-ease) !important; }
     .fl-reveal { transition: opacity var(--fl-reveal-dur) var(--fl-ease), transform var(--fl-reveal-dur) var(--fl-ease), filter 0.6s var(--fl-ease) !important; }
 
     body.has-focus-hover .fl-nav__link:not(.is-hovered-target),
     body.has-focus-hover .fl-logo__gif-wrap-pc:not(.is-hovered-target),
+    body.has-focus-hover .fl-logo-text:not(.is-hovered-target),
     body.has-focus-hover .fl-reveal:not(.is-hovered-target) { opacity: 0.2; filter: blur(8px); }
 
     #ui-landing-hero.is-active ~ #ui-main-grid .fl-reveal { opacity: 0.2; filter: blur(8px); }
 
     body.has-panel-focus-hover #ui-landing-hero:not(.is-hovered-target),
     body.has-panel-focus-hover .fl-logo__gif-wrap-pc:not(.is-hovered-target),
+    body.has-panel-focus-hover .fl-logo-text:not(.is-hovered-target),
     body.has-panel-focus-hover .fl-nav__link:not(.is-hovered-target),
     body.has-panel-focus-hover .fl-hero-special-text:not(.is-hovered-target),
     body.has-panel-focus-hover .fl-gallery-link:not(.is-hovered-target),
@@ -249,22 +262,22 @@ body.is-loading { overflow: hidden; }
     opacity: 0; visibility: hidden; transition: 0.4s var(--fl-ease);
 }
 .fl-wechat-overlay.is-active { opacity: 1; visibility: visible; }
-.fl-wechat-card { width: 320px; background: #fff; padding: 40px; text-align: center; }
-.fl-wechat-qr { width: 100%; aspect-ratio: 1; margin-bottom: 24px; }
+
+/* 微信卡片：强制文字为黑色以切断深色模式干扰，并适配大小 */
+.fl-wechat-card { width: 320px; background: #fff; padding: 40px; text-align: center; color: #000; }
+.fl-wechat-qr { width: 100%; aspect-ratio: 1; margin: 0 auto 24px auto; }
 .fl-wechat-qr img { width: 100%; height: 100%; object-fit: contain; }
 
 @media (max-width: 768px) {
-    /* ==== 核心杀招：手机端开屏容器“出生即 Absolute”，根治 Safari 固定元素快照 Bug ==== */
     .fl-splash {
         position: absolute !important;
-        height: 100vh !important;
-        height: 100dvh !important;
+        top: -10vh !important; 
+        left: 0 !important;
+        width: 100% !important;
+        height: 120vh !important; 
     }
-    .fl-splash.is-finished {
-        z-index: 1 !important; /* 完美垫底 */
-    }
+    .fl-splash.is-finished { z-index: 1 !important; }
     
-    /* 剥离 CSS opacity 过渡控制，确保 JS 滑动透明度变化时不产生性能撕裂与卡顿 */
     .fl-splash.is-scroll-ready .fl-splash__bg {
         transition: transform var(--splash-dur) var(--fl-ease), filter var(--splash-dur) var(--fl-ease) !important;
     }
@@ -277,14 +290,9 @@ body.is-loading { overflow: hidden; }
 
     .fl-logo__gif-wrap-pc { display: none !important; }
     
-    /* 补丁：增加 min-height: 200vh，强制撑开页面触发 Safari 沉浸式工具栏 */
-    .fl-grid { 
-        padding: 4px 0 160px !important; 
-        margin-top: 0 !important; 
-        min-height: 200vh !important; 
-    }
-    
+    .fl-grid { padding: 4px 0 160px !important; margin-top: 0 !important; min-height: 200vh !important; }
     .fl-gallery-text { width: 100% !important; max-width: 100% !important; }
+    
     .fl-paragraph { font-size: var(--gallery-content-fs-m) !important; margin-bottom: 1.8em !important; }
     .fl-paragraph:last-child { margin-bottom: 0 !important; }
     
@@ -313,16 +321,8 @@ body.is-loading { overflow: hidden; }
     }
     .fl-landing-hero img { border-radius: 8px !important; }
     
-    .fl-logo-panel { 
-        z-index: 1004 !important; 
-        transition: transform 0.4s var(--fl-ease), opacity 0.4s var(--fl-ease) !important;
-    }
-    
-    .fl-close-btn {
-        top: auto !important;
-        bottom: calc(var(--bg-height) - 24px) !important;
-        right: 48px !important;
-    }
+    .fl-logo-panel { z-index: 1004 !important; transition: transform 0.4s var(--fl-ease), opacity 0.4s var(--fl-ease) !important; }
+    .fl-close-btn { top: auto !important; bottom: calc(var(--bg-height) - 24px) !important; right: 48px !important; }
 
     .fl-hero-special-text {
         font-family: "Arial", sans-serif !important; font-size: var(--special-text-fs-m) !important;
@@ -361,7 +361,27 @@ body.is-loading { overflow: hidden; }
         height: 44px !important; display: flex !important; align-items: center !important; gap: 20px !important; 
     }
     .fl-nav__link { font-size: var(--nav-fs-m) !important; color: var(--fl-text) !important; opacity: 1 !important; filter: none !important; }
-    .fl-logo-text { opacity: 0 !important; }
+}
+
+body.is-low-perf .fl-header__bg {
+    backdrop-filter: none !important; 
+    background: rgba(255, 255, 255, 0.95) !important;
+}
+@media (prefers-color-scheme: dark) {
+    body.is-low-perf .fl-header__bg { background: rgba(28, 28, 30, 0.95) !important; }
+}
+body.is-low-perf .fl-splash.is-finished .fl-splash__bg {
+    filter: none !important;
+    opacity: 0 !important; 
+}
+body.is-low-perf .fl-hero-special-text,
+body.is-low-perf .fl-contact-row,
+body.is-low-perf .fl-close-btn {
+    filter: none !important; 
+}
+body.is-low-perf .fl-wechat-overlay {
+    backdrop-filter: none !important;
+    background: rgba(0, 0, 0, 0.95) !important;
 }
 </style>
 </head>
@@ -412,53 +432,56 @@ body.is-loading { overflow: hidden; }
 
 <div class="fl-wechat-overlay" id="ui-wechat-overlay">
     <div class="fl-wechat-card">
-        <div class="fl-wechat-qr"><img src="https://folio.neuepoor.com/wechatsuckboyz.svg" alt="WeChat"></div>
-        <div class="fl-wechat-id">WeChat: NeuePoor</div>
+        <div class="fl-wechat-qr" id="ui-wechat-qr"><img src="https://folio.neuepoor.com/wechatsuckboyz.svg" alt="WeChat"></div>
+        <div class="fl-wechat-id" id="ui-wechat-id">WeChat: NeuePoor</div>
     </div>
 </div>
 
 <script>
 const CONFIG = {
-    version: "4.14.30",
+    version: "4.14.35",
     seo: { title: "Foo", favicon: "https://folio.neuepoor.com/favicon.webp" },
+    
+    performance: {
+        mode: "high"
+    },
     
     splash: { 
         text: "Folio", 
         bg: "https://folio.neuepoor.com/fo.gif",
         holdTime: 1000,
         transitionTime: 1000,
-        // 控制手机端背景滑动渐隐的速度（系数）。
-        // 0.1 表示页面往下滑动相当于屏幕高度 10% 的距离时，背景就会完全变透明消失。值越小，消失越快。
         scrollFadeRatio: 0.1
     },
     
     header: {
-        logo: { gif: "https://folio.neuepoor.com/logo.gif", text: "Foo", font: "Arial, sans-serif", weight: "700", sizePC: "32px", sizeMobile: "21px" },
+        logo: { gif: "https://folio.neuepoor.com/logo.gif", text: "Foo", font: "Arial, sans-serif", weight: "700", sizePC: "32px", sizeMobile: "clamp(16px, 5vw, 21px)" },
         nav: [
-            { name: 'Works', link: 'https://works.neuepoor.com', sizePC: "32px", sizeMobile: "21px" },
-            { name: '(Play)', link: 'https://play.neuepoor.com', sizePC: "32px", sizeMobile: "21px" },
-            { name: 'Me', link: 'https://Me.neuepoor.com', sizePC: "32px", sizeMobile: "21px" }
+            { name: 'Works', link: 'https://works.neuepoor.com', sizePC: "32px", sizeMobile: "clamp(14px, 5vw, 21px)" },
+            { name: '(Play)', link: 'https://play.neuepoor.com', sizePC: "32px", sizeMobile: "clamp(14px, 5vw, 21px)" },
+            { name: 'Me', link: 'https://Me.neuepoor.com', sizePC: "32px", sizeMobile: "clamp(14px, 5vw, 21px)" }
         ]
     },
     
     logoPanel: {
         heroImg: "https://folio.neuepoor.com/landing.gif",
-        specialText: { text: "Hi, I'm Fo", sizePC: "32px", sizeMobile: "21px" },
+        specialText: { text: "Hi, I'm Fo", sizePC: "32px", sizeMobile: "clamp(16px, 6vw, 21px)" },
         contact: [
             { name: "Email", link: "mailto:poorleaglguy@qq.com" },
             { name: "Instagram", link: "https://www.instagram.com/neuepoor" },
             { name: "Github", link: "https://github.com/NeuePoor" },
             { name: "小红书", link: "https://xhslink.com/m/9qPnrun1Dh9" },
-            { name: "WeChat", link: "#", isWeChat: true }
+            // 解耦与完善：为微信弹窗开放纯黑强制字体颜色的同时，支持通过 qrText 和 svgSize 控制内容和比例
+            { name: "WeChat", link: "#", isWeChat: true, qrText: "WeChat: NeuePoor", svgSize: "100%" }
         ],
-        contactStyles: { sizePC: "21px", sizeMobile: "21px" }
+        contactStyles: { sizePC: "21px", sizeMobile: "clamp(14px, 5vw, 21px)" }
     },
     
     gallery: { 
         font: "Arial, sans-serif", 
         weight: "700", 
         paragraphSpacing: "2.2em",
-        contentStyles: { sizePC: "48px", sizeMobile: "32px" },
+        contentStyles: { sizePC: "48px", sizeMobile: "clamp(16px, 8vw, 32px)" },
         items: [{ 
             span: 12, 
             paragraphs: [
@@ -492,6 +515,15 @@ const ENGINE = {
         document.title = CONFIG.seo.title; 
         const f = document.getElementById('favicon'); 
         if (f) f.href = CONFIG.seo.favicon; 
+    },
+
+    initPerformanceMode() {
+        const mode = CONFIG.performance?.mode || 'high';
+        if (mode === 'high') return; 
+        
+        if (mode === 'low' || (mode === 'auto' && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) {
+            document.body.classList.add('is-low-perf');
+        }
     },
 
     applyTypography() {
@@ -540,8 +572,10 @@ const ENGINE = {
         t.innerText = CONFIG.header.logo.text; 
         gPC.src = CONFIG.header.logo.gif;
         gM.src = CONFIG.header.logo.gif;
-        gPC.onload = () => gPC.style.opacity = "1";
-        gM.onload = () => gM.style.opacity = "1";
+        
+        gPC.onload = () => { gPC.style.opacity = "1"; t.classList.add('is-replaced'); };
+        gM.onload = () => { gM.style.opacity = "1"; t.classList.add('is-replaced'); };
+        
         n.innerHTML = CONFIG.header.nav.map(i => `<a href="${i.link}" class="fl-nav__link">${i.name}</a>`).join('');
     },
     
@@ -551,6 +585,18 @@ const ENGINE = {
         const hi = document.getElementById('ui-hero-img');
         hi.src = CONFIG.logoPanel.heroImg;
         st.innerText = CONFIG.logoPanel.specialText.text;
+        
+        // 动态注入微信配置到 DOM 中
+        const wechatConfig = CONFIG.logoPanel.contact.find(l => l.isWeChat);
+        if (wechatConfig) {
+            const wId = document.getElementById('ui-wechat-id');
+            const wQr = document.getElementById('ui-wechat-qr');
+            if (wId && wechatConfig.qrText) wId.innerText = wechatConfig.qrText;
+            if (wQr && wechatConfig.svgSize) {
+                wQr.style.width = wechatConfig.svgSize;
+            }
+        }
+        
         cr.innerHTML = CONFIG.logoPanel.contact.map(l => `<a href="${l.link}" class="fl-gallery-link" ${l.isWeChat ? 'id="trigger-wechat"' : 'target="_blank"'}>${l.name}</a>`).join('');
         ENGINE.initWeChatTrigger();
     },
@@ -615,12 +661,28 @@ const ENGINE = {
         const gPC = document.getElementById('ui-logo-gif-pc');
         const closeBtn = document.getElementById('ui-close-btn');
         const navContainer = document.getElementById('ui-nav');
+        const tLogo = document.getElementById('ui-logo-text'); 
 
         if (lwPC && gPC) {
             lwPC.onmouseenter = () => { if (window.innerWidth > 768 && !p.classList.contains('is-panel-pinned')) ENGINE.showHeroPC(false); };
             lwPC.onmouseleave = () => { if (window.innerWidth > 768 && !p.classList.contains('is-panel-pinned')) ENGINE.hideHero(); };
             gPC.onclick = (e) => { e.stopPropagation(); if (window.innerWidth <= 768) return; if (hero.classList.contains('is-active') && p.classList.contains('is-panel-pinned')) ENGINE.hideHero(); else ENGINE.showHeroPC(true); };
         }
+        
+        if (tLogo) {
+            tLogo.onmouseenter = () => { if (window.innerWidth > 768 && !p.classList.contains('is-panel-pinned')) ENGINE.showHeroPC(false); };
+            tLogo.onmouseleave = () => { if (window.innerWidth > 768 && !p.classList.contains('is-panel-pinned')) ENGINE.hideHero(); };
+            tLogo.onclick = (e) => { 
+                e.preventDefault(); 
+                e.stopPropagation(); 
+                if (window.innerWidth <= 768) {
+                    if (hero.classList.contains('is-active')) ENGINE.hideHero(); else ENGINE.showHeroMobile();
+                } else {
+                    if (hero.classList.contains('is-active') && p.classList.contains('is-panel-pinned')) ENGINE.hideHero(); else ENGINE.showHeroPC(true);
+                }
+            };
+        }
+
         const gM = document.getElementById('ui-logo-gif-m');
         if (gM) { gM.onclick = (e) => { e.stopPropagation(); if (window.innerWidth > 768) return; if (hero.classList.contains('is-active')) ENGINE.hideHero(); else ENGINE.showHeroMobile(); }; }
         if (p) { p.onclick = (e) => { if (e.target === p && p.classList.contains('is-panel-pinned')) ENGINE.hideHero(); }; }
@@ -632,20 +694,15 @@ const ENGINE = {
             };
         }
 
-        // ==== 点击导航劫持并延迟收回逻辑 ====
         if (navContainer) {
             navContainer.addEventListener('click', (e) => {
                 const link = e.target.closest('.fl-nav__link');
-                if (!link) return; // 如果点的不是 a 标签则不管
+                if (!link) return; 
                 
-                // 【核心锁】：仅当是手机端、且面板在开启状态时才执行动画拦截
                 if (ENGINE.isMobile() && p && p.classList.contains('is-panel-pinned')) {
-                    e.preventDefault(); // 阻断原生的瞬间跳转
-                    
+                    e.preventDefault(); 
                     const targetHref = link.href;
-                    ENGINE.hideHero();  // 触发 CSS 收拢动画
-                    
-                    // 精准等待 400ms（与 CSS transition 0.4s 保持对齐）
+                    ENGINE.hideHero();  
                     setTimeout(() => {
                         window.location.href = targetHref;
                     }, 400);
@@ -667,7 +724,6 @@ const ENGINE = {
             sessionStorage.setItem('fl_visited', 'true');
             ENGINE.initReveal();
             
-            // 手机端核心逻辑：待 Splash CSS 层过渡结束（完全释放控制权），让 JS 接管透明度滑动
             setTimeout(() => {
                 s.classList.add('is-scroll-ready');
                 if (ENGINE.isMobile()) {
@@ -698,8 +754,8 @@ const ENGINE = {
     initFocusMode() {
         if (window.innerWidth <= 768) return;
         const b = document.body; const hero = document.getElementById('ui-landing-hero');
-        const selA = '.fl-nav__link, .fl-logo__gif-wrap-pc, .fl-reveal';
-        const selB = '.fl-nav__link, .fl-logo__gif-wrap-pc, #ui-landing-hero, #ui-hero-special-text, .fl-gallery-link, .fl-close-btn';
+        const selA = '.fl-nav__link, .fl-logo__gif-wrap-pc, .fl-logo-text, .fl-reveal';
+        const selB = '.fl-nav__link, .fl-logo__gif-wrap-pc, .fl-logo-text, #ui-landing-hero, #ui-hero-special-text, .fl-gallery-link, .fl-close-btn';
         document.addEventListener('mouseover', (e) => { 
             if (b.classList.contains('is-loading') || window.innerWidth <= 768) return;
             const isPanelActive = hero && hero.classList.contains('is-active');
@@ -761,14 +817,12 @@ const ENGINE = {
                     requestAnimationFrame(() => {
                         const currentScrollY = window.scrollY;
                         
-                        // 1. 核心滚动解耦：跟随页面滑动，动态减弱 fo.gif 透明度
                         if (splash && splash.classList.contains('is-scroll-ready')) {
                             let fadeRatio = CONFIG.splash.scrollFadeRatio || 0.8;
                             let op = 1 - (currentScrollY / (window.innerHeight * fadeRatio));
                             splashBg.style.opacity = Math.max(0, Math.min(1, op));
                         }
 
-                        // 2. 导航栏交互控制
                         if (lh && lh.classList.contains('is-active')) {
                             ticking = false;
                             return;
@@ -824,7 +878,8 @@ const ENGINE = {
     },
     
     start() {
-        ENGINE.initSEO(); 
+        ENGINE.initSEO();
+        ENGINE.initPerformanceMode(); 
         ENGINE.applyTypography(); 
         ENGINE.renderHeader(); 
         ENGINE.renderLogoPanel();
