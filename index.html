@@ -7,8 +7,6 @@
 <title>Foo</title>
 <link id="favicon" rel="icon" type="image/webp" href="https://folio.neuepoor.com/favicon.webp">
 
-<link rel="preload" as="image" href="https://folio.neuepoor.com/fo.gif">
-
 <style>
 /* ==========================================================================
    DYNAMIC DESIGN TOKENS (CSS VARIABLES)
@@ -86,7 +84,7 @@ body.is-loading { overflow: hidden; }
     background: url('https://folio.neuepoor.com/fo.gif') center/cover no-repeat;
     transition: filter var(--splash-dur) var(--fl-ease), opacity var(--splash-dur) var(--fl-ease), transform var(--splash-dur) var(--fl-ease);
     z-index: 1; opacity: 1;
-    transform: translateZ(0); 
+    /* 核心修复：彻底剥离动图的强制 GPU 加速，解决致命卡顿 */
 }
 .fl-splash__text {
     position: relative; z-index: 3;
@@ -439,7 +437,7 @@ body.is-low-perf .fl-wechat-overlay {
 
 <script>
 const CONFIG = {
-    version: "4.14.35",
+    version: "4.14.36",
     seo: { title: "Foo", favicon: "https://folio.neuepoor.com/favicon.webp" },
     
     performance: {
@@ -471,7 +469,6 @@ const CONFIG = {
             { name: "Instagram", link: "https://www.instagram.com/neuepoor" },
             { name: "Github", link: "https://github.com/NeuePoor" },
             { name: "小红书", link: "https://xhslink.com/m/9qPnrun1Dh9" },
-            // 解耦与完善：为微信弹窗开放纯黑强制字体颜色的同时，支持通过 qrText 和 svgSize 控制内容和比例
             { name: "WeChat", link: "#", isWeChat: true, qrText: "WeChat: NeuePoor", svgSize: "100%" }
         ],
         contactStyles: { sizePC: "21px", sizeMobile: "clamp(14px, 5vw, 21px)" }
@@ -586,7 +583,6 @@ const ENGINE = {
         hi.src = CONFIG.logoPanel.heroImg;
         st.innerText = CONFIG.logoPanel.specialText.text;
         
-        // 动态注入微信配置到 DOM 中
         const wechatConfig = CONFIG.logoPanel.contact.find(l => l.isWeChat);
         if (wechatConfig) {
             const wId = document.getElementById('ui-wechat-id');
