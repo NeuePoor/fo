@@ -7,9 +7,11 @@
 <title>Foo</title>
 <link id="favicon" rel="icon" type="image/webp" href="https://folio.neuepoor.com/favicon.webp">
 
+<link rel="preload" as="image" href="https://folio.neuepoor.com/fo.gif">
+
 <style>
 /* ==========================================================================
-   DYNAMIC DESIGN TOKENS (CSS VARIABLES)
+   [1] 全局基础与重置 (BASE & RESET)
    ========================================================================== */
 :root {
     --fl-bg: #ffffff;
@@ -19,14 +21,7 @@
     --fl-nav-h: 60px;
     --fl-nav-h-m: 44px;
     --fl-ease: cubic-bezier(0.23, 1, 0.32, 1);
-    --fl-reveal-dist: 30px;
-    --fl-reveal-dur: 1.2s;
     --fl-font-fallback: "Arial", "Helvetica", sans-serif;
-    --splash-fs: 32px;
-    --gallery-paragraph-spacing: 2.2em;
-    --splash-dur: 1.2s;
-    
-    --grid-col-width: calc((100vw - (var(--fl-margin) * 2) - (var(--fl-gutter) * 11)) / 12);
     --cr-height: 105px;
     --st-height: 21px;
     --bg-height: 230px;
@@ -74,40 +69,39 @@ body.is-loading { overflow: hidden; }
 .fl-cursor__v { width: 1px; height: 100vh; top: 0; left: 0; }
 .fl-cursor__h { height: 1px; width: 100vw; left: 0; top: 0; }
 
-.fl-splash {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    z-index: 9999; display: flex; align-items: center; justify-content: center;
-    background: var(--fl-bg); transition: background var(--splash-dur) var(--fl-ease);
-}
-.fl-splash__bg {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: url('https://folio.neuepoor.com/fo.gif') center/cover no-repeat;
-    transition: filter var(--splash-dur) var(--fl-ease), opacity var(--splash-dur) var(--fl-ease), transform var(--splash-dur) var(--fl-ease);
-    z-index: 1; opacity: 1;
-    /* 核心修复：彻底剥离动图的强制 GPU 加速，解决致命卡顿 */
-}
-.fl-splash__text {
-    position: relative; z-index: 3;
-    font-size: var(--splash-fs); font-weight: 700; color: #fff;
-    mix-blend-mode: difference; opacity: 1; pointer-events: none;
-    transition: opacity 0.5s var(--fl-ease);
-    transform: translateZ(0); 
-    will-change: opacity, transform;
-}
-.fl-splash.is-finished { pointer-events: none; background: transparent; z-index: 1; }
-.fl-splash.is-finished .fl-splash__bg { filter: blur(40px); opacity: 1; transform: scale(1.1); }
-.fl-splash.is-finished .fl-splash__text { opacity: 0 !important; visibility: hidden; }
 
-.fl-landing-hero {
-    position: fixed; z-index: 1001; pointer-events: none;
-    overflow: hidden; opacity: 0; transform: translate3d(0,0,0);
-    visibility: hidden;
-    will-change: opacity, filter;
-    transition: opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease), visibility 0.4s var(--fl-ease);
-}
-.fl-landing-hero.is-active { pointer-events: auto; opacity: 1; visibility: visible; } 
-.fl-landing-hero img { width: 100%; height: 100%; object-fit: cover; }
+/* ==========================================================================
+   ⬇️⬇️⬇️ [2] 全局通用组件：HEADER & LOGO PANEL (全站复制粘贴区) ⬇️⬇️⬇️
+   ========================================================================== */
 
+/* 头部导航与背景框 */
+.fl-header { 
+    position: fixed; width: 100%; z-index: 3000; display: flex; 
+    justify-content: space-between; align-items: center; padding: 0 4px; 
+    height: var(--fl-nav-h); top: 0; 
+    mix-blend-mode: difference;
+    transition: transform 0.4s var(--fl-ease); 
+}
+.fl-header__bg { display: none; }
+
+.fl-logo-text { 
+    text-decoration: none; color: #fff; 
+    font-size: var(--header-fs); font-weight: var(--header-fw); 
+    opacity: 0; cursor: pointer; pointer-events: auto; 
+    transition: opacity 0.3s var(--fl-ease);
+}
+.fl-logo-text.is-replaced {
+    visibility: hidden !important; opacity: 0 !important; pointer-events: none !important;
+}
+
+.fl-nav { display: flex; gap: 40px; }
+.fl-nav__link { 
+    font-size: var(--nav-fs); font-weight: var(--header-fw); 
+    color: #fff; text-decoration: none; 
+    transition: opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease); 
+}
+
+/* 独立动效 Logo GIF */
 .fl-logo__gif-wrap-pc { 
     position: fixed; top: 0; left: 4px; height: var(--fl-nav-h); 
     display: flex; align-items: center; z-index: 3001; 
@@ -116,131 +110,53 @@ body.is-loading { overflow: hidden; }
 .fl-logo__gif-wrap-m { display: none; }
 .fl-logo__gif { height: var(--logo-size-pc); width: auto; opacity: 0; transition: opacity 0.3s var(--fl-ease); cursor: pointer; }
 
-.fl-header { 
-    position: fixed; width: 100%; z-index: 3000; display: flex; 
-    justify-content: space-between; align-items: center; padding: 0 4px; 
-    height: var(--fl-nav-h); top: 0; 
-    mix-blend-mode: difference;
-    transition: transform 0.4s var(--fl-ease); 
-}
-
-.fl-logo-text { 
-    text-decoration: none; 
-    color: #fff; 
-    font-size: var(--header-fs); 
-    font-weight: var(--header-fw); 
-    opacity: 0; 
-    cursor: pointer;
-    pointer-events: auto; 
-    transition: opacity 0.3s var(--fl-ease);
-}
-
-.fl-logo-text.is-replaced {
-    visibility: hidden !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
-}
-
-.fl-nav { display: flex; gap: 40px; }
-.fl-nav__link { 
-    font-size: var(--nav-fs); 
-    font-weight: var(--header-fw); 
-    color: #fff; 
-    text-decoration: none; 
-    transition: opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease); 
-}
-
-.fl-header__bg { display: none; }
-
-.fl-grid {
-    position: relative; display: grid; grid-template-columns: repeat(12, 1fr);
-    gap: var(--fl-gutter); margin: var(--fl-margin);
-    min-height: calc(100vh - (var(--fl-margin) * 2)); 
-    align-content: start; padding: 80px 0 100px; 
-    z-index: 10; 
-}
-
-@media (min-width: 769px) {
-    .fl-grid.is-intro { padding-top: calc(100vh - 280px); } 
-}
-
-.fl-reveal { 
-    opacity: 0; 
-    transform: translateY(var(--fl-reveal-dist)); 
-    transition: opacity var(--fl-reveal-dur) var(--fl-ease), transform var(--fl-reveal-dur) var(--fl-ease); 
-    will-change: opacity, transform; 
-}
-.fl-reveal.is-visible { opacity: 1; transform: translateY(0); }
-
-.fl-gallery-text { width: 100%; max-width: 850px; margin-bottom: 0; }
-
-@media (min-width: 769px) {
-    .fl-gallery-text { max-width: 100% !important; }
-    .fl-reveal { --fl-reveal-dist: 100px; }
-}
-
-.fl-paragraph {
-    font-size: clamp(var(--gallery-content-fs-m), 1vw + 13px, var(--gallery-content-fs));
-    font-weight: var(--gallery-fw);
-    color: var(--fl-text);
-    line-height: 1.35;
-    margin: 0 0 var(--gallery-paragraph-spacing) 0;
-    text-wrap: pretty; 
-    word-break: break-word; 
-    -webkit-hyphens: auto;
-    hyphens: auto; 
-}
-
-.fl-paragraph:last-child { margin-bottom: 0; }
-
+/* 展开的 Logo Panel 与 Hero 图像 */
 .fl-logo-panel { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2000; }
 .fl-logo-panel.is-panel-pinned { pointer-events: auto; }
 
-.fl-hero-special-text, .fl-contact-row, .fl-close-btn {
-    position: fixed; 
-    opacity: 0; 
-    filter: blur(15px); 
-    pointer-events: none; 
-    visibility: hidden; 
-    transition: opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease), visibility 0.4s var(--fl-ease);
+.fl-landing-hero {
+    position: fixed; z-index: 2001; pointer-events: none;
+    overflow: hidden; opacity: 0; transform: translate3d(0,0,0);
+    visibility: hidden; will-change: opacity, filter, transform;
+    transition: opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease), visibility 0.4s var(--fl-ease), transform 0.4s var(--fl-ease);
 }
+.fl-landing-hero.is-active { pointer-events: auto; opacity: 1; visibility: visible; } 
+.fl-landing-hero img { width: 100%; height: 100%; object-fit: cover; }
 
+.fl-hero-special-text, .fl-contact-row, .fl-close-btn {
+    position: fixed; opacity: 0; filter: blur(15px); pointer-events: none; visibility: hidden; 
+    transition: opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease), visibility 0.4s var(--fl-ease), transform 0.4s var(--fl-ease);
+}
 #ui-landing-hero.is-active ~ #ui-logo-panel .fl-hero-special-text,
 #ui-landing-hero.is-active ~ #ui-logo-panel .fl-contact-row,
 #ui-landing-hero.is-active ~ #ui-logo-panel .fl-close-btn {
-    opacity: 1; 
-    filter: blur(0px); 
-    pointer-events: auto;
-    visibility: visible; 
+    opacity: 1; filter: blur(0px); pointer-events: auto; visibility: visible; 
 }
 
 .fl-hero-special-text { font-size: var(--special-text-fs); font-weight: var(--gallery-fw); color: var(--fl-text); white-space: nowrap; }
 .fl-contact-row { display: flex; gap: 40px; align-items: center; }
 .fl-gallery-link { font-size: var(--contact-fs); font-weight: var(--gallery-fw); color: var(--fl-text); text-decoration: none; transition: opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease); }
+.fl-close-btn { position: absolute; right: 24px; bottom: 12px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--fl-text); }
 
-.fl-close-btn { 
-    position: absolute; 
-    right: 24px; 
-    bottom: 12px; 
-    width: 32px; 
-    height: 32px; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    cursor: pointer; 
-    color: var(--fl-text); 
+/* 微信二维码弹窗 */
+.fl-wechat-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    z-index: 11000; display: flex; align-items: center; justify-content: center;
+    opacity: 0; visibility: hidden; transition: 0.4s var(--fl-ease);
 }
+.fl-wechat-overlay.is-active { opacity: 1; visibility: visible; }
+.fl-wechat-card { width: 320px; background: #fff; padding: 40px; text-align: center; color: #000; }
+.fl-wechat-qr { width: 100%; aspect-ratio: 1; margin: 0 auto 24px auto; }
+.fl-wechat-qr img { width: 100%; height: 100%; object-fit: contain; }
 
+/* PC 端焦点模式模糊隔离 */
 @media (min-width: 769px) {
     .fl-nav__link, .fl-logo__gif-wrap-pc, .fl-hero-special-text, .fl-contact-row, .fl-close-btn, .fl-landing-hero, .fl-logo-text { transition: opacity 0.6s var(--fl-ease), filter 0.6s var(--fl-ease), visibility 0.5s var(--fl-ease) !important; }
-    .fl-reveal { transition: opacity var(--fl-reveal-dur) var(--fl-ease), transform var(--fl-reveal-dur) var(--fl-ease), filter 0.6s var(--fl-ease) !important; }
-
+    
     body.has-focus-hover .fl-nav__link:not(.is-hovered-target),
     body.has-focus-hover .fl-logo__gif-wrap-pc:not(.is-hovered-target),
-    body.has-focus-hover .fl-logo-text:not(.is-hovered-target),
-    body.has-focus-hover .fl-reveal:not(.is-hovered-target) { opacity: 0.2; filter: blur(8px); }
-
-    #ui-landing-hero.is-active ~ #ui-main-grid .fl-reveal { opacity: 0.2; filter: blur(8px); }
+    body.has-focus-hover .fl-logo-text:not(.is-hovered-target) { opacity: 0.2; filter: blur(8px); }
 
     body.has-panel-focus-hover #ui-landing-hero:not(.is-hovered-target),
     body.has-panel-focus-hover .fl-logo__gif-wrap-pc:not(.is-hovered-target),
@@ -253,68 +169,20 @@ body.is-loading { overflow: hidden; }
     body.has-panel-focus-hover .is-hovered-target { opacity: 1 !important; filter: blur(0px) !important; }
 }
 
-.fl-wechat-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-    z-index: 11000; display: flex; align-items: center; justify-content: center;
-    opacity: 0; visibility: hidden; transition: 0.4s var(--fl-ease);
-}
-.fl-wechat-overlay.is-active { opacity: 1; visibility: visible; }
-
-/* 微信卡片：强制文字为黑色以切断深色模式干扰，并适配大小 */
-.fl-wechat-card { width: 320px; background: #fff; padding: 40px; text-align: center; color: #000; }
-.fl-wechat-qr { width: 100%; aspect-ratio: 1; margin: 0 auto 24px auto; }
-.fl-wechat-qr img { width: 100%; height: 100%; object-fit: contain; }
-
+/* 移动端形态降级隔离 */
 @media (max-width: 768px) {
-    .fl-splash {
-        position: absolute !important;
-        /* 废弃 120vh 暴力拉伸，引入安全区刘海精确计算，完美避开显存报警 */
-        top: calc(-1 * env(safe-area-inset-top, 0px)) !important; 
-        left: 0 !important;
-        width: 100% !important;
-        height: calc(100vh + env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px)) !important; 
-    }
-    .fl-splash.is-finished { z-index: 1 !important; }
-    
-    /* 移动端专属减负：将模糊半径从 40px 降级为 20px，释放 GPU 算力 */
-    .fl-splash.is-finished .fl-splash__bg {
-        filter: blur(20px) !important;
-    }
-    
-    .fl-splash.is-scroll-ready .fl-splash__bg {
-        transition: transform var(--splash-dur) var(--fl-ease), filter var(--splash-dur) var(--fl-ease) !important;
-    }
-
-    .is-nav-hidden {
-        opacity: 0 !important;
-        transform: translateY(20px) !important;
-        pointer-events: none !important;
-    }
-
     .fl-logo__gif-wrap-pc { display: none !important; }
     
-    .fl-grid { padding: 4px 0 160px !important; margin-top: 0 !important; min-height: 200vh !important; }
-    .fl-gallery-text { width: 100% !important; max-width: 100% !important; }
-    
-    .fl-paragraph { font-size: var(--gallery-content-fs-m) !important; margin-bottom: 1.8em !important; }
-    .fl-paragraph:last-child { margin-bottom: 0 !important; }
-    
     .fl-header__bg {
-        display: block; position: fixed; bottom: 24px; left: 32px; width: calc(100% - 64px);
-        height: 44px; background: rgba(255, 255, 255, 0.2) !important; 
-        backdrop-filter: blur(16px) saturate(160%) !important;
+        display: block; position: fixed; bottom: 24px; left: 32px; width: calc(100% - 64px); height: 44px; 
+        background: rgba(255, 255, 255, 0.2) !important; backdrop-filter: blur(16px) saturate(160%) !important;
         border: 0.5px solid rgba(0, 0, 0, 0.1) !important; border-radius: 12px !important;
         z-index: 1000 !important; pointer-events: none;
         transition: height 0.4s var(--fl-ease), transform 0.4s var(--fl-ease), opacity 0.4s var(--fl-ease) !important;
     }
     .fl-header__bg.is-expanded { height: var(--bg-height) !important; }
-
     @media (prefers-color-scheme: dark) {
-        .fl-header__bg {
-            background: rgba(28, 28, 30, 0.45) !important;
-            border: 0.5px solid rgba(255, 255, 255, 0.1) !important;
-        }
+        .fl-header__bg { background: rgba(28, 28, 30, 0.45) !important; border: 0.5px solid rgba(255, 255, 255, 0.1) !important; }
     }
     
     .fl-landing-hero {
@@ -339,10 +207,7 @@ body.is-loading { overflow: hidden; }
         gap: 0px !important; width: calc(50% - 24px) !important; top: auto !important;
         bottom: 80px !important; left: 48px !important; transform: none !important;
     }
-    .fl-contact-row .fl-gallery-link {
-        font-family: "Arial", sans-serif !important; font-size: var(--contact-fs-m) !important;
-        font-weight: 700 !important; line-height: 1.05 !important; 
-    }
+    .fl-contact-row .fl-gallery-link { font-family: "Arial", sans-serif !important; font-size: var(--contact-fs-m) !important; font-weight: 700 !important; line-height: 1.05 !important; }
 
     .fl-header {
         top: auto !important; bottom: 24px !important; left: 32px !important; width: calc(100% - 64px) !important;
@@ -365,28 +230,91 @@ body.is-loading { overflow: hidden; }
         height: 44px !important; display: flex !important; align-items: center !important; gap: 20px !important; 
     }
     .fl-nav__link { font-size: var(--nav-fs-m) !important; color: var(--fl-text) !important; opacity: 1 !important; filter: none !important; }
+    
+    body .is-nav-hidden { opacity: 0 !important; transform: translateY(20px) !important; pointer-events: none !important; }
 }
 
-body.is-low-perf .fl-header__bg {
-    backdrop-filter: none !important; 
-    background: rgba(255, 255, 255, 0.95) !important;
+/* 性能降级隔离 */
+body.is-low-perf .fl-header__bg { backdrop-filter: none !important; background: rgba(255, 255, 255, 0.95) !important; }
+@media (prefers-color-scheme: dark) { body.is-low-perf .fl-header__bg { background: rgba(28, 28, 30, 0.95) !important; } }
+body.is-low-perf .fl-hero-special-text, body.is-low-perf .fl-contact-row, body.is-low-perf .fl-close-btn { filter: none !important; }
+body.is-low-perf .fl-wechat-overlay { backdrop-filter: none !important; background: rgba(0, 0, 0, 0.95) !important; }
+
+/* ==========================================================================
+   ⬆️⬆️⬆️ 全局通用组件 结束 ⬆️⬆️⬆️
+   ========================================================================== */
+
+
+/* ==========================================================================
+   [3] 当前页面专属 (PAGE SPECIFIC - HOME ONLY)
+   ========================================================================== */
+:root {
+    --splash-fs: 32px;
+    --gallery-paragraph-spacing: 2.2em;
+    --splash-dur: 1.2s;
+    --fl-reveal-dist: 30px;
+    --fl-reveal-dur: 1.2s;
+    --grid-col-width: calc((100vw - (var(--fl-margin) * 2) - (var(--fl-gutter) * 11)) / 12);
 }
-@media (prefers-color-scheme: dark) {
-    body.is-low-perf .fl-header__bg { background: rgba(28, 28, 30, 0.95) !important; }
+
+.fl-splash {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; 
+    display: flex; align-items: center; justify-content: center; background: var(--fl-bg); 
+    transition: background var(--splash-dur) var(--fl-ease);
 }
-body.is-low-perf .fl-splash.is-finished .fl-splash__bg {
-    filter: none !important;
-    opacity: 0 !important; 
+.fl-splash__bg {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: url('https://folio.neuepoor.com/fo.gif') center/cover no-repeat;
+    transition: filter var(--splash-dur) var(--fl-ease), opacity var(--splash-dur) var(--fl-ease), transform var(--splash-dur) var(--fl-ease);
+    z-index: 1; opacity: 1;
 }
-body.is-low-perf .fl-hero-special-text,
-body.is-low-perf .fl-contact-row,
-body.is-low-perf .fl-close-btn {
-    filter: none !important; 
+.fl-splash__text {
+    position: relative; z-index: 3; font-size: var(--splash-fs); font-weight: 700; color: #fff;
+    mix-blend-mode: difference; opacity: 1; pointer-events: none; transition: opacity 0.5s var(--fl-ease);
+    transform: translateZ(0); will-change: opacity, transform;
 }
-body.is-low-perf .fl-wechat-overlay {
-    backdrop-filter: none !important;
-    background: rgba(0, 0, 0, 0.95) !important;
+.fl-splash.is-finished { pointer-events: none; background: transparent; z-index: 1; }
+.fl-splash.is-finished .fl-splash__bg { filter: blur(40px); opacity: 1; transform: scale(1.1); }
+.fl-splash.is-finished .fl-splash__text { opacity: 0 !important; visibility: hidden; }
+
+.fl-grid {
+    position: relative; display: grid; grid-template-columns: repeat(12, 1fr);
+    gap: var(--fl-gutter); margin: var(--fl-margin);
+    min-height: calc(100vh - (var(--fl-margin) * 2)); 
+    align-content: start; padding: 80px 0 100px; z-index: 10; 
 }
+
+.fl-reveal { opacity: 0; transform: translateY(var(--fl-reveal-dist)); transition: opacity var(--fl-reveal-dur) var(--fl-ease), transform var(--fl-reveal-dur) var(--fl-ease); will-change: opacity, transform; }
+.fl-reveal.is-visible { opacity: 1; transform: translateY(0); }
+.fl-gallery-text { width: 100%; max-width: 850px; margin-bottom: 0; }
+.fl-paragraph {
+    font-size: clamp(var(--gallery-content-fs-m), 1vw + 13px, var(--gallery-content-fs));
+    font-weight: var(--gallery-fw); color: var(--fl-text); line-height: 1.35;
+    margin: 0 0 var(--gallery-paragraph-spacing) 0; text-wrap: pretty; word-break: break-word; -webkit-hyphens: auto; hyphens: auto; 
+}
+.fl-paragraph:last-child { margin-bottom: 0; }
+
+@media (min-width: 769px) {
+    .fl-grid.is-intro { padding-top: calc(100vh - 280px); } 
+    .fl-gallery-text { max-width: 100% !important; }
+    .fl-reveal { --fl-reveal-dist: 100px; transition: opacity var(--fl-reveal-dur) var(--fl-ease), transform var(--fl-reveal-dur) var(--fl-ease), filter 0.6s var(--fl-ease) !important; }
+    body.has-focus-hover .fl-reveal:not(.is-hovered-target) { opacity: 0.2; filter: blur(8px); }
+    #ui-landing-hero.is-active ~ #ui-main-grid .fl-reveal { opacity: 0.2; filter: blur(8px); }
+}
+
+@media (max-width: 768px) {
+    .fl-splash { position: absolute !important; top: calc(-1 * env(safe-area-inset-top, 0px)) !important; left: 0 !important; width: 100% !important; height: calc(100vh + env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px)) !important; }
+    .fl-splash.is-finished { z-index: 1 !important; }
+    .fl-splash.is-finished .fl-splash__bg { filter: blur(20px) !important; }
+    .fl-splash.is-scroll-ready .fl-splash__bg { transition: transform var(--splash-dur) var(--fl-ease), filter var(--splash-dur) var(--fl-ease) !important; }
+    .fl-grid { padding: 4px 0 160px !important; margin-top: 0 !important; min-height: 200vh !important; }
+    .fl-gallery-text { width: 100% !important; max-width: 100% !important; }
+    .fl-paragraph { font-size: var(--gallery-content-fs-m) !important; margin-bottom: 1.8em !important; }
+    .fl-paragraph:last-child { margin-bottom: 0 !important; }
+}
+
+body.is-low-perf .fl-splash.is-finished .fl-splash__bg { filter: none !important; opacity: 0 !important; }
+
 </style>
 </head>
 <body class="is-loading">
@@ -396,11 +324,19 @@ body.is-low-perf .fl-wechat-overlay {
     <div class="fl-cursor__h" id="ui-cursor-h"></div>
 </div>
 
+
+<!-- ==========================================================================
+     [3] 页面专属模块 (HOME ONLY)
+     ========================================================================== -->
 <div class="fl-splash" id="ui-splash">
     <div class="fl-splash__bg" id="ui-splash-bg"></div>
     <div class="fl-splash__text" id="ui-splash-text"></div>
 </div>
 
+
+<!-- ==========================================================================
+     ⬇️⬇️⬇️ [2] 全局通用组件：HEADER & LOGO PANEL (全站复制粘贴区) ⬇️⬇️⬇️
+     ========================================================================== -->
 <div class="fl-header__bg" id="ui-header-bg"></div>
 
 <div class="fl-landing-hero" id="ui-landing-hero">
@@ -432,32 +368,31 @@ body.is-low-perf .fl-wechat-overlay {
     <nav class="fl-nav" id="ui-nav"></nav>
 </header>
 
-<main class="fl-grid is-intro" id="ui-main-grid"></main>
-
 <div class="fl-wechat-overlay" id="ui-wechat-overlay">
     <div class="fl-wechat-card">
         <div class="fl-wechat-qr" id="ui-wechat-qr"><img src="https://folio.neuepoor.com/wechatsuckboyz.svg" alt="WeChat"></div>
         <div class="fl-wechat-id" id="ui-wechat-id">WeChat: NeuePoor</div>
     </div>
 </div>
+<!-- ==========================================================================
+     ⬆️⬆️⬆️ 全局通用组件 结束 ⬆️⬆️⬆️
+     ========================================================================== -->
+
+
+<!-- ==========================================================================
+     [3] 页面专属内容模块 (HOME ONLY)
+     ========================================================================== -->
+<main class="fl-grid is-intro" id="ui-main-grid"></main>
+
 
 <script>
-const CONFIG = {
-    version: "4.14.37",
+/* ==========================================================================
+   ⬇️⬇️⬇️ [2] 全局通用 JS 配置与逻辑 (全站复制粘贴区) ⬇️⬇️⬇️
+   ========================================================================== */
+const CONFIG_GLOBAL = {
+    version: "4.14.38",
     seo: { title: "Foo", favicon: "https://folio.neuepoor.com/favicon.webp" },
-    
-    performance: {
-        mode: "high"
-    },
-    
-    splash: { 
-        text: "Folio", 
-        bg: "https://folio.neuepoor.com/fo.gif",
-        holdTime: 1000,
-        transitionTime: 1000,
-        scrollFadeRatio: 0.1
-    },
-    
+    performance: { mode: "high" },
     header: {
         logo: { gif: "https://folio.neuepoor.com/logo.gif", text: "Foo", font: "Arial, sans-serif", weight: "700", sizePC: "32px", sizeMobile: "clamp(16px, 5vw, 21px)" },
         nav: [
@@ -466,7 +401,6 @@ const CONFIG = {
             { name: 'Me', link: 'https://Me.neuepoor.com', sizePC: "32px", sizeMobile: "clamp(14px, 5vw, 21px)" }
         ]
     },
-    
     logoPanel: {
         heroImg: "https://folio.neuepoor.com/landing.gif",
         specialText: { text: "Hi, I'm Fo", sizePC: "32px", sizeMobile: "clamp(16px, 6vw, 21px)" },
@@ -478,30 +412,6 @@ const CONFIG = {
             { name: "WeChat", link: "#", isWeChat: true, qrText: "WeChat: NeuePoor", svgSize: "100%" }
         ],
         contactStyles: { sizePC: "21px", sizeMobile: "clamp(14px, 5vw, 21px)" }
-    },
-    
-    gallery: { 
-        font: "Arial, sans-serif", 
-        weight: "700", 
-        paragraphSpacing: "2.2em",
-        contentStyles: { sizePC: "48px", sizeMobile: "clamp(16px, 8vw, 32px)" },
-        items: [{ 
-            span: 12, 
-            paragraphs: [
-                "I'm a multi-disciplinary designer with focus on Graphic&Illustration,Creative Direction, Branding,Visual Identities, Packaging, Website, and Print& Editorial Design.",
-                "If you are looking for a designer who excles in BrandStrategy/Visual Direction/Print Works/Products/IP/Curatorial/Grid Layout/Website design/Typeface Customization.",
-                "Please contact me."
-            ]
-        }] 
-    },
-    
-    heroImage: {
-        colSpanPC: 6.0,
-        colSpanMobile: 5.0,
-        position: {
-            pc: { anchorColumn: 10, top: "50%", transform: "translate3d(-50%, -50%, 0)" },
-            mobile: { right: "21px", bottomBase: "80px" }
-        }
     }
 };
 
@@ -510,112 +420,72 @@ const ENGINE = {
     lastIsMobile: window.innerWidth <= 768,
     lastHeight: window.innerHeight,
     
-    isMobile() { 
-        return window.innerWidth <= 768; 
-    },
+    isMobile() { return window.innerWidth <= 768; },
 
     initSEO() { 
-        document.title = CONFIG.seo.title; 
-        const f = document.getElementById('favicon'); 
-        if (f) f.href = CONFIG.seo.favicon; 
+        document.title = CONFIG_GLOBAL.seo.title; 
+        const f = document.getElementById('favicon'); if (f) f.href = CONFIG_GLOBAL.seo.favicon; 
     },
 
     initPerformanceMode() {
-        const mode = CONFIG.performance?.mode || 'high';
+        const mode = CONFIG_GLOBAL.performance?.mode || 'high';
         if (mode === 'high') return; 
-        
         if (mode === 'low' || (mode === 'auto' && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) {
             document.body.classList.add('is-low-perf');
         }
     },
 
-    applyTypography() {
-        const r = document.documentElement; 
-        const c = CONFIG;
-        
+    applyGlobalTypography() {
+        const r = document.documentElement; const c = CONFIG_GLOBAL;
         const p = { 
-            '--header-font': c.header.logo.font, 
-            '--header-fw': c.header.logo.weight, 
-            '--header-fs': c.header.logo.sizePC, 
-            '--header-fs-m': c.header.logo.sizeMobile, 
-            '--nav-fs': c.header.nav[0].sizePC,
-            '--nav-fs-m': c.header.nav[0].sizeMobile,
-            '--special-text-fs': c.logoPanel.specialText.sizePC,
-            '--special-text-fs-m': c.logoPanel.specialText.sizeMobile,
-            '--contact-fs': c.logoPanel.contactStyles.sizePC,
-            '--contact-fs-m': c.logoPanel.contactStyles.sizeMobile,
-            '--gallery-content-fs': c.gallery.contentStyles.sizePC,
-            '--gallery-content-fs-m': c.gallery.contentStyles.sizeMobile,
-            '--gallery-font': c.gallery.font, 
-            '--gallery-fw': c.gallery.weight, 
-            '--gallery-paragraph-spacing': c.gallery.paragraphSpacing,
-            '--logo-size-pc': c.header.logo.sizePC, 
-            '--logo-size-m': c.header.logo.sizeMobile,
-            
-            '--hero-col-span-pc': c.heroImage.colSpanPC,
-            '--hero-col-span-mb': c.heroImage.colSpanMobile,
-            '--hero-size-pc': `calc(var(--hero-col-span-pc) * var(--grid-col-width) + (var(--hero-col-span-pc) - 1) * var(--fl-gutter))`,
-            '--hero-size-mb': `calc(var(--hero-col-span-mb) * var(--grid-col-width) + (var(--hero-col-span-mb) - 1) * var(--fl-gutter))`,
-            
-            '--hero-top-pc': c.heroImage.position.pc.top,
-            '--hero-transform-pc': c.heroImage.position.pc.transform,
-            '--hero-right-mb': c.heroImage.position.mobile.right,
-            '--hero-bottom-base-mb': c.heroImage.position.mobile.bottomBase,
-            
-            '--splash-dur': `${c.splash.transitionTime}ms`
+            '--header-font': c.header.logo.font, '--header-fw': c.header.logo.weight, 
+            '--header-fs': c.header.logo.sizePC, '--header-fs-m': c.header.logo.sizeMobile, 
+            '--nav-fs': c.header.nav[0].sizePC, '--nav-fs-m': c.header.nav[0].sizeMobile,
+            '--special-text-fs': c.logoPanel.specialText.sizePC, '--special-text-fs-m': c.logoPanel.specialText.sizeMobile,
+            '--contact-fs': c.logoPanel.contactStyles.sizePC, '--contact-fs-m': c.logoPanel.contactStyles.sizeMobile,
+            '--logo-size-pc': c.header.logo.sizePC, '--logo-size-m': c.header.logo.sizeMobile,
+            // 确保没有 Hero 配置时不报错
+            ...(typeof CONFIG_PAGE !== 'undefined' && CONFIG_PAGE.heroImage ? {
+                '--hero-col-span-pc': CONFIG_PAGE.heroImage.colSpanPC, '--hero-col-span-mb': CONFIG_PAGE.heroImage.colSpanMobile,
+                '--hero-size-pc': `calc(var(--hero-col-span-pc) * var(--grid-col-width) + (var(--hero-col-span-pc) - 1) * var(--fl-gutter))`,
+                '--hero-size-mb': `calc(var(--hero-col-span-mb) * var(--grid-col-width) + (var(--hero-col-span-mb) - 1) * var(--fl-gutter))`,
+                '--hero-top-pc': CONFIG_PAGE.heroImage.position.pc.top, '--hero-transform-pc': CONFIG_PAGE.heroImage.position.pc.transform,
+                '--hero-right-mb': CONFIG_PAGE.heroImage.position.mobile.right, '--hero-bottom-base-mb': CONFIG_PAGE.heroImage.position.mobile.bottomBase
+            } : {})
         };
         Object.entries(p).forEach(([k, v]) => r.style.setProperty(k, v));
     },
     
     renderHeader() {
-        const gPC = document.getElementById('ui-logo-gif-pc');
-        const gM = document.getElementById('ui-logo-gif-m');
-        const t = document.getElementById('ui-logo-text');
-        const n = document.getElementById('ui-nav');
-        t.innerText = CONFIG.header.logo.text; 
-        gPC.src = CONFIG.header.logo.gif;
-        gM.src = CONFIG.header.logo.gif;
-        
+        const gPC = document.getElementById('ui-logo-gif-pc'); const gM = document.getElementById('ui-logo-gif-m');
+        const t = document.getElementById('ui-logo-text'); const n = document.getElementById('ui-nav');
+        if(!gPC || !n) return;
+        t.innerText = CONFIG_GLOBAL.header.logo.text; 
+        gPC.src = CONFIG_GLOBAL.header.logo.gif; gM.src = CONFIG_GLOBAL.header.logo.gif;
         gPC.onload = () => { gPC.style.opacity = "1"; t.classList.add('is-replaced'); };
         gM.onload = () => { gM.style.opacity = "1"; t.classList.add('is-replaced'); };
-        
-        n.innerHTML = CONFIG.header.nav.map(i => `<a href="${i.link}" class="fl-nav__link">${i.name}</a>`).join('');
+        n.innerHTML = CONFIG_GLOBAL.header.nav.map(i => `<a href="${i.link}" class="fl-nav__link">${i.name}</a>`).join('');
     },
     
     renderLogoPanel() {
-        const st = document.getElementById('ui-hero-special-text');
-        const cr = document.getElementById('ui-contact-row');
+        const st = document.getElementById('ui-hero-special-text'); const cr = document.getElementById('ui-contact-row');
         const hi = document.getElementById('ui-hero-img');
-        hi.src = CONFIG.logoPanel.heroImg;
-        st.innerText = CONFIG.logoPanel.specialText.text;
+        if(!st || !cr) return;
+        hi.src = CONFIG_GLOBAL.logoPanel.heroImg; st.innerText = CONFIG_GLOBAL.logoPanel.specialText.text;
         
-        const wechatConfig = CONFIG.logoPanel.contact.find(l => l.isWeChat);
+        const wechatConfig = CONFIG_GLOBAL.logoPanel.contact.find(l => l.isWeChat);
         if (wechatConfig) {
-            const wId = document.getElementById('ui-wechat-id');
-            const wQr = document.getElementById('ui-wechat-qr');
+            const wId = document.getElementById('ui-wechat-id'); const wQr = document.getElementById('ui-wechat-qr');
             if (wId && wechatConfig.qrText) wId.innerText = wechatConfig.qrText;
-            if (wQr && wechatConfig.svgSize) {
-                wQr.style.width = wechatConfig.svgSize;
-            }
+            if (wQr && wechatConfig.svgSize) wQr.style.width = wechatConfig.svgSize;
         }
-        
-        cr.innerHTML = CONFIG.logoPanel.contact.map(l => `<a href="${l.link}" class="fl-gallery-link" ${l.isWeChat ? 'id="trigger-wechat"' : 'target="_blank"'}>${l.name}</a>`).join('');
+        cr.innerHTML = CONFIG_GLOBAL.logoPanel.contact.map(l => `<a href="${l.link}" class="fl-gallery-link" ${l.isWeChat ? 'id="trigger-wechat"' : 'target="_blank"'}>${l.name}</a>`).join('');
         ENGINE.initWeChatTrigger();
     },
     
-    buildContent() {
-        const g = document.getElementById('ui-main-grid');
-        g.innerHTML = CONFIG.gallery.items.map(i => {
-            const paras = i.paragraphs.map(p => `<p class="fl-paragraph">${p}</p>`).join('');
-            return `<div class="fl-item-wrapper fl-reveal" style="grid-column: span ${i.span || 12};"><div class="fl-gallery-text">${paras}</div></div>`;
-        }).join('');
-    },
-    
     resetAllStates() {
-        const h = document.getElementById('ui-landing-hero');
-        const p = document.getElementById('ui-logo-panel');
-        const bg = document.getElementById('ui-header-bg');
-        const b = document.body;
+        const h = document.getElementById('ui-landing-hero'); const p = document.getElementById('ui-logo-panel');
+        const bg = document.getElementById('ui-header-bg'); const b = document.body;
         if (h) { h.style.opacity = '0'; h.classList.remove('is-active'); }
         if (p) p.classList.remove('is-panel-pinned');
         if (bg) bg.classList.remove('is-expanded');
@@ -624,29 +494,25 @@ const ENGINE = {
     },
 
     showHeroMobile() {
-        const h = document.getElementById('ui-landing-hero');
-        const p = document.getElementById('ui-logo-panel');
-        const st = document.getElementById('ui-hero-special-text');
-        const cr = document.getElementById('ui-contact-row');
+        const h = document.getElementById('ui-landing-hero'); const p = document.getElementById('ui-logo-panel');
+        const st = document.getElementById('ui-hero-special-text'); const cr = document.getElementById('ui-contact-row');
         const bg = document.getElementById('ui-header-bg');
-        const stHeight = st.getBoundingClientRect().height || 21;
-        const crHeight = cr.getBoundingClientRect().height || 105; 
+        if(!h || !p) return;
+        const stHeight = st.getBoundingClientRect().height || 21; const crHeight = cr.getBoundingClientRect().height || 105; 
         document.documentElement.style.setProperty('--cr-height', `${crHeight}px`);
         document.documentElement.style.setProperty('--bg-height', `${24 + stHeight + 24 + crHeight + 56}px`);
-        p.classList.add('is-panel-pinned');
-        if (bg) bg.classList.add('is-expanded');
+        p.classList.add('is-panel-pinned'); if (bg) bg.classList.add('is-expanded');
         h.style.opacity = "1"; h.classList.add('is-active');
     },
 
     showHeroPC(isPin = false) {
-        const h = document.getElementById('ui-landing-hero');
-        const p = document.getElementById('ui-logo-panel');
-        const st = document.getElementById('ui-hero-special-text');
-        const cr = document.getElementById('ui-contact-row');
-        h.style.width = 'var(--hero-size-pc)'; h.style.height = 'var(--hero-size-pc)';
-        h.style.top = 'var(--hero-top-pc)'; 
-        const u = window.innerWidth / 12; 
-        h.style.left = `${u * CONFIG.heroImage.position.pc.anchorColumn}px`; 
+        const h = document.getElementById('ui-landing-hero'); const p = document.getElementById('ui-logo-panel');
+        const st = document.getElementById('ui-hero-special-text'); const cr = document.getElementById('ui-contact-row');
+        if(!h || !p) return;
+        h.style.width = 'var(--hero-size-pc)'; h.style.height = 'var(--hero-size-pc)'; h.style.top = 'var(--hero-top-pc)'; 
+        // 容错处理：如果没有配置锚点列，默认使用第 10 列
+        const anchorCol = (typeof CONFIG_PAGE !== 'undefined' && CONFIG_PAGE.heroImage) ? CONFIG_PAGE.heroImage.position.pc.anchorColumn : 10;
+        h.style.left = `${(window.innerWidth / 12) * anchorCol}px`; 
         h.style.transform = 'var(--hero-transform-pc)';
         st.style.left = '4px'; st.style.top = '50%'; st.style.transform = 'translateY(-50%)';
         cr.style.left = '4px'; cr.style.bottom = '12px';
@@ -657,13 +523,11 @@ const ENGINE = {
     hideHero() { ENGINE.resetAllStates(); },
 
     initTriggersAndInteractions() {
-        const p = document.getElementById('ui-logo-panel');
-        const hero = document.getElementById('ui-landing-hero');
-        const lwPC = document.getElementById('ui-logo-gif-wrap-pc');
-        const gPC = document.getElementById('ui-logo-gif-pc');
-        const closeBtn = document.getElementById('ui-close-btn');
-        const navContainer = document.getElementById('ui-nav');
+        const p = document.getElementById('ui-logo-panel'); const hero = document.getElementById('ui-landing-hero');
+        const lwPC = document.getElementById('ui-logo-gif-wrap-pc'); const gPC = document.getElementById('ui-logo-gif-pc');
+        const closeBtn = document.getElementById('ui-close-btn'); const navContainer = document.getElementById('ui-nav');
         const tLogo = document.getElementById('ui-logo-text'); 
+        if(!p || !hero) return;
 
         if (lwPC && gPC) {
             lwPC.onmouseenter = () => { if (window.innerWidth > 768 && !p.classList.contains('is-panel-pinned')) ENGINE.showHeroPC(false); };
@@ -675,88 +539,32 @@ const ENGINE = {
             tLogo.onmouseenter = () => { if (window.innerWidth > 768 && !p.classList.contains('is-panel-pinned')) ENGINE.showHeroPC(false); };
             tLogo.onmouseleave = () => { if (window.innerWidth > 768 && !p.classList.contains('is-panel-pinned')) ENGINE.hideHero(); };
             tLogo.onclick = (e) => { 
-                e.preventDefault(); 
-                e.stopPropagation(); 
-                if (window.innerWidth <= 768) {
-                    if (hero.classList.contains('is-active')) ENGINE.hideHero(); else ENGINE.showHeroMobile();
-                } else {
-                    if (hero.classList.contains('is-active') && p.classList.contains('is-panel-pinned')) ENGINE.hideHero(); else ENGINE.showHeroPC(true);
-                }
+                e.preventDefault(); e.stopPropagation(); 
+                if (window.innerWidth <= 768) { if (hero.classList.contains('is-active')) ENGINE.hideHero(); else ENGINE.showHeroMobile(); } 
+                else { if (hero.classList.contains('is-active') && p.classList.contains('is-panel-pinned')) ENGINE.hideHero(); else ENGINE.showHeroPC(true); }
             };
         }
 
         const gM = document.getElementById('ui-logo-gif-m');
         if (gM) { gM.onclick = (e) => { e.stopPropagation(); if (window.innerWidth > 768) return; if (hero.classList.contains('is-active')) ENGINE.hideHero(); else ENGINE.showHeroMobile(); }; }
         if (p) { p.onclick = (e) => { if (e.target === p && p.classList.contains('is-panel-pinned')) ENGINE.hideHero(); }; }
-        
-        if (closeBtn) {
-            closeBtn.onclick = (e) => {
-                e.stopPropagation();
-                ENGINE.hideHero();
-            };
-        }
+        if (closeBtn) { closeBtn.onclick = (e) => { e.stopPropagation(); ENGINE.hideHero(); }; }
 
         if (navContainer) {
             navContainer.addEventListener('click', (e) => {
-                const link = e.target.closest('.fl-nav__link');
-                if (!link) return; 
-                
-                if (ENGINE.isMobile() && p && p.classList.contains('is-panel-pinned')) {
-                    e.preventDefault(); 
-                    const targetHref = link.href;
-                    ENGINE.hideHero();  
-                    setTimeout(() => {
-                        window.location.href = targetHref;
-                    }, 400);
+                const link = e.target.closest('.fl-nav__link'); if (!link) return; 
+                if (ENGINE.isMobile() && p.classList.contains('is-panel-pinned')) {
+                    e.preventDefault(); const targetHref = link.href; ENGINE.hideHero();  
+                    setTimeout(() => { window.location.href = targetHref; }, 400);
                 }
             });
         }
     },
     
-    initSplash() {
-        const s = document.getElementById('ui-splash');
-        const st = document.getElementById('ui-splash-text');
-        const sb = document.getElementById('ui-splash-bg');
-        st.innerText = CONFIG.splash.text;
-        sb.style.backgroundImage = `url(${CONFIG.splash.bg})`;
-        
-        const d = () => {
-            if (!document.body.classList.contains('is-loading')) return;
-            s.classList.add('is-finished'); document.body.classList.remove('is-loading');
-            sessionStorage.setItem('fl_visited', 'true');
-            ENGINE.initReveal();
-            
-            setTimeout(() => {
-                s.classList.add('is-scroll-ready');
-                if (ENGINE.isMobile()) {
-                    let fadeRatio = CONFIG.splash.scrollFadeRatio || 0.8;
-                    let op = 1 - (window.scrollY / (window.innerHeight * fadeRatio));
-                    sb.style.opacity = Math.max(0, Math.min(1, op));
-                }
-            }, CONFIG.splash.transitionTime);
-        };
-        
-        if (sessionStorage.getItem('fl_visited')) { 
-            document.body.classList.remove('is-loading'); 
-            s.classList.add('is-finished', 'is-scroll-ready'); 
-            ENGINE.initReveal(); 
-            
-            if (ENGINE.isMobile()) {
-                let fadeRatio = CONFIG.splash.scrollFadeRatio || 0.8;
-                let op = 1 - (window.scrollY / (window.innerHeight * fadeRatio));
-                sb.style.opacity = Math.max(0, Math.min(1, op));
-            }
-            return; 
-        }
-        
-        setTimeout(d, CONFIG.splash.holdTime); 
-        s.onclick = d;
-    },
-    
-    initFocusMode() {
+    initGlobalFocusMode() {
         if (window.innerWidth <= 768) return;
         const b = document.body; const hero = document.getElementById('ui-landing-hero');
-        const selA = '.fl-nav__link, .fl-logo__gif-wrap-pc, .fl-logo-text, .fl-reveal';
+        const selA = '.fl-nav__link, .fl-logo__gif-wrap-pc, .fl-logo-text, .fl-reveal'; // 包含了 .fl-reveal 以兼容下游
         const selB = '.fl-nav__link, .fl-logo__gif-wrap-pc, .fl-logo-text, #ui-landing-hero, #ui-hero-special-text, .fl-gallery-link, .fl-close-btn';
         document.addEventListener('mouseover', (e) => { 
             if (b.classList.contains('is-loading') || window.innerWidth <= 768) return;
@@ -779,39 +587,13 @@ const ENGINE = {
         });
     },
 
-    initCustomCursor() {
-        if (ENGINE.isMobile()) return;
-        const v = document.getElementById('ui-cursor-v'); 
-        const h = document.getElementById('ui-cursor-h');
-        
-        let ticking = false;
-        
-        window.addEventListener('mousemove', (e) => {
-            if (document.body.classList.contains('is-loading')) return;
-            
-            if (!ticking) {
-                requestAnimationFrame(() => { 
-                    v.style.transform = `translate3d(${e.clientX}px, 0, 0)`; 
-                    h.style.transform = `translate3d(0, ${e.clientY}px, 0)`; 
-                    ticking = false;
-                });
-                ticking = true;
-            }
-        }, { passive: true });
-    },
-
-    initScrollInteraction() {
-        const h = document.getElementById('ui-header'); 
-        const lwM = document.getElementById('ui-logo-gif-wrap-m'); 
-        const bg = document.getElementById('ui-header-bg');
-        const lp = document.getElementById('ui-logo-panel');
+    initGlobalScrollInteraction() {
+        const h = document.getElementById('ui-header'); const lwM = document.getElementById('ui-logo-gif-wrap-m'); 
+        const bg = document.getElementById('ui-header-bg'); const lp = document.getElementById('ui-logo-panel');
         const lh = document.getElementById('ui-landing-hero');
-        const splash = document.getElementById('ui-splash');
-        const splashBg = document.getElementById('ui-splash-bg');
+        const splash = document.getElementById('ui-splash'); const splashBg = document.getElementById('ui-splash-bg');
         
-        let timer;
-        let lastScrollY = window.scrollY;
-        let ticking = false;
+        let timer; let lastScrollY = window.scrollY; let ticking = false;
 
         window.addEventListener('scroll', () => {
             if (ENGINE.isMobile()) {
@@ -819,41 +601,46 @@ const ENGINE = {
                     requestAnimationFrame(() => {
                         const currentScrollY = window.scrollY;
                         
-                        if (splash && splash.classList.contains('is-scroll-ready')) {
-                            let fadeRatio = CONFIG.splash.scrollFadeRatio || 0.8;
+                        // 兼容下游：只有页面存在 splash 时才执行透明度控制
+                        if (splash && splash.classList.contains('is-scroll-ready') && splashBg && typeof CONFIG_PAGE !== 'undefined' && CONFIG_PAGE.splash) {
+                            let fadeRatio = CONFIG_PAGE.splash.scrollFadeRatio || 0.8;
                             let op = 1 - (currentScrollY / (window.innerHeight * fadeRatio));
                             splashBg.style.opacity = Math.max(0, Math.min(1, op));
-                        }
-
-                        if (lh && lh.classList.contains('is-active')) {
-                            ticking = false;
-                            return;
                         }
 
                         const isScrollingDown = currentScrollY > lastScrollY;
                         lastScrollY = currentScrollY;
 
                         if (isScrollingDown && currentScrollY > 10) {
-                            if (!h.classList.contains('is-nav-hidden')) {
+                            if (h && !h.classList.contains('is-nav-hidden')) {
                                 h.classList.add('is-nav-hidden'); 
-                                if (lwM) lwM.classList.add('is-nav-hidden');
-                                if (bg) bg.classList.add('is-nav-hidden');
-                                if (lp) lp.classList.add('is-nav-hidden');
+                                if (lwM) lwM.classList.add('is-nav-hidden'); if (bg) bg.classList.add('is-nav-hidden');
                                 if (lh) lh.classList.add('is-nav-hidden');
+                                
+                                const st = document.getElementById('ui-hero-special-text');
+                                const cr = document.getElementById('ui-contact-row');
+                                const cb = document.getElementById('ui-close-btn');
+                                if (st) st.classList.add('is-nav-hidden');
+                                if (cr) cr.classList.add('is-nav-hidden');
+                                if (cb) cb.classList.add('is-nav-hidden');
                             }
                         }
 
                         clearTimeout(timer); 
                         timer = setTimeout(() => { 
-                            if (h.classList.contains('is-nav-hidden')) {
+                            if (h && h.classList.contains('is-nav-hidden')) {
                                 h.classList.remove('is-nav-hidden'); 
-                                if (lwM) lwM.classList.remove('is-nav-hidden'); 
-                                if (bg) bg.classList.remove('is-nav-hidden');
-                                if (lp) lp.classList.remove('is-nav-hidden');
+                                if (lwM) lwM.classList.remove('is-nav-hidden'); if (bg) bg.classList.remove('is-nav-hidden');
                                 if (lh) lh.classList.remove('is-nav-hidden');
+                                
+                                const st = document.getElementById('ui-hero-special-text');
+                                const cr = document.getElementById('ui-contact-row');
+                                const cb = document.getElementById('ui-close-btn');
+                                if (st) st.classList.remove('is-nav-hidden');
+                                if (cr) cr.classList.remove('is-nav-hidden');
+                                if (cb) cb.classList.remove('is-nav-hidden');
                             }
                         }, 350);
-                        
                         ticking = false;
                     });
                     ticking = true;
@@ -862,35 +649,114 @@ const ENGINE = {
         }, { passive: true });
     },
     
-    initReveal() {
-        const o = new IntersectionObserver((es) => es.forEach(e => { 
-            if (e.isIntersecting) { 
-                e.target.classList.add('is-visible'); 
-                if (ENGINE.isMobile()) {
-                    o.unobserve(e.target); 
-                }
-            } 
-        }), { threshold: 0.05 });
-        document.querySelectorAll('.fl-reveal').forEach(el => o.observe(el));
-    },
-    
     initWeChatTrigger() {
         const t = document.getElementById('trigger-wechat'); const o = document.getElementById('ui-wechat-overlay');
         if (t && o) { t.onclick = (e) => { e.preventDefault(); o.classList.add('is-active'); }; o.onclick = () => o.classList.remove('is-active'); }
     },
+    /* ==========================================================================
+       ⬆️⬆️⬆️ 全局通用 JS 结束 ⬆️⬆️⬆️
+       ========================================================================== */
+
+
+
+    /* ==========================================================================
+       [3] 页面专属 JS 逻辑 (PAGE SPECIFIC - HOME ONLY)
+       ========================================================================== */
+    applyPageTypography() {
+        if(typeof CONFIG_PAGE === 'undefined' || !CONFIG_PAGE.gallery) return;
+        const r = document.documentElement; 
+        const p = { 
+            '--gallery-content-fs': CONFIG_PAGE.gallery.contentStyles.sizePC,
+            '--gallery-content-fs-m': CONFIG_PAGE.gallery.contentStyles.sizeMobile,
+            '--gallery-font': CONFIG_PAGE.gallery.font, 
+            '--gallery-fw': CONFIG_PAGE.gallery.weight, 
+            '--gallery-paragraph-spacing': CONFIG_PAGE.gallery.paragraphSpacing,
+            '--splash-dur': CONFIG_PAGE.splash ? `${CONFIG_PAGE.splash.transitionTime}ms` : '1.2s'
+        };
+        Object.entries(p).forEach(([k, v]) => r.style.setProperty(k, v));
+    },
+
+    buildContent() {
+        if(typeof CONFIG_PAGE === 'undefined' || !CONFIG_PAGE.gallery) return;
+        const g = document.getElementById('ui-main-grid');
+        if(!g) return;
+        g.innerHTML = CONFIG_PAGE.gallery.items.map(i => {
+            const paras = i.paragraphs.map(p => `<p class="fl-paragraph">${p}</p>`).join('');
+            return `<div class="fl-item-wrapper fl-reveal" style="grid-column: span ${i.span || 12};"><div class="fl-gallery-text">${paras}</div></div>`;
+        }).join('');
+    },
     
+    initSplash() {
+        if(typeof CONFIG_PAGE === 'undefined' || !CONFIG_PAGE.splash) return;
+        const s = document.getElementById('ui-splash'); const st = document.getElementById('ui-splash-text'); const sb = document.getElementById('ui-splash-bg');
+        if(!s || !st || !sb) return;
+        st.innerText = CONFIG_PAGE.splash.text; sb.style.backgroundImage = `url(${CONFIG_PAGE.splash.bg})`;
+        
+        const d = () => {
+            if (!document.body.classList.contains('is-loading')) return;
+            s.classList.add('is-finished'); document.body.classList.remove('is-loading');
+            sessionStorage.setItem('fl_visited', 'true');
+            ENGINE.initReveal();
+            setTimeout(() => {
+                s.classList.add('is-scroll-ready');
+                if (ENGINE.isMobile()) {
+                    let fadeRatio = CONFIG_PAGE.splash.scrollFadeRatio || 0.8;
+                    let op = 1 - (window.scrollY / (window.innerHeight * fadeRatio));
+                    sb.style.opacity = Math.max(0, Math.min(1, op));
+                }
+            }, CONFIG_PAGE.splash.transitionTime);
+        };
+        
+        if (sessionStorage.getItem('fl_visited')) { 
+            document.body.classList.remove('is-loading'); s.classList.add('is-finished', 'is-scroll-ready'); 
+            ENGINE.initReveal(); 
+            if (ENGINE.isMobile()) {
+                let fadeRatio = CONFIG_PAGE.splash.scrollFadeRatio || 0.8;
+                let op = 1 - (window.scrollY / (window.innerHeight * fadeRatio));
+                sb.style.opacity = Math.max(0, Math.min(1, op));
+            }
+            return; 
+        }
+        setTimeout(d, CONFIG_PAGE.splash.holdTime); s.onclick = d;
+    },
+
+    initReveal() {
+        const o = new IntersectionObserver((es) => es.forEach(e => { 
+            if (e.isIntersecting) { e.target.classList.add('is-visible'); if (ENGINE.isMobile()) o.unobserve(e.target); } 
+        }), { threshold: 0.05 });
+        document.querySelectorAll('.fl-reveal').forEach(el => o.observe(el));
+    },
+
+    initCustomCursor() {
+        if (ENGINE.isMobile()) return;
+        const v = document.getElementById('ui-cursor-v'); const h = document.getElementById('ui-cursor-h');
+        if(!v || !h) return;
+        let ticking = false;
+        window.addEventListener('mousemove', (e) => {
+            if (document.body.classList.contains('is-loading')) return;
+            if (!ticking) { requestAnimationFrame(() => { v.style.transform = `translate3d(${e.clientX}px, 0, 0)`; h.style.transform = `translate3d(0, ${e.clientY}px, 0)`; ticking = false; }); ticking = true; }
+        }, { passive: true });
+    },
+
+    // 核心集线器
     start() {
         ENGINE.initSEO();
         ENGINE.initPerformanceMode(); 
-        ENGINE.applyTypography(); 
+        
+        // 1. 初始化全局组件
+        ENGINE.applyGlobalTypography(); 
         ENGINE.renderHeader(); 
         ENGINE.renderLogoPanel();
-        ENGINE.buildContent(); 
-        ENGINE.initFocusMode(); 
-        ENGINE.initCustomCursor();
-        ENGINE.initScrollInteraction();
+        ENGINE.initGlobalFocusMode(); 
+        ENGINE.initGlobalScrollInteraction();
         ENGINE.initTriggersAndInteractions(); 
-        ENGINE.initSplash();
+        
+        // 2. 初始化页面专属组件
+        ENGINE.applyPageTypography();
+        ENGINE.initCustomCursor();
+        if(typeof CONFIG_PAGE !== 'undefined' && CONFIG_PAGE.gallery) ENGINE.buildContent(); 
+        if(typeof CONFIG_PAGE !== 'undefined' && CONFIG_PAGE.splash) ENGINE.initSplash();
+        else { document.body.classList.remove('is-loading'); ENGINE.initReveal(); }
 
         let resizeTicking = false;
         window.addEventListener('resize', () => {
@@ -901,38 +767,65 @@ const ENGINE = {
                     const heightChanged = window.innerHeight !== ENGINE.lastHeight;
                     
                     if (currentIsMobile !== ENGINE.lastIsMobile) {
-                        ENGINE.lastIsMobile = currentIsMobile;
-                        ENGINE.lastWidth = window.innerWidth;
-                        ENGINE.lastHeight = window.innerHeight;
-                        
-                        ENGINE.resetAllStates();
-                        ENGINE.buildContent();
+                        ENGINE.lastIsMobile = currentIsMobile; ENGINE.lastWidth = window.innerWidth; ENGINE.lastHeight = window.innerHeight;
+                        ENGINE.resetAllStates(); 
+                        if(typeof CONFIG_PAGE !== 'undefined' && CONFIG_PAGE.gallery) ENGINE.buildContent(); 
                         ENGINE.initReveal(); 
                     } else if (widthChanged) {
-                        ENGINE.lastWidth = window.innerWidth;
-                        ENGINE.buildContent();
+                        ENGINE.lastWidth = window.innerWidth; 
+                        if(typeof CONFIG_PAGE !== 'undefined' && CONFIG_PAGE.gallery) ENGINE.buildContent(); 
                         ENGINE.initReveal(); 
                         if (!ENGINE.isMobile()) {
+                            const h = document.getElementById('ui-landing-hero'); const p = document.getElementById('ui-logo-panel');
+                            if (h && h.classList.contains('is-active') && p && p.classList.contains('is-panel-pinned')) ENGINE.showHeroPC(true);
+                        } else {
                             const h = document.getElementById('ui-landing-hero');
-                            const p = document.getElementById('ui-logo-panel');
-                            if (h && h.classList.contains('is-active') && p.classList.contains('is-panel-pinned')) {
-                                ENGINE.showHeroPC(true);
-                            }
-                        }
-                    } else if (heightChanged && ENGINE.isMobile()) {
-                        const h = document.getElementById('ui-landing-hero');
-                        if (h && h.classList.contains('is-active')) {
-                            ENGINE.showHeroMobile();
+                            if (h && h.classList.contains('is-active')) ENGINE.showHeroMobile();
                         }
                     }
-                    ENGINE.lastHeight = window.innerHeight;
-                    resizeTicking = false;
+                    ENGINE.lastHeight = window.innerHeight; resizeTicking = false;
                 });
                 resizeTicking = true;
             }
         }, { passive: true });
     }
 };
+
+/* ==========================================================================
+   [3] 页面专属内容配置 (CONFIG_PAGE) - HOME ONLY
+   ========================================================================== */
+const CONFIG_PAGE = {
+    splash: { 
+        text: "Folio", 
+        bg: "https://folio.neuepoor.com/fo.gif",
+        holdTime: 1000,
+        transitionTime: 1000,
+        scrollFadeRatio: 0.05
+    },
+    gallery: { 
+        font: "Arial, sans-serif", 
+        weight: "700", 
+        paragraphSpacing: "2.2em",
+        contentStyles: { sizePC: "48px", sizeMobile: "clamp(16px, 8vw, 32px)" },
+        items: [{ 
+            span: 12, 
+            paragraphs: [
+                "I'm a multi-disciplinary designer with focus on Graphic&Illustration,Creative Direction, Branding,Visual Identities, Packaging, Website, and Print& Editorial Design.",
+                "If you are looking for a designer who excles in BrandStrategy/Visual Direction/Print Works/Products/IP/Curatorial/Grid Layout/Website design/Typeface Customization.",
+                "Please contact me."
+            ]
+        }] 
+    },
+    heroImage: {
+        colSpanPC: 6.0,
+        colSpanMobile: 5.0,
+        position: {
+            pc: { anchorColumn: 10, top: "50%", transform: "translate3d(-50%, -50%, 0)" },
+            mobile: { right: "21px", bottomBase: "80px" }
+        }
+    }
+};
+
 window.onload = () => ENGINE.start();
 </script>
 </body>
