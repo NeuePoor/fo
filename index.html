@@ -35,6 +35,7 @@
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; -webkit-font-smoothing: antialiased; }
+
 html, body { scrollbar-width: none; -ms-overflow-style: none; user-select: none; height: 100%; margin: 0; padding: 0; }
 html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
@@ -101,14 +102,19 @@ body.is-loading { overflow: hidden; }
     transition: opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease); 
 }
 
-/* 独立动效 Logo GIF */
+/* 独立动效 Logo GIF 外层容器 */
 .fl-logo__gif-wrap-pc { 
     position: fixed; top: 0; left: 4px; height: var(--fl-nav-h); 
     display: flex; align-items: center; z-index: 3001; 
     transition: transform 0.4s var(--fl-ease), opacity 0.6s var(--fl-ease); 
+    cursor: pointer;
+}
+.fl-logo__gif-wrap-pc::before {
+    content: ''; position: absolute;
+    top: -12px; bottom: -12px; left: -4px; right: -24px;
 }
 .fl-logo__gif-wrap-m { display: none; }
-.fl-logo__gif { height: var(--logo-size-pc); width: auto; opacity: 0; transition: opacity 0.3s var(--fl-ease); cursor: pointer; }
+.fl-logo__gif { height: var(--logo-size-pc); width: auto; opacity: 0; transition: opacity 0.3s var(--fl-ease); }
 
 /* 展开的 Logo Panel 与 Hero 图像 */
 .fl-logo-panel { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2000; }
@@ -222,6 +228,11 @@ body.is-loading { overflow: hidden; }
         left: 48px !important; height: 44px !important; align-items: center !important;
         z-index: 1006 !important; 
         transition: transform 0.4s var(--fl-ease), opacity 0.4s var(--fl-ease) !important;
+        cursor: pointer;
+    }
+    .fl-logo__gif-wrap-m::before {
+        content: ''; position: absolute;
+        top: -16px; bottom: -16px; left: -16px; right: -24px;
     }
     .fl-logo__gif-wrap-m .fl-logo__gif { height: 18px !important; opacity: 1 !important; }
     
@@ -231,7 +242,7 @@ body.is-loading { overflow: hidden; }
     }
     .fl-nav__link { font-size: var(--nav-fs-m) !important; color: var(--fl-text) !important; opacity: 1 !important; filter: none !important; }
     
-    body .is-nav-hidden { opacity: 0 !important; transform: translateY(20px) !important; pointer-events: none !important; }
+    body .is-nav-hidden { opacity: 0 !important; transform: translateY(16px) scale(0.8) translateZ(0) !important; pointer-events: none !important; }
 }
 
 /* 性能降级隔离 */
@@ -261,12 +272,15 @@ body.is-low-perf .fl-wechat-overlay { backdrop-filter: none !important; backgrou
     position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; 
     display: flex; align-items: center; justify-content: center; background: var(--fl-bg); 
     transition: background var(--splash-dur) var(--fl-ease);
+    overflow: hidden;
 }
 .fl-splash__bg {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     background: url('https://folio.neuepoor.com/fo.gif') center/cover no-repeat;
     transition: filter var(--splash-dur) var(--fl-ease), opacity var(--splash-dur) var(--fl-ease), transform var(--splash-dur) var(--fl-ease);
     z-index: 1; opacity: 1;
+    /* 新增：为 JS 高频接管 transform 铺垫，确保将变动交给硬件加速渲染 */
+    will-change: transform, opacity;
 }
 .fl-splash__text {
     position: relative; z-index: 3; font-size: var(--splash-fs); font-weight: 700; color: #fff;
@@ -278,7 +292,7 @@ body.is-low-perf .fl-wechat-overlay { backdrop-filter: none !important; backgrou
 .fl-splash.is-finished .fl-splash__text { opacity: 0 !important; visibility: hidden; }
 
 .fl-grid {
-    position: relative; display: grid; grid-template-columns: repeat(12, 1fr);
+    position: relative; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr));
     gap: var(--fl-gutter); margin: var(--fl-margin);
     min-height: calc(100vh - (var(--fl-margin) * 2)); 
     align-content: start; padding: 80px 0 100px; z-index: 10; 
@@ -286,6 +300,9 @@ body.is-low-perf .fl-wechat-overlay { backdrop-filter: none !important; backgrou
 
 .fl-reveal { opacity: 0; transform: translateY(var(--fl-reveal-dist)); transition: opacity var(--fl-reveal-dur) var(--fl-ease), transform var(--fl-reveal-dur) var(--fl-ease); will-change: opacity, transform; }
 .fl-reveal.is-visible { opacity: 1; transform: translateY(0); }
+
+.fl-item-wrapper { min-width: 0; }
+
 .fl-gallery-text { width: 100%; max-width: 850px; margin-bottom: 0; }
 .fl-paragraph {
     font-size: clamp(var(--gallery-content-fs-m), 1vw + 13px, var(--gallery-content-fs));
@@ -304,9 +321,14 @@ body.is-low-perf .fl-wechat-overlay { backdrop-filter: none !important; backgrou
 
 @media (max-width: 768px) {
     .fl-splash { position: absolute !important; top: calc(-1 * env(safe-area-inset-top, 0px)) !important; left: 0 !important; width: 100% !important; height: calc(100vh + env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px)) !important; }
+    .fl-splash__bg { background-position: center calc(50% + 56px) !important; }
     .fl-splash.is-finished { z-index: 1 !important; }
     .fl-splash.is-finished .fl-splash__bg { filter: blur(20px) !important; }
-    .fl-splash.is-scroll-ready .fl-splash__bg { transition: transform var(--splash-dur) var(--fl-ease), filter var(--splash-dur) var(--fl-ease) !important; }
+    
+    /* 核心修改：在准备好滚动后，彻底摒弃 CSS 对 transform 和 opacity 的过渡限制。
+       这样 JS 手势控制才能毫无延迟，如 SwiftUI 般丝滑跟手！ */
+    .fl-splash.is-scroll-ready .fl-splash__bg { transition: filter var(--splash-dur) var(--fl-ease) !important; }
+    
     .fl-grid { padding: 4px 0 160px !important; margin-top: 0 !important; min-height: 200vh !important; }
     .fl-gallery-text { width: 100% !important; max-width: 100% !important; }
     .fl-paragraph { font-size: var(--gallery-content-fs-m) !important; margin-bottom: 1.8em !important; }
@@ -403,7 +425,7 @@ const CONFIG_GLOBAL = {
     },
     logoPanel: {
         heroImg: "https://folio.neuepoor.com/landing.gif",
-        specialText: { text: "Hi, I'm Fo", sizePC: "32px", sizeMobile: "clamp(16px, 6vw, 21px)" },
+        specialText: { text: "Hi, I'm Fo", sizePC: "32px", sizeMobile: "clamp(14px, 6vw, 21px)" },
         contact: [
             { name: "Email", link: "mailto:poorleaglguy@qq.com" },
             { name: "Instagram", link: "https://www.instagram.com/neuepoor" },
@@ -411,7 +433,7 @@ const CONFIG_GLOBAL = {
             { name: "小红书", link: "https://xhslink.com/m/9qPnrun1Dh9" },
             { name: "WeChat", link: "#", isWeChat: true, qrText: "WeChat: NeuePoor", svgSize: "100%" }
         ],
-        contactStyles: { sizePC: "21px", sizeMobile: "clamp(14px, 5vw, 21px)" }
+        contactStyles: { sizePC: "21px", sizeMobile: "clamp(10px, 5vw, 12px)" }
     }
 };
 
@@ -524,15 +546,16 @@ const ENGINE = {
 
     initTriggersAndInteractions() {
         const p = document.getElementById('ui-logo-panel'); const hero = document.getElementById('ui-landing-hero');
-        const lwPC = document.getElementById('ui-logo-gif-wrap-pc'); const gPC = document.getElementById('ui-logo-gif-pc');
+        const lwPC = document.getElementById('ui-logo-gif-wrap-pc');
+        const lwM = document.getElementById('ui-logo-gif-wrap-m');
         const closeBtn = document.getElementById('ui-close-btn'); const navContainer = document.getElementById('ui-nav');
         const tLogo = document.getElementById('ui-logo-text'); 
         if(!p || !hero) return;
 
-        if (lwPC && gPC) {
+        if (lwPC) {
             lwPC.onmouseenter = () => { if (window.innerWidth > 768 && !p.classList.contains('is-panel-pinned')) ENGINE.showHeroPC(false); };
             lwPC.onmouseleave = () => { if (window.innerWidth > 768 && !p.classList.contains('is-panel-pinned')) ENGINE.hideHero(); };
-            gPC.onclick = (e) => { e.stopPropagation(); if (window.innerWidth <= 768) return; if (hero.classList.contains('is-active') && p.classList.contains('is-panel-pinned')) ENGINE.hideHero(); else ENGINE.showHeroPC(true); };
+            lwPC.onclick = (e) => { e.stopPropagation(); if (window.innerWidth <= 768) return; if (hero.classList.contains('is-active') && p.classList.contains('is-panel-pinned')) ENGINE.hideHero(); else ENGINE.showHeroPC(true); };
         }
         
         if (tLogo) {
@@ -545,8 +568,10 @@ const ENGINE = {
             };
         }
 
-        const gM = document.getElementById('ui-logo-gif-m');
-        if (gM) { gM.onclick = (e) => { e.stopPropagation(); if (window.innerWidth > 768) return; if (hero.classList.contains('is-active')) ENGINE.hideHero(); else ENGINE.showHeroMobile(); }; }
+        if (lwM) { 
+            lwM.onclick = (e) => { e.stopPropagation(); if (window.innerWidth > 768) return; if (hero.classList.contains('is-active')) ENGINE.hideHero(); else ENGINE.showHeroMobile(); }; 
+        }
+        
         if (p) { p.onclick = (e) => { if (e.target === p && p.classList.contains('is-panel-pinned')) ENGINE.hideHero(); }; }
         if (closeBtn) { closeBtn.onclick = (e) => { e.stopPropagation(); ENGINE.hideHero(); }; }
 
@@ -564,7 +589,7 @@ const ENGINE = {
     initGlobalFocusMode() {
         if (window.innerWidth <= 768) return;
         const b = document.body; const hero = document.getElementById('ui-landing-hero');
-        const selA = '.fl-nav__link, .fl-logo__gif-wrap-pc, .fl-logo-text, .fl-reveal'; // 包含了 .fl-reveal 以兼容下游
+        const selA = '.fl-nav__link, .fl-logo__gif-wrap-pc, .fl-logo-text, .fl-reveal'; 
         const selB = '.fl-nav__link, .fl-logo__gif-wrap-pc, .fl-logo-text, #ui-landing-hero, #ui-hero-special-text, .fl-gallery-link, .fl-close-btn';
         document.addEventListener('mouseover', (e) => { 
             if (b.classList.contains('is-loading') || window.innerWidth <= 768) return;
@@ -601,16 +626,26 @@ const ENGINE = {
                     requestAnimationFrame(() => {
                         const currentScrollY = window.scrollY;
                         
-                        // 兼容下游：只有页面存在 splash 时才执行透明度控制
+                        /* 核心修改：重新引入专门针对 Splash 的独立渲染映射机制，解绑菜单栏限制 */
                         if (splash && splash.classList.contains('is-scroll-ready') && splashBg && typeof CONFIG_PAGE !== 'undefined' && CONFIG_PAGE.splash) {
                             let fadeRatio = CONFIG_PAGE.splash.scrollFadeRatio || 0.8;
-                            let op = 1 - (currentScrollY / (window.innerHeight * fadeRatio));
-                            splashBg.style.opacity = Math.max(0, Math.min(1, op));
+                            /* Progress：根据滑动高度百分比生成 0~1 的手势进度 */
+                            let progress = Math.max(0, Math.min(1, currentScrollY / (window.innerHeight * fadeRatio)));
+                            
+                            let op = 1 - progress;
+                            /* 原始比例为1.1，随滑动平滑收拢到0.8 */
+                            let currentScale = 1.1 - (0.3 * progress);
+                            /* 原地原位，随滑动下沉到16px */
+                            let currentY = 16 * progress;
+                            
+                            splashBg.style.opacity = op;
+                            splashBg.style.transform = `translateY(${currentY}px) scale(${currentScale}) translateZ(0)`;
                         }
 
                         const isScrollingDown = currentScrollY > lastScrollY;
                         lastScrollY = currentScrollY;
 
+                        /* 下方是菜单栏的专属隐显逻辑，与 Splash 再无瓜葛 */
                         if (isScrollingDown && currentScrollY > 10) {
                             if (h && !h.classList.contains('is-nav-hidden')) {
                                 h.classList.add('is-nav-hidden'); 
@@ -699,10 +734,15 @@ const ENGINE = {
             ENGINE.initReveal();
             setTimeout(() => {
                 s.classList.add('is-scroll-ready');
+                /* 核心修改：确保在 transitionTime 结束、状态切换时，坐标系统步与独立滑动映射对齐 */
                 if (ENGINE.isMobile()) {
                     let fadeRatio = CONFIG_PAGE.splash.scrollFadeRatio || 0.8;
-                    let op = 1 - (window.scrollY / (window.innerHeight * fadeRatio));
-                    sb.style.opacity = Math.max(0, Math.min(1, op));
+                    let progress = Math.max(0, Math.min(1, window.scrollY / (window.innerHeight * fadeRatio)));
+                    let op = 1 - progress;
+                    let currentScale = 1.1 - (0.3 * progress);
+                    let currentY = 16 * progress;
+                    sb.style.opacity = op;
+                    sb.style.transform = `translateY(${currentY}px) scale(${currentScale}) translateZ(0)`;
                 }
             }, CONFIG_PAGE.splash.transitionTime);
         };
@@ -710,10 +750,15 @@ const ENGINE = {
         if (sessionStorage.getItem('fl_visited')) { 
             document.body.classList.remove('is-loading'); s.classList.add('is-finished', 'is-scroll-ready'); 
             ENGINE.initReveal(); 
+            /* 核心修改：非首次访问也应用独立的坐标滑动映射 */
             if (ENGINE.isMobile()) {
                 let fadeRatio = CONFIG_PAGE.splash.scrollFadeRatio || 0.8;
-                let op = 1 - (window.scrollY / (window.innerHeight * fadeRatio));
-                sb.style.opacity = Math.max(0, Math.min(1, op));
+                let progress = Math.max(0, Math.min(1, window.scrollY / (window.innerHeight * fadeRatio)));
+                let op = 1 - progress;
+                let currentScale = 1.1 - (0.3 * progress);
+                let currentY = 16 * progress;
+                sb.style.opacity = op;
+                sb.style.transform = `translateY(${currentY}px) scale(${currentScale}) translateZ(0)`;
             }
             return; 
         }
