@@ -68,10 +68,9 @@ body.is-loading { overflow: hidden; }
     body:not(.is-loading) .fl-cursor { opacity: 1; }
 }
 .fl-cursor__v, .fl-cursor__h { position: absolute; background: #fff; will-change: transform; }
-.fl-cursor__v { width: 1px; height: 100vh; height: 100svh; top: 0; left: 0; }
+.fl-cursor__v { width: 1px; height: 100vh; height: 100dvh; top: 0; left: 0; }
 .fl-cursor__h { height: 1px; width: 100vw; left: 0; top: 0; }
 
-/* 锁定混合模式的计算范围，极大降低 GPU 负担 */
 #ui-splash, #ui-main-grid, #ui-landing-hero {
     isolation: isolate;
 }
@@ -80,7 +79,6 @@ body.is-loading { overflow: hidden; }
    ⬇️⬇️⬇️ [2] 全局通用组件：HEADER & LOGO PANEL (全站复制粘贴区) ⬇️⬇️⬇️
    ========================================================================== */
 
-/* 头部导航与背景框 */
 .fl-header { 
     position: fixed; width: 100%; z-index: 3000; display: flex; 
     justify-content: space-between; align-items: center; padding: 0 4px; 
@@ -107,7 +105,6 @@ body.is-loading { overflow: hidden; }
     transition: opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease); 
 }
 
-/* 独立动效 Logo GIF 外层容器 */
 .fl-logo__gif-wrap-pc { 
     position: fixed; top: 0; left: 4px; height: var(--fl-nav-h); 
     display: flex; align-items: center; z-index: 3001; 
@@ -121,7 +118,6 @@ body.is-loading { overflow: hidden; }
 .fl-logo__gif-wrap-m { display: none; }
 .fl-logo__gif { height: var(--logo-size-pc); width: auto; opacity: 0; transition: opacity 0.3s var(--fl-ease); }
 
-/* 展开的 Logo Panel 与 Hero 图像 */
 .fl-logo-panel { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2000; }
 .fl-logo-panel.is-panel-pinned { pointer-events: auto; }
 
@@ -149,7 +145,6 @@ body.is-loading { overflow: hidden; }
 .fl-gallery-link { font-size: var(--contact-fs); font-weight: var(--gallery-fw); color: var(--fl-text); text-decoration: none; transition: opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease); }
 .fl-close-btn { position: absolute; right: 24px; bottom: 12px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--fl-text); }
 
-/* 微信二维码弹窗 */
 .fl-wechat-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
@@ -161,7 +156,6 @@ body.is-loading { overflow: hidden; }
 .fl-wechat-qr { width: 100%; aspect-ratio: 1; margin: 0 auto 24px auto; }
 .fl-wechat-qr img { width: 100%; height: 100%; object-fit: contain; }
 
-/* PC 端焦点模式模糊隔离 */
 @media (min-width: 769px) {
     .fl-nav__link, .fl-logo__gif-wrap-pc, .fl-hero-special-text, .fl-contact-row, .fl-close-btn, .fl-landing-hero, .fl-logo-text { transition: opacity 0.6s var(--fl-ease), filter 0.6s var(--fl-ease), visibility 0.5s var(--fl-ease) !important; }
     
@@ -180,7 +174,6 @@ body.is-loading { overflow: hidden; }
     body.has-panel-focus-hover .is-hovered-target { opacity: 1 !important; filter: blur(0px) !important; }
 }
 
-/* 移动端形态降级隔离 */
 @media (max-width: 768px) {
     .fl-logo__gif-wrap-pc { display: none !important; }
     
@@ -250,7 +243,6 @@ body.is-loading { overflow: hidden; }
     body .is-nav-hidden { opacity: 0 !important; transform: translateY(16px) scale(0.8) translateZ(0) !important; pointer-events: none !important; }
 }
 
-/* 性能降级隔离 */
 body.is-low-perf .fl-header__bg { backdrop-filter: none !important; background: rgba(255, 255, 255, 0.95) !important; }
 @media (prefers-color-scheme: dark) { body.is-low-perf .fl-header__bg { background: rgba(28, 28, 30, 0.95) !important; } }
 body.is-low-perf .fl-hero-special-text, body.is-low-perf .fl-contact-row, body.is-low-perf .fl-close-btn { filter: none !important; }
@@ -274,18 +266,17 @@ body.is-low-perf .fl-wechat-overlay { backdrop-filter: none !important; backgrou
 }
 
 .fl-splash {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%; height: 100svh; z-index: 9999; 
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; height: 100dvh; z-index: 9999; 
     display: flex; align-items: center; justify-content: center; background: var(--fl-bg); 
-    transition: background var(--splash-dur) var(--fl-ease);
+    transition: opacity var(--splash-dur) var(--fl-ease), visibility var(--splash-dur) var(--fl-ease), background var(--splash-dur) var(--fl-ease);
     overflow: hidden;
 }
 .fl-splash__bg {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    /* 【优化】使用 object-fit 替代 background-size，保证视觉 1:1 还原 */
+    display: block;
     object-fit: cover; 
     transition: filter var(--splash-dur) var(--fl-ease), opacity var(--splash-dur) var(--fl-ease), transform var(--splash-dur) var(--fl-ease);
     z-index: 1; opacity: 1;
-    /* 新增：为 JS 高频接管 transform 铺垫，确保将变动交给硬件加速渲染 */
     will-change: transform, opacity;
 }
 .fl-splash__text {
@@ -293,6 +284,8 @@ body.is-low-perf .fl-wechat-overlay { backdrop-filter: none !important; backgrou
     mix-blend-mode: difference; opacity: 1; pointer-events: none; transition: opacity 0.5s var(--fl-ease);
     transform: translateZ(0); will-change: opacity, transform;
 }
+
+/* PC 端默认逻辑：Splash 结束时保留底层 fo.gif 背景并虚化 */
 .fl-splash.is-finished { pointer-events: none; background: transparent; z-index: 1; }
 .fl-splash.is-finished .fl-splash__bg { filter: blur(40px); opacity: 1; transform: scale(1.1); }
 .fl-splash.is-finished .fl-splash__text { opacity: 0 !important; visibility: hidden; }
@@ -304,7 +297,6 @@ body.is-low-perf .fl-wechat-overlay { backdrop-filter: none !important; backgrou
     align-content: start; padding: 80px 0 100px; z-index: 10; 
 }
 
-/* 删去 will-change，完全释放静态显存 */
 .fl-reveal { opacity: 0; transform: translateY(var(--fl-reveal-dist)); transition: opacity var(--fl-reveal-dur) var(--fl-ease), transform var(--fl-reveal-dur) var(--fl-ease); }
 .fl-reveal.is-visible { opacity: 1; transform: translateY(0); }
 
@@ -327,23 +319,17 @@ body.is-low-perf .fl-wechat-overlay { backdrop-filter: none !important; backgrou
 }
 
 @media (max-width: 768px) {
-    .fl-splash { position: absolute !important; top: calc(-1 * env(safe-area-inset-top, 0px)) !important; left: 0 !important; width: 100% !important; height: calc(100vh + env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px)) !important; height: calc(100svh + env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px)) !important; }
-    /* 【优化】使用 object-position 替代 background-position */
+    .fl-splash { position: absolute !important; top: calc(-1 * env(safe-area-inset-top, 0px)) !important; left: 0 !important; width: 100% !important; height: calc(100vh + env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px)) !important; height: calc(100dvh + env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px)) !important; }
     .fl-splash__bg { object-position: center calc(50% + 56px) !important; }
-    .fl-splash.is-finished { z-index: 1 !important; }
-    .fl-splash.is-finished .fl-splash__bg { filter: blur(20px) !important; }
     
-    /* 核心修改：在准备好滚动后，彻底摒弃 CSS 对 transform 和 opacity 的过渡限制。
-       这样 JS 手势控制才能毫无延迟，如 SwiftUI 般丝滑跟手！ */
-    .fl-splash.is-scroll-ready .fl-splash__bg { transition: filter var(--splash-dur) var(--fl-ease) !important; }
+    /* 移动端专属覆写：开屏结束后彻底渐隐整个容器，不保留任何背景 */
+    .fl-splash.is-finished { opacity: 0 !important; visibility: hidden !important; }
     
     .fl-grid { padding: 4px 0 160px !important; margin-top: 0 !important; min-height: 200vh !important; }
     .fl-gallery-text { width: 100% !important; max-width: 100% !important; }
     .fl-paragraph { font-size: var(--gallery-content-fs-m) !important; margin-bottom: 1.8em !important; }
     .fl-paragraph:last-child { margin-bottom: 0 !important; }
 }
-
-body.is-low-perf .fl-splash.is-finished .fl-splash__bg { filter: none !important; opacity: 0 !important; }
 
 </style>
 </head>
@@ -450,7 +436,6 @@ const ENGINE = {
     lastIsMobile: window.innerWidth <= 768,
     lastHeight: window.innerHeight,
     
-    // 【新增】：用于缓存和清理 Observer 实例
     revealObserver: null, 
     
     isMobile() { return window.innerWidth <= 768; },
@@ -477,7 +462,6 @@ const ENGINE = {
             '--special-text-fs': c.logoPanel.specialText.sizePC, '--special-text-fs-m': c.logoPanel.specialText.sizeMobile,
             '--contact-fs': c.logoPanel.contactStyles.sizePC, '--contact-fs-m': c.logoPanel.contactStyles.sizeMobile,
             '--logo-size-pc': c.header.logo.sizePC, '--logo-size-m': c.header.logo.sizeMobile,
-            // 确保没有 Hero 配置时不报错
             ...(typeof CONFIG_PAGE !== 'undefined' && CONFIG_PAGE.heroImage ? {
                 '--hero-col-span-pc': CONFIG_PAGE.heroImage.colSpanPC, '--hero-col-span-mb': CONFIG_PAGE.heroImage.colSpanMobile,
                 '--hero-size-pc': `calc(var(--hero-col-span-pc) * var(--grid-col-width) + (var(--hero-col-span-pc) - 1) * var(--fl-gutter))`,
@@ -545,12 +529,10 @@ const ENGINE = {
         const cr = document.getElementById('ui-contact-row');
         if(!h || !p) return;
 
-        // 【优化】先集中进行 DOM Read，避免布局抖动
         const currentWinWidth = window.innerWidth;
         const anchorCol = (typeof CONFIG_PAGE !== 'undefined' && CONFIG_PAGE.heroImage) ? CONFIG_PAGE.heroImage.position.pc.anchorColumn : 10;
         const calculatedLeft = `${(currentWinWidth / 12) * anchorCol}px`;
 
-        // 【优化】后集中进行 DOM Write
         h.style.width = 'var(--hero-size-pc)';
         h.style.height = 'var(--hero-size-pc)'; 
         h.style.top = 'var(--hero-top-pc)'; 
@@ -640,7 +622,6 @@ const ENGINE = {
         const h = document.getElementById('ui-header'); const lwM = document.getElementById('ui-logo-gif-wrap-m'); 
         const bg = document.getElementById('ui-header-bg'); const lp = document.getElementById('ui-logo-panel');
         const lh = document.getElementById('ui-landing-hero');
-        const splash = document.getElementById('ui-splash'); const splashBg = document.getElementById('ui-splash-bg');
         
         let timer; let lastScrollY = window.scrollY; let ticking = false;
 
@@ -649,27 +630,9 @@ const ENGINE = {
                 if (!ticking) {
                     requestAnimationFrame(() => {
                         const currentScrollY = window.scrollY;
-                        
-                        /* 核心修改：重新引入专门针对 Splash 的独立渲染映射机制，解绑菜单栏限制 */
-                        if (splash && splash.classList.contains('is-scroll-ready') && splashBg && typeof CONFIG_PAGE !== 'undefined' && CONFIG_PAGE.splash) {
-                            let fadeRatio = CONFIG_PAGE.splash.scrollFadeRatio || 0.8;
-                            /* Progress：根据滑动高度百分比生成 0~1 的手势进度 */
-                            let progress = Math.max(0, Math.min(1, currentScrollY / (window.innerHeight * fadeRatio)));
-                            
-                            let op = 1 - progress;
-                            /* 原始比例为1.1，随滑动平滑收拢到0.8 */
-                            let currentScale = 1.1 - (0.3 * progress);
-                            /* 原地原位，随滑动下沉到16px */
-                            let currentY = 16 * progress;
-                            
-                            splashBg.style.opacity = op;
-                            splashBg.style.transform = `translateY(${currentY}px) scale(${currentScale}) translateZ(0)`;
-                        }
-
                         const isScrollingDown = currentScrollY > lastScrollY;
                         lastScrollY = currentScrollY;
 
-                        /* 下方是菜单栏的专属隐显逻辑，与 Splash 再无瓜葛 */
                         if (isScrollingDown && currentScrollY > 10) {
                             if (h && !h.classList.contains('is-nav-hidden')) {
                                 h.classList.add('is-nav-hidden'); 
@@ -704,6 +667,33 @@ const ENGINE = {
                     });
                     ticking = true;
                 }
+            }
+        }, { passive: true });
+    },
+
+    initOverscrollRedirect() {
+        const targetUrl = CONFIG_GLOBAL.header.nav.find(n => n.name === 'Works')?.link || 'https://works.neuepoor.com';
+        let startY = 0;
+        let isAtBottom = false;
+
+        window.addEventListener('touchstart', (e) => {
+            startY = e.touches[0].clientY;
+            isAtBottom = Math.ceil(window.innerHeight + window.scrollY) >= document.documentElement.scrollHeight - 5;
+        }, { passive: true });
+
+        window.addEventListener('touchmove', (e) => {
+            if (!isAtBottom) return;
+            const currentY = e.touches[0].clientY;
+            const diffY = startY - currentY;
+            if (diffY > 80) {
+                window.location.href = targetUrl;
+            }
+        }, { passive: true });
+
+        window.addEventListener('wheel', (e) => {
+            isAtBottom = Math.ceil(window.innerHeight + window.scrollY) >= document.documentElement.scrollHeight - 5;
+            if (isAtBottom && e.deltaY > 50) {
+                window.location.href = targetUrl;
             }
         }, { passive: true });
     },
@@ -750,7 +740,6 @@ const ENGINE = {
         const s = document.getElementById('ui-splash'); const st = document.getElementById('ui-splash-text'); const sb = document.getElementById('ui-splash-bg');
         if(!s || !st || !sb) return;
         
-        // 【优化】挂载 src 触发网络请求
         st.innerText = CONFIG_PAGE.splash.text; 
         sb.src = CONFIG_PAGE.splash.bg;
         
@@ -759,36 +748,14 @@ const ENGINE = {
             s.classList.add('is-finished'); document.body.classList.remove('is-loading');
             sessionStorage.setItem('fl_visited', 'true');
             ENGINE.initReveal();
-            setTimeout(() => {
-                s.classList.add('is-scroll-ready');
-                if (ENGINE.isMobile()) {
-                    let fadeRatio = CONFIG_PAGE.splash.scrollFadeRatio || 0.8;
-                    let progress = Math.max(0, Math.min(1, window.scrollY / (window.innerHeight * fadeRatio)));
-                    let op = 1 - progress;
-                    let currentScale = 1.1 - (0.3 * progress);
-                    let currentY = 16 * progress;
-                    sb.style.opacity = op;
-                    sb.style.transform = `translateY(${currentY}px) scale(${currentScale}) translateZ(0)`;
-                }
-            }, CONFIG_PAGE.splash.transitionTime);
         };
         
         if (sessionStorage.getItem('fl_visited')) { 
-            document.body.classList.remove('is-loading'); s.classList.add('is-finished', 'is-scroll-ready'); 
+            document.body.classList.remove('is-loading'); s.classList.add('is-finished'); 
             ENGINE.initReveal(); 
-            if (ENGINE.isMobile()) {
-                let fadeRatio = CONFIG_PAGE.splash.scrollFadeRatio || 0.8;
-                let progress = Math.max(0, Math.min(1, window.scrollY / (window.innerHeight * fadeRatio)));
-                let op = 1 - progress;
-                let currentScale = 1.1 - (0.3 * progress);
-                let currentY = 16 * progress;
-                sb.style.opacity = op;
-                sb.style.transform = `translateY(${currentY}px) scale(${currentScale}) translateZ(0)`;
-            }
             return; 
         }
 
-        // 【核心修改】：精准拦截！必须等 GIF 实体加载并解码完毕后，才允许开启 holdTime 倒计时
         const startSplash = () => {
             setTimeout(d, CONFIG_PAGE.splash.holdTime);
         };
@@ -797,16 +764,13 @@ const ENGINE = {
             startSplash();
         } else {
             sb.onload = startSplash;
-            // 兜底机制：即使网络断死导致 GIF 失败，5秒后强制放行，绝不让用户死等白屏
             setTimeout(() => { if(document.body.classList.contains('is-loading')) d(); }, 5000);
         }
         
-        // 依然允许用户点击屏幕立刻跳过
         s.onclick = d;
     },
 
     initReveal() {
-        // 【优化】：清理旧的观察者，防止内存严重泄漏
         if (ENGINE.revealObserver) {
             ENGINE.revealObserver.disconnect();
         }
@@ -832,30 +796,26 @@ const ENGINE = {
         }, { passive: true });
     },
 
-    // 核心集线器
     start() {
         ENGINE.initSEO();
         ENGINE.initPerformanceMode(); 
         
-        // 1. 初始化全局组件
         ENGINE.applyGlobalTypography(); 
         ENGINE.renderHeader(); 
         ENGINE.renderLogoPanel();
         ENGINE.initGlobalFocusMode(); 
         ENGINE.initGlobalScrollInteraction();
+        ENGINE.initOverscrollRedirect();
         ENGINE.initTriggersAndInteractions(); 
         
-        // 2. 初始化页面专属组件
         ENGINE.applyPageTypography();
         ENGINE.initCustomCursor();
         if(typeof CONFIG_PAGE !== 'undefined' && CONFIG_PAGE.gallery) ENGINE.buildContent(); 
         if(typeof CONFIG_PAGE !== 'undefined' && CONFIG_PAGE.splash) ENGINE.initSplash();
         else { document.body.classList.remove('is-loading'); ENGINE.initReveal(); }
 
-        // 替换 start() 中的 resize 监听部分
         let resizeTimer = null;
         window.addEventListener('resize', () => {
-            // 【优化】：使用定时器防抖，替代高频的 rAF，避免 DOM 被每秒暴力重建 60 次
             clearTimeout(resizeTimer);
             resizeTimer = setTimeout(() => {
                 const currentIsMobile = ENGINE.isMobile();
@@ -881,19 +841,16 @@ const ENGINE = {
                     }
                 }
                 ENGINE.lastHeight = window.innerHeight;
-            }, 150); // 等待 150ms 的拖拽停顿后再执行重绘
+            }, 150);
         }, { passive: true });
     }
 };
 
-/* ==========================================================================
-   [3] 页面专属内容配置 (CONFIG_PAGE) - HOME ONLY
-   ========================================================================== */
 const CONFIG_PAGE = {
     splash: { 
         text: "Folio", 
         bg: "https://folio.neuepoor.com/fo.gif",
-        holdTime: 1000,
+        holdTime: 3000,
         transitionTime: 1000,
         scrollFadeRatio: 0.05
     },
@@ -921,7 +878,6 @@ const CONFIG_PAGE = {
     }
 };
 
-/* 修改后：DOM 就绪即刻启动引擎，彻底告别弱网白屏假死 */
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => ENGINE.start());
 } else {
@@ -930,3 +886,4 @@ if (document.readyState === 'loading') {
 </script>
 </body>
 </html>
+
