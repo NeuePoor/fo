@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -8,7 +7,7 @@
 <title>Foo</title>
 <link id="favicon" rel="icon" type="image/webp" href="https://folio.neuepoor.com/favicon.webp">
 
-<link rel="preload" as="image" href="https://folio.neuepoor.com/fo.webp">
+<link rel="preload" as="video" href="https://folio.neuepoor.com/fo_safari.mp4" type="video/mp4">
 
 <style>
 /* ==========================================================================
@@ -44,7 +43,8 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
     body:not(.is-loading) { cursor: none; }
     body:not(.is-loading) a, 
     body:not(.is-loading) button, 
-    body:not(.is-loading) img { cursor: none !important; }
+    body:not(.is-loading) img,
+    body:not(.is-loading) video { cursor: none !important; }
 }
 
 body {
@@ -270,7 +270,6 @@ body.is-low-perf .fl-wechat-overlay { backdrop-filter: none !important; backgrou
     display: flex; align-items: center; justify-content: center; background: var(--fl-bg); 
     transition: opacity var(--splash-dur) var(--fl-ease), visibility var(--splash-dur) var(--fl-ease), background var(--splash-dur) var(--fl-ease);
     overflow: hidden;
-    /* 【防穿透优化】增加 touch-action 和 overscroll-behavior 彻底锁死手势 */
     touch-action: none; 
     overscroll-behavior: none;
 }
@@ -284,13 +283,14 @@ body.is-low-perf .fl-wechat-overlay { backdrop-filter: none !important; backgrou
     will-change: transform, opacity;
 }
 
+#ui-splash-bg-blurred { opacity: 0; } 
+
 .fl-splash__text {
     position: relative; z-index: 3; font-size: var(--splash-fs); font-weight: 700; color: #fff;
     mix-blend-mode: difference; opacity: 1; pointer-events: none; transition: opacity 0.5s var(--fl-ease);
     transform: translateZ(0); will-change: opacity, transform;
 }
 
-/* 修改后：全端统一逻辑，直接渐隐整个 Splash 容器 */
 .fl-splash.is-finished { opacity: 0 !important; visibility: hidden !important; pointer-events: none; z-index: 1; }
 
 .fl-grid {
@@ -345,7 +345,7 @@ body.is-low-perf .fl-wechat-overlay { backdrop-filter: none !important; backgrou
      [3] 页面专属模块 (HOME ONLY)
      ========================================================================== -->
 <div class="fl-splash" id="ui-splash">
-    <img class="fl-splash__bg" id="ui-splash-bg" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" decoding="async" alt="splash">
+    <video class="fl-splash__bg" id="ui-splash-bg" poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" preload="auto" muted autoplay loop playsinline webkit-playsinline x5-playsinline disablePictureInPicture></video>
     <div class="fl-splash__text" id="ui-splash-text"></div>
 </div>
 
@@ -703,7 +703,7 @@ const ENGINE = {
         if (t && o) { t.onclick = (e) => { e.preventDefault(); o.classList.add('is-active'); }; o.onclick = () => o.classList.remove('is-active'); }
     },
     /* ==========================================================================
-       ⬆️⬆️⬆️ 全局通用 JS 结束 ⬆️⬆️⬆️
+       ⬆️⬆️ 全局通用 JS 结束 ⬆️⬆️
        ========================================================================== */
 
 
@@ -743,6 +743,14 @@ const ENGINE = {
 
         st.innerText = CONFIG_PAGE.splash.text; 
         sb.src = CONFIG_PAGE.splash.bg;
+        sb.muted = true;
+        sb.playsInline = true;
+        sb.loop = true; // 【恢复循环】
+        
+        let playPromise = sb.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(() => {});
+        }
 
         const d = () => {
             if (!document.body.classList.contains('is-loading')) return;
@@ -750,7 +758,6 @@ const ENGINE = {
             sessionStorage.setItem('fl_visited', 'true');
             ENGINE.initReveal();
 
-            // 【核心精简】：全端统一！动画结束后直接连锅端，把整个 Splash 容器物理销毁，断绝一切性能隐患
             setTimeout(() => {
                 if (s && s.parentNode) s.parentNode.removeChild(s);
             }, CONFIG_PAGE.splash.transitionTime);
@@ -759,25 +766,32 @@ const ENGINE = {
         if (sessionStorage.getItem('fl_visited')) { 
             document.body.classList.remove('is-loading'); s.classList.add('is-finished'); 
             ENGINE.initReveal(); 
-            // 【核心精简】：非首次访问，全端直接连锅端销毁
             if (s && s.parentNode) s.parentNode.removeChild(s);
             return; 
         }
 
+        // 【核心修复】：基于时间的体验控制。一旦触发，停留 holdTime 后平滑淡出
+        let isTimerStarted = false;
         const startSplash = () => {
+            if (isTimerStarted) return;
+            isTimerStarted = true;
             setTimeout(d, CONFIG_PAGE.splash.holdTime);
         };
 
-        const checkReady = () => {
-            if (sb.complete) startSplash();
-        };
-
-        if (sb.complete) {
+        // 核心修复：将“发令枪”从 canplay 推迟到 playing，彻底抹平系统渲染几十毫秒的延迟误差
+        sb.addEventListener('playing', startSplash, { once: true });
+        
+        // 兜底补丁：极其罕见的情况下视频已经瞬间 playing，手动补一枪
+        if (!sb.paused && sb.currentTime > 0) {
             startSplash();
-        } else {
-            sb.onload = checkReady;
-            setTimeout(() => { if(document.body.classList.contains('is-loading')) d(); }, 5000);
         }
+
+        // 兜底机制：极度弱网下，强行放行，绝不卡死
+        setTimeout(() => { 
+            if(document.body.classList.contains('is-loading') && !isTimerStarted) {
+                d(); 
+            }
+        }, 6000);
 
         s.onclick = d;
     },
@@ -861,8 +875,8 @@ const ENGINE = {
 const CONFIG_PAGE = {
     splash: { 
         text: "Folio", 
-        bg: "https://folio.neuepoor.com/fo.webp",
-        holdTime: 3000,
+        bg: "https://folio.neuepoor.com/fo_safari.mp4",
+        holdTime: 3000, // 【恢复】：强制驻留时间（毫秒），接管关闭权限
         transitionTime: 1000,
         scrollFadeRatio: 0.05
     },
@@ -898,4 +912,3 @@ if (document.readyState === 'loading') {
 </script>
 </body>
 </html>
-
