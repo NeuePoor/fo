@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -8,6 +9,7 @@
 <link id="favicon" rel="icon" type="image/webp" href="https://folio.neuepoor.com/favicon.webp">
 
 <link rel="preload" as="video" href="https://folio.neuepoor.com/fo_safari.mp4" type="video/mp4">
+<link rel="preload" as="image" href="https://folio.neuepoor.com/fo.webp">
 
 <style>
 /* ==========================================================================
@@ -345,7 +347,8 @@ body.is-low-perf .fl-wechat-overlay { backdrop-filter: none !important; backgrou
      [3] 页面专属模块 (HOME ONLY)
      ========================================================================== -->
 <div class="fl-splash" id="ui-splash">
-    <video class="fl-splash__bg" id="ui-splash-bg" poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" preload="auto" muted autoplay loop playsinline webkit-playsinline x5-playsinline disablePictureInPicture></video>
+    <!-- 核心修复1：使用实体海报图替代透明 Base64，保障在极度严格或预览环境下的画面即刻呈现 -->
+    <video class="fl-splash__bg" id="ui-splash-bg" poster="https://folio.neuepoor.com/fo.webp" preload="auto" muted autoplay loop playsinline webkit-playsinline x5-playsinline disablePictureInPicture></video>
     <div class="fl-splash__text" id="ui-splash-text"></div>
 </div>
 
@@ -743,14 +746,16 @@ const ENGINE = {
 
         st.innerText = CONFIG_PAGE.splash.text; 
         sb.src = CONFIG_PAGE.splash.bg;
-        sb.muted = true;
-        sb.playsInline = true;
-        sb.loop = true; // 【恢复循环】
+        // 核心修复1：将透明 GIF 换为真海报图，防止被拦截时页面白死
+        if (CONFIG_PAGE.splash.poster) sb.poster = CONFIG_PAGE.splash.poster;
         
-        let playPromise = sb.play();
-        if (playPromise !== undefined) {
-            playPromise.catch(() => {});
-        }
+        sb.muted = true;
+        sb.defaultMuted = true; // 强化自动播放成功率
+        sb.playsInline = true;
+        sb.loop = true; 
+        
+        // 核心修复2：主动触发加载，强制推送渲染流
+        sb.load();
 
         const d = () => {
             if (!document.body.classList.contains('is-loading')) return;
@@ -770,7 +775,6 @@ const ENGINE = {
             return; 
         }
 
-        // 【核心修复】：基于时间的体验控制。一旦触发，停留 holdTime 后平滑淡出
         let isTimerStarted = false;
         const startSplash = () => {
             if (isTimerStarted) return;
@@ -778,15 +782,31 @@ const ENGINE = {
             setTimeout(d, CONFIG_PAGE.splash.holdTime);
         };
 
-        // 核心修复：将“发令枪”从 canplay 推迟到 playing，彻底抹平系统渲染几十毫秒的延迟误差
+        // 核心修复3：监控 Promise 异常，一旦被浏览器强硬阻断（如 Canvas iframe 预览环境），
+        // 立即退化使用 Poster 静态海报并顺利倒数，绝不让用户在无尽的等待中白屏
+        let playPromise = sb.play();
+        if (playPromise !== undefined) {
+            playPromise.catch((error) => {
+                // 遭到权限拦截时，立刻启动倒数，让静态替身平滑过渡
+                startSplash();
+            });
+        }
+
+        const forceWeChatPlay = () => { sb.play().catch(() => {}); };
+        if (typeof WeixinJSBridge === "object" && typeof WeixinJSBridge.invoke === "function") {
+            WeixinJSBridge.invoke("getNetworkType", {}, forceWeChatPlay);
+        } else {
+            document.addEventListener("WeixinJSBridgeReady", () => {
+                WeixinJSBridge.invoke("getNetworkType", {}, forceWeChatPlay);
+            }, false);
+        }
+
         sb.addEventListener('playing', startSplash, { once: true });
         
-        // 兜底补丁：极其罕见的情况下视频已经瞬间 playing，手动补一枪
         if (!sb.paused && sb.currentTime > 0) {
             startSplash();
         }
 
-        // 兜底机制：极度弱网下，强行放行，绝不卡死
         setTimeout(() => { 
             if(document.body.classList.contains('is-loading') && !isTimerStarted) {
                 d(); 
@@ -876,7 +896,8 @@ const CONFIG_PAGE = {
     splash: { 
         text: "Folio", 
         bg: "https://folio.neuepoor.com/fo_safari.mp4",
-        holdTime: 3000, // 【恢复】：强制驻留时间（毫秒），接管关闭权限
+        poster: "https://folio.neuepoor.com/fo.webp", // 新增静态图片作为完全兜底防线
+        holdTime: 3000, 
         transitionTime: 1000,
         scrollFadeRatio: 0.05
     },
@@ -912,3 +933,4 @@ if (document.readyState === 'loading') {
 </script>
 </body>
 </html>
+
