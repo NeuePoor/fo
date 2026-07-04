@@ -7,8 +7,9 @@
 <title>Foo</title>
 <link id="favicon" rel="icon" type="image/webp" href="https://folio.neuepoor.com/favicon.webp">
 
-<link rel="preload" as="video" href="https://folio.neuepoor.com/fo_safari.mp4" type="video/mp4">
-<link rel="preload" as="image" href="https://folio.neuepoor.com/fo.webp">
+<!-- 核心修改：利用 media 查询将预加载完全解耦，不浪费跨端用户的带宽 -->
+<link rel="preload" as="video" href="https://folio.neuepoor.com/fo_chrome.webm" type="video/webm" media="(min-width: 769px)">
+<link rel="preload" as="image" href="https://folio.neuepoor.com/fo.gif" media="(max-width: 768px)">
 
 <style>
 /* ==========================================================================
@@ -173,6 +174,9 @@ body.is-loading { overflow: hidden; }
     body.has-panel-focus-hover .fl-close-btn:not(.is-hovered-target) { opacity: 0.2 !important; filter: blur(8px) !important; }
 
     body.has-panel-focus-hover .is-hovered-target { opacity: 1 !important; filter: blur(0px) !important; }
+    
+    /* 核心修改：渲染层彻底解耦，在 PC 环境下将移动端专属节点直接抹杀 */
+    #ui-splash-bg-m { display: none !important; }
 }
 
 @media (max-width: 768px) {
@@ -242,6 +246,9 @@ body.is-loading { overflow: hidden; }
     .fl-nav__link { font-size: var(--nav-fs-m) !important; color: var(--fl-text) !important; opacity: 1 !important; filter: none !important; }
     
     body .is-nav-hidden { opacity: 0 !important; transform: translateY(16px) scale(0.8) translateZ(0) !important; pointer-events: none !important; }
+    
+    /* 核心修改：渲染层彻底解耦，在移动环境下将 PC 端专属 WebM 节点直接抹杀 */
+    #ui-splash-bg-pc { display: none !important; }
 }
 
 body.is-low-perf .fl-header__bg { backdrop-filter: none !important; background: rgba(255, 255, 255, 0.95) !important; }
@@ -275,7 +282,6 @@ body.is-low-perf .fl-wechat-overlay { backdrop-filter: none !important; backgrou
     overscroll-behavior: none;
 }
 
-/* 核心修复：添加 !important 强制绝对全屏尺寸，杜绝视频内联尺寸导致的不满屏与相对位移 bug */
 .fl-splash__bg {
     position: absolute !important; top: 0 !important; left: 0 !important;
     width: 100% !important; height: 100% !important;
@@ -285,8 +291,6 @@ body.is-low-perf .fl-wechat-overlay { backdrop-filter: none !important; backgrou
     z-index: 1; opacity: 1;
     will-change: transform, opacity;
 }
-
-#ui-splash-bg-blurred { opacity: 0; } 
 
 .fl-splash__text {
     position: relative; z-index: 3; font-size: var(--splash-fs); font-weight: 700; color: #fff;
@@ -327,8 +331,6 @@ body.is-low-perf .fl-wechat-overlay { backdrop-filter: none !important; backgrou
 @media (max-width: 768px) {
     .fl-splash { position: absolute !important; top: calc(-1 * env(safe-area-inset-top, 0px)) !important; left: 0 !important; width: 100% !important; height: calc(100vh + env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px)) !important; height: calc(100dvh + env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px)) !important; }
     
-    .fl-splash.is-finished { opacity: 0 !important; visibility: hidden !important; }
-    
     .fl-grid { padding: 4px 0 160px !important; margin-top: 0 !important; min-height: 200vh !important; }
     .fl-gallery-text { width: 100% !important; max-width: 100% !important; }
     .fl-paragraph { font-size: var(--gallery-content-fs-m) !important; margin-bottom: 1.8em !important; }
@@ -349,8 +351,10 @@ body.is-low-perf .fl-wechat-overlay { backdrop-filter: none !important; backgrou
      [3] 页面专属模块 (HOME ONLY)
      ========================================================================== -->
 <div class="fl-splash" id="ui-splash">
-    <!-- 核心精简：移除 loop，开启全屏沉浸纯净播放 -->
-    <video class="fl-splash__bg" id="ui-splash-bg" poster="https://folio.neuepoor.com/fo.webp" preload="auto" muted autoplay playsinline webkit-playsinline x5-playsinline disablePictureInPicture></video>
+    <!-- 核心修改：DOM 物理级双轨解耦 -->
+    <video class="fl-splash__bg" id="ui-splash-bg-pc" muted autoplay playsinline webkit-playsinline disablePictureInPicture></video>
+    <img class="fl-splash__bg" id="ui-splash-bg-m" decoding="async" alt="splash">
+    
     <div class="fl-splash__text" id="ui-splash-text"></div>
 </div>
 
@@ -743,19 +747,13 @@ const ENGINE = {
     initSplash() {
         if(typeof CONFIG_PAGE === 'undefined' || !CONFIG_PAGE.splash) return;
         const s = document.getElementById('ui-splash'); const st = document.getElementById('ui-splash-text'); 
-        const sb = document.getElementById('ui-splash-bg'); 
-        if(!s || !st || !sb) return;
+        const sbPC = document.getElementById('ui-splash-bg-pc'); 
+        const sbM = document.getElementById('ui-splash-bg-m');
+        if(!s || !st || !sbPC || !sbM) return;
 
         st.innerText = CONFIG_PAGE.splash.text; 
-        sb.src = CONFIG_PAGE.splash.bg;
-        if (CONFIG_PAGE.splash.poster) sb.poster = CONFIG_PAGE.splash.poster;
         
-        sb.muted = true;
-        sb.defaultMuted = true;
-        sb.playsInline = true;
-        sb.loop = false; // 核心减法：明确单次播放，交由 ended 事件自然驱动关闭
-        
-        sb.load();
+        const isMob = ENGINE.isMobile();
 
         const d = () => {
             if (!document.body.classList.contains('is-loading')) return;
@@ -775,31 +773,42 @@ const ENGINE = {
             return; 
         }
 
-        // 核心减法：废弃复杂的时间轴倒计时，只听命于原生的视频播放结束事件
-        sb.addEventListener('ended', d, { once: true });
-
-        // 核心功能：允许用户随时点击直接跳过
         s.onclick = d;
 
-        let playPromise = sb.play();
-        if (playPromise !== undefined) {
-            playPromise.catch((error) => {
-                // 遭到极严格权限拦截时，启用 3 秒备用倒计时关闭，避免陷入死等
-                setTimeout(d, 3000);
-            });
-        }
-
-        const forceWeChatPlay = () => { sb.play().catch(() => {}); };
-        if (typeof WeixinJSBridge === "object" && typeof WeixinJSBridge.invoke === "function") {
-            WeixinJSBridge.invoke("getNetworkType", {}, forceWeChatPlay);
+        // 核心修改：逻辑分支解耦
+        if (isMob) {
+            // 移动端：启用 GIF，使用配置的 holdTimeMobile 安全关闭
+            sbM.src = CONFIG_PAGE.splash.bgMobile;
+            const startSplashM = () => {
+                setTimeout(d, CONFIG_PAGE.splash.holdTimeMobile);
+            };
+            
+            if (sbM.complete) {
+                startSplashM();
+            } else {
+                sbM.onload = startSplashM;
+                setTimeout(() => { if(document.body.classList.contains('is-loading')) d(); }, 6000);
+            }
         } else {
-            document.addEventListener("WeixinJSBridgeReady", () => {
-                WeixinJSBridge.invoke("getNetworkType", {}, forceWeChatPlay);
-            }, false);
-        }
+            // PC 端：启用 WebM，绝不使用死板的 holdTime，完美贴合视频的原生 ended 事件
+            sbPC.src = CONFIG_PAGE.splash.bgPC;
+            sbPC.muted = true;
+            sbPC.defaultMuted = true;
+            sbPC.playsInline = true;
+            sbPC.loop = false;
+            
+            sbPC.load();
 
-        // 终极兜底防线：防止出现断网等任何未捕获到的死锁问题
-        setTimeout(() => { if(document.body.classList.contains('is-loading')) d(); }, 6000);
+            sbPC.addEventListener('ended', d, { once: true });
+
+            let playPromise = sbPC.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(() => {
+                    setTimeout(d, 3000);
+                });
+            }
+            setTimeout(() => { if(document.body.classList.contains('is-loading')) d(); }, 8000);
+        }
     },
 
     initReveal() {
@@ -878,12 +887,13 @@ const ENGINE = {
     }
 };
 
+/* 核心修改：逻辑解耦配置分离 */
 const CONFIG_PAGE = {
     splash: { 
         text: "Folio", 
-        bg: "https://folio.neuepoor.com/fo_safari.mp4",
-        poster: "https://folio.neuepoor.com/fo.webp", 
-        // 核心减法：彻底移除了不再需要的 holdTime 字段
+        bgPC: "https://folio.neuepoor.com/fo_chrome.webm",
+        bgMobile: "https://folio.neuepoor.com/fo.gif",
+        holdTimeMobile: 3000, 
         transitionTime: 1000,
         scrollFadeRatio: 0.05
     },
