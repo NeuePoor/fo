@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -161,7 +162,7 @@ body.is-loading { overflow: hidden; }
 .fl-wechat-qr img { width: 100%; height: 100%; object-fit: contain; }
 
 @media (min-width: 769px) {
-    /* 核心修改：渲染层级解耦，PC 端彻底屏蔽 Hero Image 与 Special Text 的绘制，同时保留 DOM 结构以维持后续兄弟节点（Contact）的动画触发链 */
+    /* PC端屏蔽特有组件，保留 Contact 及底层动画链 */
     #ui-landing-hero,
     #ui-hero-special-text {
         display: none !important;
@@ -183,7 +184,6 @@ body.is-loading { overflow: hidden; }
 
     body.has-panel-focus-hover .is-hovered-target { opacity: 1 !important; filter: blur(0px) !important; }
     
-    /* 核心修改：渲染层彻底解耦，在 PC 环境下将移动端专属节点直接抹杀 */
     #ui-splash-bg-m { display: none !important; }
 }
 
@@ -200,6 +200,11 @@ body.is-loading { overflow: hidden; }
     .fl-header__bg.is-expanded { height: var(--bg-height) !important; }
     @media (prefers-color-scheme: dark) {
         .fl-header__bg { background: rgba(28, 28, 30, 0.45) !important; border: 0.5px solid rgba(255, 255, 255, 0.1) !important; }
+    }
+    
+    /* 核心修改：在渲染层物理切除手机端的 Hero Image，彻底解耦视觉，但绝不影响兄弟节点联动 */
+    #ui-landing-hero {
+        display: none !important;
     }
     
     .fl-landing-hero {
@@ -255,7 +260,6 @@ body.is-loading { overflow: hidden; }
     
     body .is-nav-hidden { opacity: 0 !important; transform: translateY(16px) scale(0.8) translateZ(0) !important; pointer-events: none !important; }
     
-    /* 核心修改：渲染层彻底解耦，在移动环境下将 PC 端专属 WebM 节点直接抹杀 */
     #ui-splash-bg-pc { display: none !important; }
 }
 
@@ -337,9 +341,10 @@ body.is-low-perf .fl-wechat-overlay { backdrop-filter: none !important; backgrou
 }
 
 @media (max-width: 768px) {
-    /* 核心修复：彻底废弃 absolute 定位，强行固化在视口顶层，无视一切历史滚动恢复行为 */
-    .fl-splash { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100dvh !important; }
-    .fl-splash__bg { object-position: center calc(50% + 56px) !important; }
+    /* 核心修改：恢复 Absolute 定位，解除 Fixed 锁死，结合环境高度变量，完美规避地址栏伸缩与页面挂起刷新跳动问题 */
+    .fl-splash { position: absolute !important; top: calc(-1 * env(safe-area-inset-top, 0px)) !important; left: 0 !important; width: 100% !important; height: calc(100vh + env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px)) !important; height: calc(100dvh + env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px)) !important; }
+    
+    .fl-splash.is-finished { opacity: 0 !important; visibility: hidden !important; }
     
     .fl-grid { padding: 4px 0 160px !important; margin-top: 0 !important; min-height: 200vh !important; }
     .fl-gallery-text { width: 100% !important; max-width: 100% !important; }
@@ -361,8 +366,8 @@ body.is-low-perf .fl-wechat-overlay { backdrop-filter: none !important; backgrou
      [3] 页面专属模块 (HOME ONLY)
      ========================================================================== -->
 <div class="fl-splash" id="ui-splash">
-    <!-- 核心修改：DOM 物理级双轨解耦 -->
     <video class="fl-splash__bg" id="ui-splash-bg-pc" muted autoplay playsinline webkit-playsinline disablePictureInPicture></video>
+    <!-- 保留极简透明占位符，防止弱网白底边框闪烁 -->
     <img class="fl-splash__bg" id="ui-splash-bg-m" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" decoding="async" alt="">
     
     <div class="fl-splash__text" id="ui-splash-text"></div>
@@ -547,12 +552,10 @@ const ENGINE = {
         const cr = document.getElementById('ui-contact-row');
         if(!h || !p) return;
 
-        // 核心修改：业务逻辑层解耦。PC 端彻底剥离对于 HeroImg 的尺寸注入和定位计算，仅维护 Contact 区域并发送激活信号
         cr.style.left = '4px'; 
         cr.style.bottom = '12px';
         
         if (isPin) { p.classList.add('is-panel-pinned'); document.body.classList.add('is-pin-action'); }
-        // 维持赋予激活类名，以触发 Contact 组件的展开动效
         h.classList.add('is-active');
     },
 
@@ -746,7 +749,7 @@ const ENGINE = {
             return; 
         }
 
-        /* 核心修复：拦截并阻断浏览器自动恢复上次阅读位置的默认行为，强制页面回顶 */
+        /* 核心防线：拦截并阻断浏览器自动恢复上次阅读位置的默认行为，强制页面在开屏时必定回顶 */
         if ('scrollRestoration' in history) {
             history.scrollRestoration = 'manual';
         }
@@ -754,9 +757,7 @@ const ENGINE = {
 
         s.onclick = d;
 
-        // 核心修改：逻辑分支解耦
         if (isMob) {
-            // 移动端：启用 GIF，根据深浅色模式加载对应素材
             sbM.src = isDark ? CONFIG_PAGE.splash.bgMobileDark : CONFIG_PAGE.splash.bgMobileLight;
             const startSplashM = () => {
                 setTimeout(d, CONFIG_PAGE.splash.holdTimeMobile);
@@ -769,7 +770,6 @@ const ENGINE = {
                 setTimeout(() => { if(document.body.classList.contains('is-loading')) d(); }, 6000);
             }
         } else {
-            // PC 端：启用 WebM，根据深浅色模式加载对应素材，不使用死板的 holdTime，完美贴合视频的原生 ended 事件
             sbPC.src = isDark ? CONFIG_PAGE.splash.bgPCDark : CONFIG_PAGE.splash.bgPCLight;
             sbPC.muted = true;
             sbPC.defaultMuted = true;
@@ -865,7 +865,6 @@ const ENGINE = {
     }
 };
 
-/* 核心修改：逻辑解耦配置分离，引入四个维度的深浅与设备隔离素材 */
 const CONFIG_PAGE = {
     splash: { 
         text: "Folio", 
