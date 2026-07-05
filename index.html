@@ -7,9 +7,11 @@
 <title>Foo</title>
 <link id="favicon" rel="icon" type="image/webp" href="https://folio.neuepoor.com/favicon.webp">
 
-<!-- 核心修改：利用 media 查询将预加载完全解耦，不浪费跨端用户的带宽 -->
-<link rel="preload" as="video" href="https://folio.neuepoor.com/fo_chrome.webm" type="video/webm" media="(min-width: 769px)">
-<link rel="preload" as="image" href="https://folio.neuepoor.com/fo.gif" media="(max-width: 768px)">
+<!-- 核心修改：利用组合 media 查询将预加载按 设备 × 深浅模式 完全四向解耦，绝不浪费跨端用户的带宽 -->
+<link rel="preload" as="video" href="https://folio.neuepoor.com/FoColorWhite.webm" type="video/webm" media="(min-width: 769px) and (prefers-color-scheme: light)">
+<link rel="preload" as="video" href="https://folio.neuepoor.com/FoColorBlack.webm" type="video/webm" media="(min-width: 769px) and (prefers-color-scheme: dark)">
+<link rel="preload" as="image" href="https://folio.neuepoor.com/FoColorWhite.gif" media="(max-width: 768px) and (prefers-color-scheme: light)">
+<link rel="preload" as="image" href="https://folio.neuepoor.com/FoColorBlack.gif" media="(max-width: 768px) and (prefers-color-scheme: dark)">
 
 <style>
 /* ==========================================================================
@@ -724,6 +726,7 @@ const ENGINE = {
         st.innerText = CONFIG_PAGE.splash.text; 
         
         const isMob = ENGINE.isMobile();
+        const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
 
         const d = () => {
             if (!document.body.classList.contains('is-loading')) return;
@@ -753,8 +756,8 @@ const ENGINE = {
 
         // 核心修改：逻辑分支解耦
         if (isMob) {
-            // 移动端：启用 GIF，使用配置的 holdTimeMobile 安全关闭
-            sbM.src = CONFIG_PAGE.splash.bgMobile;
+            // 移动端：启用 GIF，根据深浅色模式加载对应素材
+            sbM.src = isDark ? CONFIG_PAGE.splash.bgMobileDark : CONFIG_PAGE.splash.bgMobileLight;
             const startSplashM = () => {
                 setTimeout(d, CONFIG_PAGE.splash.holdTimeMobile);
             };
@@ -766,8 +769,8 @@ const ENGINE = {
                 setTimeout(() => { if(document.body.classList.contains('is-loading')) d(); }, 6000);
             }
         } else {
-            // PC 端：启用 WebM，绝不使用死板的 holdTime，完美贴合视频的原生 ended 事件
-            sbPC.src = CONFIG_PAGE.splash.bgPC;
+            // PC 端：启用 WebM，根据深浅色模式加载对应素材，不使用死板的 holdTime，完美贴合视频的原生 ended 事件
+            sbPC.src = isDark ? CONFIG_PAGE.splash.bgPCDark : CONFIG_PAGE.splash.bgPCLight;
             sbPC.muted = true;
             sbPC.defaultMuted = true;
             sbPC.playsInline = true;
@@ -862,12 +865,14 @@ const ENGINE = {
     }
 };
 
-/* 核心修改：逻辑解耦配置分离 */
+/* 核心修改：逻辑解耦配置分离，引入四个维度的深浅与设备隔离素材 */
 const CONFIG_PAGE = {
     splash: { 
         text: "Folio", 
-        bgPC: "https://folio.neuepoor.com/fo_chrome.webm",
-        bgMobile: "https://folio.neuepoor.com/fo.gif",
+        bgPCDark: "https://folio.neuepoor.com/FoColorBlack.webm",
+        bgPCLight: "https://folio.neuepoor.com/FoColorWhite.webm",
+        bgMobileDark: "https://folio.neuepoor.com/FoColorBlack.gif",
+        bgMobileLight: "https://folio.neuepoor.com/FoColorWhite.gif",
         holdTimeMobile: 3000, 
         transitionTime: 1000,
         scrollFadeRatio: 0.05
