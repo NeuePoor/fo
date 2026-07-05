@@ -159,6 +159,12 @@ body.is-loading { overflow: hidden; }
 .fl-wechat-qr img { width: 100%; height: 100%; object-fit: contain; }
 
 @media (min-width: 769px) {
+    /* 核心修改：渲染层级解耦，PC 端彻底屏蔽 Hero Image 与 Special Text 的绘制，同时保留 DOM 结构以维持后续兄弟节点（Contact）的动画触发链 */
+    #ui-landing-hero,
+    #ui-hero-special-text {
+        display: none !important;
+    }
+
     .fl-nav__link, .fl-logo__gif-wrap-pc, .fl-hero-special-text, .fl-contact-row, .fl-close-btn, .fl-landing-hero, .fl-logo-text { transition: opacity 0.6s var(--fl-ease), filter 0.6s var(--fl-ease), visibility 0.5s var(--fl-ease) !important; }
     
     body.has-focus-hover .fl-nav__link:not(.is-hovered-target),
@@ -329,7 +335,9 @@ body.is-low-perf .fl-wechat-overlay { backdrop-filter: none !important; backgrou
 }
 
 @media (max-width: 768px) {
-    .fl-splash { position: absolute !important; top: calc(-1 * env(safe-area-inset-top, 0px)) !important; left: 0 !important; width: 100% !important; height: calc(100vh + env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px)) !important; height: calc(100dvh + env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px)) !important; }
+    /* 核心修复：彻底废弃 absolute 定位，强行固化在视口顶层，无视一切历史滚动恢复行为 */
+    .fl-splash { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100dvh !important; }
+    .fl-splash__bg { object-position: center calc(50% + 56px) !important; }
     
     .fl-grid { padding: 4px 0 160px !important; margin-top: 0 !important; min-height: 200vh !important; }
     .fl-gallery-text { width: 100% !important; max-width: 100% !important; }
@@ -353,7 +361,7 @@ body.is-low-perf .fl-wechat-overlay { backdrop-filter: none !important; backgrou
 <div class="fl-splash" id="ui-splash">
     <!-- 核心修改：DOM 物理级双轨解耦 -->
     <video class="fl-splash__bg" id="ui-splash-bg-pc" muted autoplay playsinline webkit-playsinline disablePictureInPicture></video>
-    <img class="fl-splash__bg" id="ui-splash-bg-m" decoding="async" alt="splash">
+    <img class="fl-splash__bg" id="ui-splash-bg-m" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" decoding="async" alt="">
     
     <div class="fl-splash__text" id="ui-splash-text"></div>
 </div>
@@ -534,27 +542,16 @@ const ENGINE = {
     showHeroPC(isPin = false) {
         const h = document.getElementById('ui-landing-hero');
         const p = document.getElementById('ui-logo-panel');
-        const st = document.getElementById('ui-hero-special-text'); 
         const cr = document.getElementById('ui-contact-row');
         if(!h || !p) return;
 
-        const currentWinWidth = window.innerWidth;
-        const anchorCol = (typeof CONFIG_PAGE !== 'undefined' && CONFIG_PAGE.heroImage) ? CONFIG_PAGE.heroImage.position.pc.anchorColumn : 10;
-        const calculatedLeft = `${(currentWinWidth / 12) * anchorCol}px`;
-
-        h.style.width = 'var(--hero-size-pc)';
-        h.style.height = 'var(--hero-size-pc)'; 
-        h.style.top = 'var(--hero-top-pc)'; 
-        h.style.left = calculatedLeft; 
-        h.style.transform = 'var(--hero-transform-pc)';
-        st.style.left = '4px'; 
-        st.style.top = '50%';
-        st.style.transform = 'translateY(-50%)';
+        // 核心修改：业务逻辑层解耦。PC 端彻底剥离对于 HeroImg 的尺寸注入和定位计算，仅维护 Contact 区域并发送激活信号
         cr.style.left = '4px'; 
         cr.style.bottom = '12px';
         
         if (isPin) { p.classList.add('is-panel-pinned'); document.body.classList.add('is-pin-action'); }
-        h.style.opacity = "1"; h.classList.add('is-active');
+        // 维持赋予激活类名，以触发 Contact 组件的展开动效
+        h.classList.add('is-active');
     },
 
     hideHero() { ENGINE.resetAllStates(); },
@@ -679,33 +676,6 @@ const ENGINE = {
             }
         }, { passive: true });
     },
-
-    initOverscrollRedirect() {
-        const targetUrl = CONFIG_GLOBAL.header.nav.find(n => n.name === 'Works')?.link || 'https://works.neuepoor.com';
-        let startY = 0;
-        let isAtBottom = false;
-
-        window.addEventListener('touchstart', (e) => {
-            startY = e.touches[0].clientY;
-            isAtBottom = Math.ceil(window.innerHeight + window.scrollY) >= document.documentElement.scrollHeight - 5;
-        }, { passive: true });
-
-        window.addEventListener('touchmove', (e) => {
-            if (!isAtBottom) return;
-            const currentY = e.touches[0].clientY;
-            const diffY = startY - currentY;
-            if (diffY > 80) {
-                window.location.href = targetUrl;
-            }
-        }, { passive: true });
-
-        window.addEventListener('wheel', (e) => {
-            isAtBottom = Math.ceil(window.innerHeight + window.scrollY) >= document.documentElement.scrollHeight - 5;
-            if (isAtBottom && e.deltaY > 50) {
-                window.location.href = targetUrl;
-            }
-        }, { passive: true });
-    },
     
     initWeChatTrigger() {
         const t = document.getElementById('trigger-wechat'); const o = document.getElementById('ui-wechat-overlay');
@@ -772,6 +742,12 @@ const ENGINE = {
             if (s && s.parentNode) s.parentNode.removeChild(s);
             return; 
         }
+
+        /* 核心修复：拦截并阻断浏览器自动恢复上次阅读位置的默认行为，强制页面回顶 */
+        if ('scrollRestoration' in history) {
+            history.scrollRestoration = 'manual';
+        }
+        window.scrollTo(0, 0);
 
         s.onclick = d;
 
@@ -846,7 +822,6 @@ const ENGINE = {
         ENGINE.renderLogoPanel();
         ENGINE.initGlobalFocusMode(); 
         ENGINE.initGlobalScrollInteraction();
-        ENGINE.initOverscrollRedirect();
         ENGINE.initTriggersAndInteractions(); 
         
         ENGINE.applyPageTypography();
