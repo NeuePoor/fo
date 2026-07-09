@@ -76,7 +76,7 @@ body.is-loading { overflow: hidden; }
 .fl-cursor__v { width: 1px; height: 100vh; height: 100dvh; top: 0; left: 0; }
 .fl-cursor__h { height: 1px; width: 100vw; left: 0; top: 0; }
 
-#ui-splash, #ui-main-grid, #ui-landing-hero {
+#ui-splash, #ui-main-grid {
     isolation: isolate;
 }
 
@@ -126,22 +126,15 @@ body.is-loading { overflow: hidden; }
 .fl-logo-panel { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2000; }
 .fl-logo-panel.is-panel-pinned { pointer-events: auto; }
 
-.fl-landing-hero {
-    position: fixed; z-index: 2001; pointer-events: none;
-    overflow: hidden; opacity: 0; transform: translate3d(0,0,0);
-    visibility: hidden; will-change: opacity, filter, transform;
-    transition: opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease), visibility 0.4s var(--fl-ease), transform 0.4s var(--fl-ease);
-}
-.fl-landing-hero.is-active { pointer-events: auto; opacity: 1; visibility: visible; } 
-.fl-landing-hero img { width: 100%; height: 100%; object-fit: cover; }
-
 .fl-hero-special-text, .fl-contact-row, .fl-close-btn {
     position: fixed; opacity: 0; filter: blur(15px); pointer-events: none; visibility: hidden; 
     transition: opacity 0.4s var(--fl-ease), filter 0.4s var(--fl-ease), visibility 0.4s var(--fl-ease), transform 0.4s var(--fl-ease);
 }
-#ui-landing-hero.is-active ~ #ui-logo-panel .fl-hero-special-text,
-#ui-landing-hero.is-active ~ #ui-logo-panel .fl-contact-row,
-#ui-landing-hero.is-active ~ #ui-logo-panel .fl-close-btn {
+
+/* 核心修复：彻底抛除无用的 heroImg 依赖，用面板自身的 active 状态主导全部动效 */
+#ui-logo-panel.is-active .fl-hero-special-text,
+#ui-logo-panel.is-active .fl-contact-row,
+#ui-logo-panel.is-active .fl-close-btn {
     opacity: 1; filter: blur(0px); pointer-events: auto; visibility: visible; 
 }
 
@@ -162,19 +155,16 @@ body.is-loading { overflow: hidden; }
 .fl-wechat-qr img { width: 100%; height: 100%; object-fit: contain; }
 
 @media (min-width: 769px) {
-    /* PC端屏蔽特有组件，保留 Contact 及底层动画链 */
-    #ui-landing-hero,
     #ui-hero-special-text {
         display: none !important;
     }
 
-    .fl-nav__link, .fl-logo__gif-wrap-pc, .fl-hero-special-text, .fl-contact-row, .fl-close-btn, .fl-landing-hero, .fl-logo-text { transition: opacity 0.6s var(--fl-ease), filter 0.6s var(--fl-ease), visibility 0.5s var(--fl-ease) !important; }
+    .fl-nav__link, .fl-logo__gif-wrap-pc, .fl-hero-special-text, .fl-contact-row, .fl-close-btn, .fl-logo-text { transition: opacity 0.6s var(--fl-ease), filter 0.6s var(--fl-ease), visibility 0.5s var(--fl-ease) !important; }
     
     body.has-focus-hover .fl-nav__link:not(.is-hovered-target),
     body.has-focus-hover .fl-logo__gif-wrap-pc:not(.is-hovered-target),
     body.has-focus-hover .fl-logo-text:not(.is-hovered-target) { opacity: 0.2; filter: blur(8px); }
 
-    body.has-panel-focus-hover #ui-landing-hero:not(.is-hovered-target),
     body.has-panel-focus-hover .fl-logo__gif-wrap-pc:not(.is-hovered-target),
     body.has-panel-focus-hover .fl-logo-text:not(.is-hovered-target),
     body.has-panel-focus-hover .fl-nav__link:not(.is-hovered-target),
@@ -202,19 +192,6 @@ body.is-loading { overflow: hidden; }
         .fl-header__bg { background: rgba(28, 28, 30, 0.45) !important; border: 0.5px solid rgba(255, 255, 255, 0.1) !important; }
     }
     
-    /* 核心修改：在渲染层物理切除手机端的 Hero Image，彻底解耦视觉，但绝不影响兄弟节点联动 */
-    #ui-landing-hero {
-        display: none !important;
-    }
-    
-    .fl-landing-hero {
-        top: auto !important; left: auto !important; right: var(--hero-right-mb, 48px) !important;
-        bottom: calc(var(--hero-bottom-base-mb, 80px) + (var(--cr-height) / 2) - (var(--hero-size-mb) / 2)) !important;
-        width: var(--hero-size-mb) !important; height: var(--hero-size-mb) !important;
-        transform: none !important; z-index: 1001 !important;
-    }
-    .fl-landing-hero img { border-radius: 8px !important; }
-    
     .fl-logo-panel { z-index: 1004 !important; transition: transform 0.4s var(--fl-ease), opacity 0.4s var(--fl-ease) !important; }
     .fl-close-btn { top: auto !important; bottom: calc(var(--bg-height) - 24px) !important; right: 48px !important; }
 
@@ -224,9 +201,11 @@ body.is-loading { overflow: hidden; }
         white-space: normal !important; top: auto !important; bottom: calc(80px + var(--cr-height) + 24px) !important;
         left: 48px !important; transform: none !important;
     }
+    
+    /* 核心修改：引入 CSS 变量接管间距配置，并设置兜底值 */
     .fl-contact-row {
         display: flex !important; flex-direction: column !important; align-items: flex-start !important;
-        gap: 0px !important; width: calc(50% - 24px) !important; top: auto !important;
+        gap: var(--contact-gap-m, 16px) !important; width: calc(50% - 24px) !important; top: auto !important;
         bottom: 80px !important; left: 48px !important; transform: none !important;
     }
     .fl-contact-row .fl-gallery-link { font-family: "Arial", sans-serif !important; font-size: var(--contact-fs-m) !important; font-weight: 700 !important; line-height: 1.05 !important; }
@@ -337,11 +316,10 @@ body.is-low-perf .fl-wechat-overlay { backdrop-filter: none !important; backgrou
     .fl-gallery-text { max-width: 100% !important; }
     .fl-reveal { --fl-reveal-dist: 100px; transition: opacity var(--fl-reveal-dur) var(--fl-ease), transform var(--fl-reveal-dur) var(--fl-ease), filter 0.6s var(--fl-ease) !important; }
     body.has-focus-hover .fl-reveal:not(.is-hovered-target) { opacity: 0.2; filter: blur(8px); }
-    #ui-landing-hero.is-active ~ #ui-main-grid .fl-reveal { opacity: 0.2; filter: blur(8px); }
+    #ui-logo-panel.is-active ~ #ui-main-grid .fl-reveal { opacity: 0.2; filter: blur(8px); }
 }
 
 @media (max-width: 768px) {
-    /* 核心修改：恢复 Absolute 定位，解除 Fixed 锁死，结合环境高度变量，完美规避地址栏伸缩与页面挂起刷新跳动问题 */
     .fl-splash { position: absolute !important; top: calc(-1 * env(safe-area-inset-top, 0px)) !important; left: 0 !important; width: 100% !important; height: calc(100vh + env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px)) !important; height: calc(100dvh + env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px)) !important; }
     
     .fl-splash.is-finished { opacity: 0 !important; visibility: hidden !important; }
@@ -367,7 +345,6 @@ body.is-low-perf .fl-wechat-overlay { backdrop-filter: none !important; backgrou
      ========================================================================== -->
 <div class="fl-splash" id="ui-splash">
     <video class="fl-splash__bg" id="ui-splash-bg-pc" muted autoplay playsinline webkit-playsinline disablePictureInPicture></video>
-    <!-- 保留极简透明占位符，防止弱网白底边框闪烁 -->
     <img class="fl-splash__bg" id="ui-splash-bg-m" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" decoding="async" alt="">
     
     <div class="fl-splash__text" id="ui-splash-text"></div>
@@ -378,10 +355,6 @@ body.is-low-perf .fl-wechat-overlay { backdrop-filter: none !important; backgrou
      ⬇️⬇️⬇️ [2] 全局通用组件：HEADER & LOGO PANEL (全站复制粘贴区) ⬇️⬇️⬇️
      ========================================================================== -->
 <div class="fl-header__bg" id="ui-header-bg"></div>
-
-<div class="fl-landing-hero" id="ui-landing-hero">
-    <img src="" alt="Landing" id="ui-hero-img" decoding="async">
-</div>
 
 <div class="fl-logo-panel" id="ui-logo-panel">
     <div class="fl-hero-special-text" id="ui-hero-special-text"></div>
@@ -442,7 +415,6 @@ const CONFIG_GLOBAL = {
         ]
     },
     logoPanel: {
-        heroImg: "https://folio.neuepoor.com/landing.gif",
         specialText: { text: "Hi, I'm Fo", sizePC: "32px", sizeMobile: "clamp(14px, 6vw, 21px)" },
         contact: [
             { name: "Email", link: "mailto:poorleaglguy@qq.com" },
@@ -451,7 +423,8 @@ const CONFIG_GLOBAL = {
             { name: "小红书", link: "https://xhslink.com/m/9qPnrun1Dh9" },
             { name: "WeChat", link: "#", isWeChat: true, qrText: "WeChat: NeuePoor", svgSize: "100%" }
         ],
-        contactStyles: { sizePC: "21px", sizeMobile: "clamp(10px, 5vw, 12px)" }
+        /* 添加了 gapMobile 配置项，方便统一在全局调节间距 */
+        contactStyles: { sizePC: "21px", sizeMobile: "clamp(10px, 5vw, 12px)", gapMobile: "10px" }
     }
 };
 
@@ -485,14 +458,8 @@ const ENGINE = {
             '--nav-fs': c.header.nav[0].sizePC, '--nav-fs-m': c.header.nav[0].sizeMobile,
             '--special-text-fs': c.logoPanel.specialText.sizePC, '--special-text-fs-m': c.logoPanel.specialText.sizeMobile,
             '--contact-fs': c.logoPanel.contactStyles.sizePC, '--contact-fs-m': c.logoPanel.contactStyles.sizeMobile,
-            '--logo-size-pc': c.header.logo.sizePC, '--logo-size-m': c.header.logo.sizeMobile,
-            ...(typeof CONFIG_PAGE !== 'undefined' && CONFIG_PAGE.heroImage ? {
-                '--hero-col-span-pc': CONFIG_PAGE.heroImage.colSpanPC, '--hero-col-span-mb': CONFIG_PAGE.heroImage.colSpanMobile,
-                '--hero-size-pc': `calc(var(--hero-col-span-pc) * var(--grid-col-width) + (var(--hero-col-span-pc) - 1) * var(--fl-gutter))`,
-                '--hero-size-mb': `calc(var(--hero-col-span-mb) * var(--grid-col-width) + (var(--hero-col-span-mb) - 1) * var(--fl-gutter))`,
-                '--hero-top-pc': CONFIG_PAGE.heroImage.position.pc.top, '--hero-transform-pc': CONFIG_PAGE.heroImage.position.pc.transform,
-                '--hero-right-mb': CONFIG_PAGE.heroImage.position.mobile.right, '--hero-bottom-base-mb': CONFIG_PAGE.heroImage.position.mobile.bottomBase
-            } : {})
+            '--contact-gap-m': c.logoPanel.contactStyles.gapMobile || '16px',
+            '--logo-size-pc': c.header.logo.sizePC, '--logo-size-m': c.header.logo.sizeMobile
         };
         Object.entries(p).forEach(([k, v]) => r.style.setProperty(k, v));
     },
@@ -510,9 +477,8 @@ const ENGINE = {
     
     renderLogoPanel() {
         const st = document.getElementById('ui-hero-special-text'); const cr = document.getElementById('ui-contact-row');
-        const hi = document.getElementById('ui-hero-img');
         if(!st || !cr) return;
-        hi.src = CONFIG_GLOBAL.logoPanel.heroImg; st.innerText = CONFIG_GLOBAL.logoPanel.specialText.text;
+        st.innerText = CONFIG_GLOBAL.logoPanel.specialText.text;
         
         const wechatConfig = CONFIG_GLOBAL.logoPanel.contact.find(l => l.isWeChat);
         if (wechatConfig) {
@@ -525,54 +491,51 @@ const ENGINE = {
     },
     
     resetAllStates() {
-        const h = document.getElementById('ui-landing-hero'); const p = document.getElementById('ui-logo-panel');
+        const p = document.getElementById('ui-logo-panel');
         const bg = document.getElementById('ui-header-bg'); const b = document.body;
-        if (h) { h.style.opacity = '0'; h.classList.remove('is-active'); }
-        if (p) p.classList.remove('is-panel-pinned');
+        if (p) p.classList.remove('is-panel-pinned', 'is-active');
         if (bg) bg.classList.remove('is-expanded');
         b.classList.remove('is-pin-action', 'has-focus-hover', 'has-panel-focus-hover');
         document.querySelectorAll('.is-hovered-target').forEach(el => el.classList.remove('is-hovered-target'));
     },
 
     showHeroMobile() {
-        const h = document.getElementById('ui-landing-hero'); const p = document.getElementById('ui-logo-panel');
+        const p = document.getElementById('ui-logo-panel');
         const st = document.getElementById('ui-hero-special-text'); const cr = document.getElementById('ui-contact-row');
         const bg = document.getElementById('ui-header-bg');
-        if(!h || !p) return;
+        if(!p) return;
         const stHeight = st.getBoundingClientRect().height || 21; const crHeight = cr.getBoundingClientRect().height || 105; 
         document.documentElement.style.setProperty('--cr-height', `${crHeight}px`);
         document.documentElement.style.setProperty('--bg-height', `${24 + stHeight + 24 + crHeight + 56}px`);
-        p.classList.add('is-panel-pinned'); if (bg) bg.classList.add('is-expanded');
-        h.style.opacity = "1"; h.classList.add('is-active');
+        p.classList.add('is-panel-pinned', 'is-active'); if (bg) bg.classList.add('is-expanded');
     },
 
     showHeroPC(isPin = false) {
-        const h = document.getElementById('ui-landing-hero');
         const p = document.getElementById('ui-logo-panel');
         const cr = document.getElementById('ui-contact-row');
-        if(!h || !p) return;
+        if(!p) return;
 
         cr.style.left = '4px'; 
         cr.style.bottom = '12px';
         
         if (isPin) { p.classList.add('is-panel-pinned'); document.body.classList.add('is-pin-action'); }
-        h.classList.add('is-active');
+        p.classList.add('is-active');
     },
 
     hideHero() { ENGINE.resetAllStates(); },
 
     initTriggersAndInteractions() {
-        const p = document.getElementById('ui-logo-panel'); const hero = document.getElementById('ui-landing-hero');
+        const p = document.getElementById('ui-logo-panel');
         const lwPC = document.getElementById('ui-logo-gif-wrap-pc');
         const lwM = document.getElementById('ui-logo-gif-wrap-m');
         const closeBtn = document.getElementById('ui-close-btn'); const navContainer = document.getElementById('ui-nav');
         const tLogo = document.getElementById('ui-logo-text'); 
-        if(!p || !hero) return;
+        if(!p) return;
 
         if (lwPC) {
             lwPC.onmouseenter = () => { if (window.innerWidth > 768 && !p.classList.contains('is-panel-pinned')) ENGINE.showHeroPC(false); };
             lwPC.onmouseleave = () => { if (window.innerWidth > 768 && !p.classList.contains('is-panel-pinned')) ENGINE.hideHero(); };
-            lwPC.onclick = (e) => { e.stopPropagation(); if (window.innerWidth <= 768) return; if (hero.classList.contains('is-active') && p.classList.contains('is-panel-pinned')) ENGINE.hideHero(); else ENGINE.showHeroPC(true); };
+            lwPC.onclick = (e) => { e.stopPropagation(); if (window.innerWidth <= 768) return; if (p.classList.contains('is-active') && p.classList.contains('is-panel-pinned')) ENGINE.hideHero(); else ENGINE.showHeroPC(true); };
         }
         
         if (tLogo) {
@@ -580,13 +543,13 @@ const ENGINE = {
             tLogo.onmouseleave = () => { if (window.innerWidth > 768 && !p.classList.contains('is-panel-pinned')) ENGINE.hideHero(); };
             tLogo.onclick = (e) => { 
                 e.preventDefault(); e.stopPropagation(); 
-                if (window.innerWidth <= 768) { if (hero.classList.contains('is-active')) ENGINE.hideHero(); else ENGINE.showHeroMobile(); } 
-                else { if (hero.classList.contains('is-active') && p.classList.contains('is-panel-pinned')) ENGINE.hideHero(); else ENGINE.showHeroPC(true); }
+                if (window.innerWidth <= 768) { if (p.classList.contains('is-active')) ENGINE.hideHero(); else ENGINE.showHeroMobile(); } 
+                else { if (p.classList.contains('is-active') && p.classList.contains('is-panel-pinned')) ENGINE.hideHero(); else ENGINE.showHeroPC(true); }
             };
         }
 
         if (lwM) { 
-            lwM.onclick = (e) => { e.stopPropagation(); if (window.innerWidth > 768) return; if (hero.classList.contains('is-active')) ENGINE.hideHero(); else ENGINE.showHeroMobile(); }; 
+            lwM.onclick = (e) => { e.stopPropagation(); if (window.innerWidth > 768) return; if (p.classList.contains('is-active')) ENGINE.hideHero(); else ENGINE.showHeroMobile(); }; 
         }
         
         if (p) { p.onclick = (e) => { if (e.target === p && p.classList.contains('is-panel-pinned')) ENGINE.hideHero(); }; }
@@ -605,12 +568,12 @@ const ENGINE = {
     
     initGlobalFocusMode() {
         if (window.innerWidth <= 768) return;
-        const b = document.body; const hero = document.getElementById('ui-landing-hero');
+        const b = document.body; const p = document.getElementById('ui-logo-panel');
         const selA = '.fl-nav__link, .fl-logo__gif-wrap-pc, .fl-logo-text, .fl-reveal'; 
-        const selB = '.fl-nav__link, .fl-logo__gif-wrap-pc, .fl-logo-text, #ui-landing-hero, #ui-hero-special-text, .fl-gallery-link, .fl-close-btn';
+        const selB = '.fl-nav__link, .fl-logo__gif-wrap-pc, .fl-logo-text, #ui-hero-special-text, .fl-gallery-link, .fl-close-btn';
         document.addEventListener('mouseover', (e) => { 
             if (b.classList.contains('is-loading') || window.innerWidth <= 768) return;
-            const isPanelActive = hero && hero.classList.contains('is-active');
+            const isPanelActive = p && p.classList.contains('is-active');
             const target = e.target.closest(isPanelActive ? selB : selA);
             if (target) {
                 document.querySelectorAll('.is-hovered-target').forEach(el => el.classList.remove('is-hovered-target'));
@@ -621,7 +584,7 @@ const ENGINE = {
         });
         document.addEventListener('mouseout', (e) => { 
             if (b.classList.contains('is-loading') || window.innerWidth <= 768) return;
-            const activeSel = (hero && hero.classList.contains('is-active')) ? selB : selA;
+            const activeSel = (p && p.classList.contains('is-active')) ? selB : selA;
             if (!e.relatedTarget || !e.relatedTarget.closest(activeSel)) {
                 b.classList.remove('has-focus-hover', 'has-panel-focus-hover');
                 document.querySelectorAll('.is-hovered-target').forEach(el => el.classList.remove('is-hovered-target'));
@@ -631,8 +594,7 @@ const ENGINE = {
 
     initGlobalScrollInteraction() {
         const h = document.getElementById('ui-header'); const lwM = document.getElementById('ui-logo-gif-wrap-m'); 
-        const bg = document.getElementById('ui-header-bg'); const lp = document.getElementById('ui-logo-panel');
-        const lh = document.getElementById('ui-landing-hero');
+        const bg = document.getElementById('ui-header-bg');
         
         let timer; let lastScrollY = window.scrollY; let ticking = false;
 
@@ -648,7 +610,6 @@ const ENGINE = {
                             if (h && !h.classList.contains('is-nav-hidden')) {
                                 h.classList.add('is-nav-hidden'); 
                                 if (lwM) lwM.classList.add('is-nav-hidden'); if (bg) bg.classList.add('is-nav-hidden');
-                                if (lh) lh.classList.add('is-nav-hidden');
                                 
                                 const st = document.getElementById('ui-hero-special-text');
                                 const cr = document.getElementById('ui-contact-row');
@@ -664,7 +625,6 @@ const ENGINE = {
                             if (h && h.classList.contains('is-nav-hidden')) {
                                 h.classList.remove('is-nav-hidden'); 
                                 if (lwM) lwM.classList.remove('is-nav-hidden'); if (bg) bg.classList.remove('is-nav-hidden');
-                                if (lh) lh.classList.remove('is-nav-hidden');
                                 
                                 const st = document.getElementById('ui-hero-special-text');
                                 const cr = document.getElementById('ui-contact-row');
@@ -851,12 +811,11 @@ const ENGINE = {
                     if(typeof CONFIG_PAGE !== 'undefined' && CONFIG_PAGE.gallery) ENGINE.buildContent(); 
                     ENGINE.initReveal(); 
                     if (!ENGINE.isMobile()) {
-                        const h = document.getElementById('ui-landing-hero'); 
                         const p = document.getElementById('ui-logo-panel');
-                        if (h && h.classList.contains('is-active') && p && p.classList.contains('is-panel-pinned')) ENGINE.showHeroPC(true);
+                        if (p && p.classList.contains('is-active') && p.classList.contains('is-panel-pinned')) ENGINE.showHeroPC(true);
                     } else {
-                        const h = document.getElementById('ui-landing-hero');
-                        if (h && h.classList.contains('is-active')) ENGINE.showHeroMobile();
+                        const p = document.getElementById('ui-logo-panel');
+                        if (p && p.classList.contains('is-active')) ENGINE.showHeroMobile();
                     }
                 }
                 ENGINE.lastHeight = window.innerHeight;
@@ -889,14 +848,6 @@ const CONFIG_PAGE = {
                 "Please contact me."
             ]
         }] 
-    },
-    heroImage: {
-        colSpanPC: 6.0,
-        colSpanMobile: 5.0,
-        position: {
-            pc: { anchorColumn: 10, top: "50%", transform: "translate3d(-50%, -50%, 0)" },
-            mobile: { right: "21px", bottomBase: "80px" }
-        }
     }
 };
 
@@ -908,3 +859,4 @@ if (document.readyState === 'loading') {
 </script>
 </body>
 </html>
+
