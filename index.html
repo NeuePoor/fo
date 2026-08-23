@@ -66,6 +66,7 @@ body.is-loading { overflow: hidden; }
     pointer-events: none; z-index: 99999; mix-blend-mode: difference;
     opacity: 0; transition: opacity 0.5s ease; display: none;
 }
+
 @media (min-width: 769px) and (min-height: 501px), (min-width: 951px), (min-width: 769px) and (orientation: portrait) {
     .fl-cursor { display: block; }
     body:not(.is-loading) .fl-cursor { opacity: 1; }
@@ -193,8 +194,7 @@ body.is-loading { overflow: hidden; }
     .fl-close-btn { top: auto !important; bottom: calc(var(--bg-height) - 24px) !important; right: 48px !important; }
 
     .fl-hero-special-text {
-        font-family: "Arial", sans-serif !important; 
-        font-size: var(--special-text-fs) !important; /* 已通过统一流体变量接管 */
+        font-family: "Arial", sans-serif !important; font-size: var(--special-text-fs-m) !important;
         font-weight: 700 !important; line-height: 1 !important; width: calc(50% - 24px) !important;
         white-space: normal !important; top: auto !important; bottom: calc(80px + var(--cr-height) + 24px) !important;
         left: 48px !important; transform: none !important;
@@ -205,11 +205,7 @@ body.is-loading { overflow: hidden; }
         gap: var(--contact-gap-m, 16px) !important; width: calc(50% - 24px) !important; top: auto !important;
         bottom: 80px !important; left: 48px !important; transform: none !important;
     }
-    .fl-contact-row .fl-gallery-link { 
-        font-family: "Arial", sans-serif !important; 
-        font-size: var(--contact-fs) !important; /* 已通过统一流体变量接管 */
-        font-weight: 700 !important; line-height: 1.05 !important; 
-    }
+    .fl-contact-row .fl-gallery-link { font-family: "Arial", sans-serif !important; font-size: var(--contact-fs-m) !important; font-weight: 700 !important; line-height: 1.05 !important; }
 
     .fl-header {
         top: auto !important; bottom: 24px !important; left: 32px !important; width: calc(100% - 64px) !important;
@@ -236,10 +232,7 @@ body.is-loading { overflow: hidden; }
         position: absolute !important; bottom: 0 !important; right: 16px !important;
         height: 44px !important; display: flex !important; align-items: center !important; gap: 20px !important; 
     }
-    .fl-nav__link { 
-        font-size: var(--nav-fs) !important; /* 已通过统一流体变量接管 */
-        color: var(--fl-text) !important; opacity: 1 !important; filter: none !important; 
-    }
+    .fl-nav__link { font-size: var(--nav-fs-m) !important; color: var(--fl-text) !important; opacity: 1 !important; filter: none !important; }
     
     body .is-nav-hidden { opacity: 0 !important; transform: translateY(16px) scale(0.8) translateZ(0) !important; pointer-events: none !important; }
     
@@ -252,14 +245,10 @@ body.is-low-perf .fl-hero-special-text, body.is-low-perf .fl-contact-row, body.i
 body.is-low-perf .fl-wechat-overlay { backdrop-filter: none !important; background: rgba(0, 0, 0, 0.95) !important; }
 
 /* ==========================================================================
-   ⬆️⬆️⬆️ 全局通用组件 结束 ⬆️⬆️⬆️
-   ========================================================================== */
-
-
-/* ==========================================================================
    [3] 当前页面专属 (PAGE SPECIFIC - HOME ONLY)
    ========================================================================== */
 :root {
+    --splash-fs: 32px;
     --gallery-paragraph-spacing: 2.2em;
     --splash-dur: 1.2s;
     --fl-reveal-dist: 30px;
@@ -287,9 +276,7 @@ body.is-low-perf .fl-wechat-overlay { backdrop-filter: none !important; backgrou
 }
 
 .fl-splash__text {
-    position: relative; z-index: 3; 
-    font-size: var(--splash-fs); 
-    font-weight: 700; color: #fff;
+    position: relative; z-index: 3; font-size: var(--splash-fs); font-weight: 700; color: #fff;
     mix-blend-mode: difference; opacity: 1; pointer-events: none; transition: opacity 0.5s var(--fl-ease);
     transform: translateZ(0); will-change: opacity, transform;
 }
@@ -309,8 +296,10 @@ body.is-low-perf .fl-wechat-overlay { backdrop-filter: none !important; backgrou
 .fl-item-wrapper { min-width: 0; }
 
 .fl-gallery-text { width: 100%; max-width: 850px; margin-bottom: 0; }
+
+/* 核心修改：移除静态的 clamp 与媒体查询，引入专用于 Gallery 的流体变量 */
 .fl-paragraph {
-    font-size: var(--gallery-content-fs); /* 抛弃CSS硬编码clamp，全面交由引擎驱动 */
+    font-size: var(--gallery-fluid-fs, 16px);
     font-weight: var(--gallery-fw); color: var(--fl-text); line-height: 1.35;
     margin: 0 0 var(--gallery-paragraph-spacing) 0; text-wrap: pretty; word-break: break-word; -webkit-hyphens: auto; hyphens: auto; 
 }
@@ -331,10 +320,8 @@ body.is-low-perf .fl-wechat-overlay { backdrop-filter: none !important; backgrou
     
     .fl-grid { padding: 4px 0 160px !important; margin-top: 0 !important; min-height: 200vh !important; }
     .fl-gallery-text { width: 100% !important; max-width: 100% !important; }
-    .fl-paragraph { 
-        font-size: var(--gallery-content-fs) !important; /* 已通过统一流体变量接管 */
-        margin-bottom: 1.8em !important; 
-    }
+    /* 核心修改：不再需要强行覆盖 font-size，引擎已自动处理手机端大小锁定 */
+    .fl-paragraph { margin-bottom: 1.8em !important; }
     .fl-paragraph:last-child { margin-bottom: 0 !important; }
 }
 
@@ -347,12 +334,21 @@ body.is-low-perf .fl-wechat-overlay { backdrop-filter: none !important; backgrou
     <div class="fl-cursor__h" id="ui-cursor-h"></div>
 </div>
 
+
+<!-- ==========================================================================
+     [3] 页面专属模块 (HOME ONLY)
+     ========================================================================== -->
 <div class="fl-splash" id="ui-splash">
     <video class="fl-splash__bg" id="ui-splash-bg-pc" muted autoplay playsinline webkit-playsinline disablePictureInPicture></video>
     <img class="fl-splash__bg" id="ui-splash-bg-m" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" decoding="async" alt="">
+    
     <div class="fl-splash__text" id="ui-splash-text"></div>
 </div>
 
+
+<!-- ==========================================================================
+     ⬇️⬇️⬇️ [2] 全局通用组件：HEADER & LOGO PANEL (全站复制粘贴区) ⬇️⬇️⬇️
+     ========================================================================== -->
 <div class="fl-header__bg" id="ui-header-bg"></div>
 
 <div class="fl-logo-panel" id="ui-logo-panel">
@@ -386,28 +382,35 @@ body.is-low-perf .fl-wechat-overlay { backdrop-filter: none !important; backgrou
         <div class="fl-wechat-id" id="ui-wechat-id">WeChat: NeuePoor</div>
     </div>
 </div>
+<!-- ==========================================================================
+     ⬆️⬆️⬆️ 全局通用组件 结束 ⬆️⬆️⬆️
+     ========================================================================== -->
 
+
+<!-- ==========================================================================
+     [3] 页面专属内容模块 (HOME ONLY)
+     ========================================================================== -->
 <main class="fl-grid is-intro" id="ui-main-grid"></main>
+
 
 <script>
 /* ==========================================================================
    ⬇️⬇️⬇️ [2] 全局通用 JS 配置与逻辑 (全站复制粘贴区) ⬇️⬇️⬇️
    ========================================================================== */
 const CONFIG_GLOBAL = {
-    version: "4.14.75",
+    version: "4.14.38",
     seo: { title: "Foo", favicon: "https://folio.neuepoor.com/favicon.webp" },
     performance: { mode: "high" },
-    // 核心修改：所有字号配置彻底净化为纯数字。代表 [320px时的最小值] 和 [1024px时的基准值(大屏按1.25倍平缓延伸)]
     header: {
-        logo: { gif: "https://folio.neuepoor.com/logo.gif", text: "Foo", font: "Arial, sans-serif", weight: "700", sizePC: 32, sizeMobile: 16 },
+        logo: { gif: "https://folio.neuepoor.com/logo.gif", text: "Foo", font: "Arial, sans-serif", weight: "700", sizePC: "32px", sizeMobile: "clamp(16px, 5vw, 21px)" },
         nav: [
-            { name: 'Works', link: 'https://works.neuepoor.com', sizePC: 32, sizeMobile: 14 },
-            { name: '(Play)', link: 'https://play.neuepoor.com', sizePC: 32, sizeMobile: 14 },
-            { name: 'Me', link: 'https://Me.neuepoor.com', sizePC: 32, sizeMobile: 14 }
+            { name: 'Works', link: 'https://works.neuepoor.com', sizePC: "42px", sizeMobile: "clamp(14px, 5vw, 21px)" },
+            { name: '(Play)', link: 'https://play.neuepoor.com', sizePC: "42px", sizeMobile: "clamp(14px, 5vw, 21px)" },
+            { name: 'Me', link: 'https://Me.neuepoor.com', sizePC: "42px", sizeMobile: "clamp(14px, 5vw, 21px)" }
         ]
     },
     logoPanel: {
-        specialText: { text: "Hi, I'm Fo", sizePC: 32, sizeMobile: 14 },
+        specialText: { text: "Hi, I'm Fo", sizePC: "60px", sizeMobile: "clamp(14px, 6vw, 21px)" },
         contact: [
             { name: "Email", link: "mailto:poorleaglguy@qq.com" },
             { name: "Instagram", link: "https://www.instagram.com/neuepoor" },
@@ -415,7 +418,7 @@ const CONFIG_GLOBAL = {
             { name: "小红书", link: "https://xhslink.com/m/9qPnrun1Dh9" },
             { name: "WeChat", link: "#", isWeChat: true, qrText: "WeChat: NeuePoor", svgSize: "100%" }
         ],
-        contactStyles: { sizePC: 21, sizeMobile: 10, gapMobile: "16px" }
+        contactStyles: { sizePC: "21px", sizeMobile: "clamp(10px, 5vw, 12px)", gapMobile: "16px" }
     }
 };
 
@@ -430,15 +433,14 @@ const ENGINE = {
         return window.matchMedia('(max-width: 768px), (max-width: 950px) and (max-height: 500px) and (orientation: landscape)').matches; 
     },
 
-    // 核心新增：无极折线流体排版引擎 (Piecewise Fluid Typography Engine)
+    // 核心新增：无极折线流体引擎（仅用于受保护的区域，例如 Gallery）
     getFluidFont(min, pc) {
-        const max = pc * 1.25; // 1920px及以上时的最大字号比例 (如 48px -> 60px)
-        // 第一段：320px - 1024px 陡峭爬坡
-        const line1 = `calc(${min}px + ${pc - min} * (100vw - 320px) / 704)`;
-        // 第二段：1024px - 1920px 平缓延伸
-        const line2 = `calc(${pc}px + ${max - pc} * (100vw - 1024px) / 896)`;
-        // 返回：取这两段折线的最小值（拼接折线），同时确保绝对不小于手机端的 min 最小值
-        return `max(${min}px, min(${line1}, ${line2}))`;
+        const minNum = parseFloat(min) || 16;
+        const pcNum = parseFloat(pc) || 48;
+        const maxNum = pcNum * 1.25; 
+        const line1 = `calc(${minNum}px + ${pcNum - minNum} * (100vw - 320px) / 704)`;
+        const line2 = `calc(${pcNum}px + ${maxNum - pcNum} * (100vw - 1024px) / 896)`;
+        return `max(${minNum}px, min(${line1}, ${line2}))`;
     },
 
     initSEO() { 
@@ -454,18 +456,17 @@ const ENGINE = {
         }
     },
 
+    /* 保持原有全局排版逻辑不变，不破坏头部组件 */
     applyGlobalTypography() {
         const r = document.documentElement; const c = CONFIG_GLOBAL;
-        const fluid = (min, pc) => ENGINE.getFluidFont(min, pc);
-        
         const p = { 
             '--header-font': c.header.logo.font, '--header-fw': c.header.logo.weight, 
-            '--header-fs': fluid(c.header.logo.sizeMobile, c.header.logo.sizePC),
-            '--nav-fs': fluid(c.header.nav[0].sizeMobile, c.header.nav[0].sizePC),
-            '--special-text-fs': fluid(c.logoPanel.specialText.sizeMobile, c.logoPanel.specialText.sizePC),
-            '--contact-fs': fluid(c.logoPanel.contactStyles.sizeMobile, c.logoPanel.contactStyles.sizePC),
+            '--header-fs': c.header.logo.sizePC, '--header-fs-m': c.header.logo.sizeMobile, 
+            '--nav-fs': c.header.nav[0].sizePC, '--nav-fs-m': c.header.nav[0].sizeMobile,
+            '--special-text-fs': c.logoPanel.specialText.sizePC, '--special-text-fs-m': c.logoPanel.specialText.sizeMobile,
+            '--contact-fs': c.logoPanel.contactStyles.sizePC, '--contact-fs-m': c.logoPanel.contactStyles.sizeMobile,
             '--contact-gap-m': c.logoPanel.contactStyles.gapMobile || '16px',
-            '--logo-size-pc': typeof c.header.logo.sizePC === 'number' ? `${c.header.logo.sizePC}px` : c.header.logo.sizePC
+            '--logo-size-pc': c.header.logo.sizePC, '--logo-size-m': c.header.logo.sizeMobile
         };
         Object.entries(p).forEach(([k, v]) => r.style.setProperty(k, v));
     },
@@ -598,6 +599,56 @@ const ENGINE = {
         });
     },
 
+    initGlobalScrollInteraction() {
+        const h = document.getElementById('ui-header'); const lwM = document.getElementById('ui-logo-gif-wrap-m'); 
+        const bg = document.getElementById('ui-header-bg');
+        
+        let timer; let lastScrollY = window.scrollY; let ticking = false;
+
+        window.addEventListener('scroll', () => {
+            if (ENGINE.isMobile()) {
+                if (!ticking) {
+                    requestAnimationFrame(() => {
+                        const currentScrollY = window.scrollY;
+                        const isScrollingDown = currentScrollY > lastScrollY;
+                        lastScrollY = currentScrollY;
+
+                        if (isScrollingDown && currentScrollY > 10) {
+                            if (h && !h.classList.contains('is-nav-hidden')) {
+                                h.classList.add('is-nav-hidden'); 
+                                if (lwM) lwM.classList.add('is-nav-hidden'); if (bg) bg.classList.add('is-nav-hidden');
+                                
+                                const st = document.getElementById('ui-hero-special-text');
+                                const cr = document.getElementById('ui-contact-row');
+                                const cb = document.getElementById('ui-close-btn');
+                                if (st) st.classList.add('is-nav-hidden');
+                                if (cr) cr.classList.add('is-nav-hidden');
+                                if (cb) cb.classList.add('is-nav-hidden');
+                            }
+                        }
+
+                        clearTimeout(timer); 
+                        timer = setTimeout(() => { 
+                            if (h && h.classList.contains('is-nav-hidden')) {
+                                h.classList.remove('is-nav-hidden'); 
+                                if (lwM) lwM.classList.remove('is-nav-hidden'); if (bg) bg.classList.remove('is-nav-hidden');
+                                
+                                const st = document.getElementById('ui-hero-special-text');
+                                const cr = document.getElementById('ui-contact-row');
+                                const cb = document.getElementById('ui-close-btn');
+                                if (st) st.classList.remove('is-nav-hidden');
+                                if (cr) cr.classList.remove('is-nav-hidden');
+                                if (cb) cb.classList.remove('is-nav-hidden');
+                            }
+                        }, 350);
+                        ticking = false;
+                    });
+                    ticking = true;
+                }
+            }
+        }, { passive: true });
+    },
+    
     initWeChatTrigger() {
         const t = document.getElementById('trigger-wechat'); const o = document.getElementById('ui-wechat-overlay');
         if (t && o) { t.onclick = (e) => { e.preventDefault(); o.classList.add('is-active'); }; o.onclick = () => o.classList.remove('is-active'); }
@@ -612,25 +663,22 @@ const ENGINE = {
        [3] 页面专属 JS 逻辑 (PAGE SPECIFIC - HOME ONLY)
        ========================================================================== */
     applyPageTypography() {
-        if(typeof CONFIG_PAGE === 'undefined') return;
+        if(typeof CONFIG_PAGE === 'undefined' || !CONFIG_PAGE.gallery) return;
         const r = document.documentElement; 
-        const fluid = (min, pc) => ENGINE.getFluidFont(min, pc);
         
-        let p = {};
-        if (CONFIG_PAGE.gallery) {
-            p['--gallery-content-fs'] = fluid(CONFIG_PAGE.gallery.contentStyles.sizeMobile, CONFIG_PAGE.gallery.contentStyles.sizePC);
-            p['--gallery-font'] = CONFIG_PAGE.gallery.font;
-            p['--gallery-fw'] = CONFIG_PAGE.gallery.weight;
-            p['--gallery-paragraph-spacing'] = CONFIG_PAGE.gallery.paragraphSpacing;
-        }
-        if (CONFIG_PAGE.splash) {
-            p['--splash-dur'] = `${CONFIG_PAGE.splash.transitionTime}ms`;
-            if (CONFIG_PAGE.splash.textStyles) {
-                p['--splash-fs'] = fluid(CONFIG_PAGE.splash.textStyles.sizeMobile, CONFIG_PAGE.splash.textStyles.sizePC);
-            } else {
-                p['--splash-fs'] = fluid(16, 32); // Fallback protection
-            }
-        }
+        // 核心修改：精准挂载！只在这里调用无极流体引擎计算 Gallery 字体
+        const fluidGalleryFs = ENGINE.getFluidFont(
+            CONFIG_PAGE.gallery.contentStyles.sizeMobile,
+            CONFIG_PAGE.gallery.contentStyles.sizePC
+        );
+        
+        const p = { 
+            '--gallery-fluid-fs': fluidGalleryFs, // 将算好的流体字符串存入 CSS 变量
+            '--gallery-font': CONFIG_PAGE.gallery.font, 
+            '--gallery-fw': CONFIG_PAGE.gallery.weight, 
+            '--gallery-paragraph-spacing': CONFIG_PAGE.gallery.paragraphSpacing,
+            '--splash-dur': CONFIG_PAGE.splash ? `${CONFIG_PAGE.splash.transitionTime}ms` : '1.2s'
+        };
         Object.entries(p).forEach(([k, v]) => r.style.setProperty(k, v));
     },
 
@@ -748,6 +796,7 @@ const ENGINE = {
         ENGINE.renderHeader(); 
         ENGINE.renderLogoPanel();
         ENGINE.initGlobalFocusMode(); 
+        ENGINE.initGlobalScrollInteraction();
         ENGINE.initTriggersAndInteractions(); 
         
         ENGINE.applyPageTypography();
@@ -787,11 +836,10 @@ const ENGINE = {
     }
 };
 
-/* 核心修改：逻辑解耦配置分离，纯数字无极字号系统注入 */
+/* 核心修改：仅保留 Gallery 的纯数字配置，严格不触碰其他任何配置 */
 const CONFIG_PAGE = {
     splash: { 
         text: "Folio", 
-        textStyles: { sizePC: 32, sizeMobile: 16 },
         bgPCDark: "https://folio.neuepoor.com/FoColorBlack.webm",
         bgPCLight: "https://folio.neuepoor.com/FoColorWhite.webm",
         bgMobileDark: "https://folio.neuepoor.com/FoColorBlack.gif",
@@ -804,7 +852,8 @@ const CONFIG_PAGE = {
         font: "Arial, sans-serif", 
         weight: "700", 
         paragraphSpacing: "2.2em",
-        contentStyles: { sizePC: 48, sizeMobile: 16 },
+        /* 隔离修改：仅此处转为纯数字，以驱动无极折线排版引擎 */
+        contentStyles: { sizePC: 42, sizeMobile: 21 },
         items: [{ 
             span: 12, 
             paragraphs: [
