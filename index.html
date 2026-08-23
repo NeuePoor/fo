@@ -80,9 +80,8 @@ body.is-loading { overflow: hidden; }
 }
 
 /* ==========================================================================
-   ⬇️⬇️⬇️ [2] 全局通用组件：HEADER & LOGO PANEL (全站复制粘贴区) ⬇️⬇️⬇️
+   [2] 全局通用组件：HEADER & LOGO PANEL (全站复制粘贴区)
    ========================================================================== */
-
 .fl-header { 
     position: fixed; width: 100%; z-index: 3000; display: flex; 
     justify-content: space-between; align-items: center; padding: 0 4px; 
@@ -244,11 +243,12 @@ body.is-low-perf .fl-header__bg { backdrop-filter: none !important; background: 
 body.is-low-perf .fl-hero-special-text, body.is-low-perf .fl-contact-row, body.is-low-perf .fl-close-btn { filter: none !important; }
 body.is-low-perf .fl-wechat-overlay { backdrop-filter: none !important; background: rgba(0, 0, 0, 0.95) !important; }
 
+
 /* ==========================================================================
    [3] 当前页面专属 (PAGE SPECIFIC - HOME ONLY)
    ========================================================================== */
 :root {
-    --splash-fs: 32px;
+    --splash-fs: 42px;
     --gallery-paragraph-spacing: 2.2em;
     --splash-dur: 1.2s;
     --fl-reveal-dist: 30px;
@@ -295,11 +295,22 @@ body.is-low-perf .fl-wechat-overlay { backdrop-filter: none !important; backgrou
 
 .fl-item-wrapper { min-width: 0; }
 
+/* 核心修改：移除下划线，转换为 inline-block 并注入平滑的小幅度呼吸弹跳动效 */
+@keyframes fl-bounce-soft {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+.fl-inline-contact { 
+    display: inline-block; 
+    cursor: pointer; 
+    pointer-events: auto; 
+    animation: fl-bounce-soft 2s ease-in-out infinite; 
+}
+
 .fl-gallery-text { width: 100%; max-width: 850px; margin-bottom: 0; }
 
-/* 核心修改：移除静态的 clamp 与媒体查询，引入专用于 Gallery 的流体变量 */
 .fl-paragraph {
-    font-size: var(--gallery-fluid-fs, 16px);
+    font-size: var(--gallery-fluid-fs); 
     font-weight: var(--gallery-fw); color: var(--fl-text); line-height: 1.35;
     margin: 0 0 var(--gallery-paragraph-spacing) 0; text-wrap: pretty; word-break: break-word; -webkit-hyphens: auto; hyphens: auto; 
 }
@@ -309,6 +320,8 @@ body.is-low-perf .fl-wechat-overlay { backdrop-filter: none !important; backgrou
     .fl-grid.is-intro { padding-top: calc(100vh - 280px); } 
     .fl-gallery-text { max-width: 100% !important; }
     .fl-reveal { --fl-reveal-dist: 100px; transition: opacity var(--fl-reveal-dur) var(--fl-ease), transform var(--fl-reveal-dur) var(--fl-ease), filter 0.6s var(--fl-ease) !important; }
+    
+    /* 这里依然保留对 fl-reveal 被动模糊的逻辑，只是触发权在 JS 里被移除了 */
     body.has-focus-hover .fl-reveal:not(.is-hovered-target) { opacity: 0.2; filter: blur(8px); }
     #ui-logo-panel.is-active ~ #ui-main-grid .fl-reveal { opacity: 0.2; filter: blur(8px); }
 }
@@ -320,7 +333,8 @@ body.is-low-perf .fl-wechat-overlay { backdrop-filter: none !important; backgrou
     
     .fl-grid { padding: 4px 0 160px !important; margin-top: 0 !important; min-height: 200vh !important; }
     .fl-gallery-text { width: 100% !important; max-width: 100% !important; }
-    /* 核心修改：不再需要强行覆盖 font-size，引擎已自动处理手机端大小锁定 */
+    
+    /* 核心修改：已删除针对 .fl-paragraph 的媒体查询强覆盖，因为 Fluid Variable 自带断点锁定 */
     .fl-paragraph { margin-bottom: 1.8em !important; }
     .fl-paragraph:last-child { margin-bottom: 0 !important; }
 }
@@ -341,13 +355,12 @@ body.is-low-perf .fl-wechat-overlay { backdrop-filter: none !important; backgrou
 <div class="fl-splash" id="ui-splash">
     <video class="fl-splash__bg" id="ui-splash-bg-pc" muted autoplay playsinline webkit-playsinline disablePictureInPicture></video>
     <img class="fl-splash__bg" id="ui-splash-bg-m" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" decoding="async" alt="">
-    
     <div class="fl-splash__text" id="ui-splash-text"></div>
 </div>
 
 
 <!-- ==========================================================================
-     ⬇️⬇️⬇️ [2] 全局通用组件：HEADER & LOGO PANEL (全站复制粘贴区) ⬇️⬇️⬇️
+     [2] 全局通用组件：HEADER & LOGO PANEL (全站复制粘贴区)
      ========================================================================== -->
 <div class="fl-header__bg" id="ui-header-bg"></div>
 
@@ -382,10 +395,6 @@ body.is-low-perf .fl-wechat-overlay { backdrop-filter: none !important; backgrou
         <div class="fl-wechat-id" id="ui-wechat-id">WeChat: NeuePoor</div>
     </div>
 </div>
-<!-- ==========================================================================
-     ⬆️⬆️⬆️ 全局通用组件 结束 ⬆️⬆️⬆️
-     ========================================================================== -->
-
 
 <!-- ==========================================================================
      [3] 页面专属内容模块 (HOME ONLY)
@@ -395,14 +404,14 @@ body.is-low-perf .fl-wechat-overlay { backdrop-filter: none !important; backgrou
 
 <script>
 /* ==========================================================================
-   ⬇️⬇️⬇️ [2] 全局通用 JS 配置与逻辑 (全站复制粘贴区) ⬇️⬇️⬇️
+   [2] 全局通用 JS 配置与逻辑 (全站复制粘贴区)
    ========================================================================== */
 const CONFIG_GLOBAL = {
-    version: "4.14.38",
+    version: "4.14.76",
     seo: { title: "Foo", favicon: "https://folio.neuepoor.com/favicon.webp" },
     performance: { mode: "high" },
     header: {
-        logo: { gif: "https://folio.neuepoor.com/logo.gif", text: "Foo", font: "Arial, sans-serif", weight: "700", sizePC: "32px", sizeMobile: "clamp(16px, 5vw, 21px)" },
+        logo: { gif: "https://folio.neuepoor.com/logo.gif", text: "Foo", font: "Arial, sans-serif", weight: "700", sizePC: "42px", sizeMobile: "clamp(16px, 5vw, 21px)" },
         nav: [
             { name: 'Works', link: 'https://works.neuepoor.com', sizePC: "42px", sizeMobile: "clamp(14px, 5vw, 21px)" },
             { name: '(Play)', link: 'https://play.neuepoor.com', sizePC: "42px", sizeMobile: "clamp(14px, 5vw, 21px)" },
@@ -410,7 +419,7 @@ const CONFIG_GLOBAL = {
         ]
     },
     logoPanel: {
-        specialText: { text: "Hi, I'm Fo", sizePC: "60px", sizeMobile: "clamp(14px, 6vw, 21px)" },
+        specialText: { text: "Hi, I'm Fo", sizePC: "42px", sizeMobile: "clamp(14px, 6vw, 21px)" },
         contact: [
             { name: "Email", link: "mailto:poorleaglguy@qq.com" },
             { name: "Instagram", link: "https://www.instagram.com/neuepoor" },
@@ -433,14 +442,12 @@ const ENGINE = {
         return window.matchMedia('(max-width: 768px), (max-width: 950px) and (max-height: 500px) and (orientation: landscape)').matches; 
     },
 
-    // 核心新增：无极折线流体引擎（仅用于受保护的区域，例如 Gallery）
+    // 核心新增：无极折线流体排版引擎 (Piecewise Fluid Typography Engine)，仅服务于 Gallery
     getFluidFont(min, pc) {
-        const minNum = parseFloat(min) || 16;
-        const pcNum = parseFloat(pc) || 48;
-        const maxNum = pcNum * 1.25; 
-        const line1 = `calc(${minNum}px + ${pcNum - minNum} * (100vw - 320px) / 704)`;
-        const line2 = `calc(${pcNum}px + ${maxNum - pcNum} * (100vw - 1024px) / 896)`;
-        return `max(${minNum}px, min(${line1}, ${line2}))`;
+        const max = pc * 1.25; 
+        const line1 = `calc(${min}px + ${pc - min} * (100vw - 320px) / 704)`;
+        const line2 = `calc(${pc}px + ${max - pc} * (100vw - 1024px) / 896)`;
+        return `max(${min}px, min(${line1}, ${line2}))`;
     },
 
     initSEO() { 
@@ -456,7 +463,6 @@ const ENGINE = {
         }
     },
 
-    /* 保持原有全局排版逻辑不变，不破坏头部组件 */
     applyGlobalTypography() {
         const r = document.documentElement; const c = CONFIG_GLOBAL;
         const p = { 
@@ -562,6 +568,19 @@ const ENGINE = {
         if (p) { p.onclick = (e) => { if (e.target === p && p.classList.contains('is-panel-pinned')) ENGINE.hideHero(); }; }
         if (closeBtn) { closeBtn.onclick = (e) => { e.stopPropagation(); ENGINE.hideHero(); }; }
 
+        /* 核心修改：为 Gallery 中的内联 "Please contact me" 添加全局委托事件触发器，逻辑与 Logo Panel 完美闭环 */
+        document.addEventListener('click', (e) => {
+            const inlineBtn = e.target.closest('.fl-inline-contact');
+            if (inlineBtn) {
+                e.preventDefault(); e.stopPropagation();
+                if (ENGINE.isMobile()) {
+                    if (p && !p.classList.contains('is-active')) ENGINE.showHeroMobile();
+                } else {
+                    if (p && !(p.classList.contains('is-active') && p.classList.contains('is-panel-pinned'))) ENGINE.showHeroPC(true);
+                }
+            }
+        });
+
         if (navContainer) {
             navContainer.addEventListener('click', (e) => {
                 const link = e.target.closest('.fl-nav__link'); if (!link) return; 
@@ -576,7 +595,8 @@ const ENGINE = {
     initGlobalFocusMode() {
         if (ENGINE.isMobile()) return;
         const b = document.body; const p = document.getElementById('ui-logo-panel');
-        const selA = '.fl-nav__link, .fl-logo__gif-wrap-pc, .fl-logo-text, .fl-reveal'; 
+        /* 核心修改：在白名单中移除了 .fl-reveal，剥夺了 Gallery 自己作为悬停主动触发器的权利 */
+        const selA = '.fl-nav__link, .fl-logo__gif-wrap-pc, .fl-logo-text'; 
         const selB = '.fl-nav__link, .fl-logo__gif-wrap-pc, .fl-logo-text, #ui-hero-special-text, .fl-gallery-link, .fl-close-btn';
         document.addEventListener('mouseover', (e) => { 
             if (b.classList.contains('is-loading') || ENGINE.isMobile()) return;
@@ -653,27 +673,17 @@ const ENGINE = {
         const t = document.getElementById('trigger-wechat'); const o = document.getElementById('ui-wechat-overlay');
         if (t && o) { t.onclick = (e) => { e.preventDefault(); o.classList.add('is-active'); }; o.onclick = () => o.classList.remove('is-active'); }
     },
-    /* ==========================================================================
-       ⬆️⬆️ 全局通用 JS 结束 ⬆️⬆️
-       ========================================================================== */
 
-
-
-    /* ==========================================================================
-       [3] 页面专属 JS 逻辑 (PAGE SPECIFIC - HOME ONLY)
-       ========================================================================== */
     applyPageTypography() {
         if(typeof CONFIG_PAGE === 'undefined' || !CONFIG_PAGE.gallery) return;
         const r = document.documentElement; 
         
-        // 核心修改：精准挂载！只在这里调用无极流体引擎计算 Gallery 字体
-        const fluidGalleryFs = ENGINE.getFluidFont(
-            CONFIG_PAGE.gallery.contentStyles.sizeMobile,
-            CONFIG_PAGE.gallery.contentStyles.sizePC
-        );
-        
+        // 核心修改：仅对当前页面有效，局部挂载纯数字计算出来的无极折线流体变量
+        const c = CONFIG_PAGE.gallery.contentStyles;
+        const fluidFs = ENGINE.getFluidFont(c.sizeMobile, c.sizePC);
+
         const p = { 
-            '--gallery-fluid-fs': fluidGalleryFs, // 将算好的流体字符串存入 CSS 变量
+            '--gallery-fluid-fs': fluidFs,
             '--gallery-font': CONFIG_PAGE.gallery.font, 
             '--gallery-fw': CONFIG_PAGE.gallery.weight, 
             '--gallery-paragraph-spacing': CONFIG_PAGE.gallery.paragraphSpacing,
@@ -836,7 +846,6 @@ const ENGINE = {
     }
 };
 
-/* 核心修改：仅保留 Gallery 的纯数字配置，严格不触碰其他任何配置 */
 const CONFIG_PAGE = {
     splash: { 
         text: "Folio", 
@@ -852,14 +861,15 @@ const CONFIG_PAGE = {
         font: "Arial, sans-serif", 
         weight: "700", 
         paragraphSpacing: "2.2em",
-        /* 隔离修改：仅此处转为纯数字，以驱动无极折线排版引擎 */
+        /* 核心修改：此处的参数仅为数字，专门服务于内部段落的局部流体计算 */
         contentStyles: { sizePC: 42, sizeMobile: 21 },
         items: [{ 
             span: 12, 
             paragraphs: [
                 "I'm a multi-disciplinary designer with focus on Graphic&Illustration,Creative Direction, Branding,Visual Identities, Packaging, Website, and Print& Editorial Design.",
                 "If you are looking for a designer who excles in BrandStrategy/Visual Direction/Print Works/Products/IP/Curatorial/Grid Layout/Website design/Typeface Customization.",
-                "Please contact me."
+                /* 核心修改：将该句式改造为了可唤醒 Logo Panel 的内联沉浸式按钮 */
+                "<a class=\"fl-inline-contact\">Please contact me.</a>"
             ]
         }] 
     }
