@@ -7,6 +7,7 @@
 <title>Foo</title>
 <link id="favicon" rel="icon" type="image/webp" href="https://folio.neuepoor.com/favicon.webp">
 
+<!-- 核心修改：利用三维组合 media 查询，完美识别并拦截横屏手机，确保四向物理预加载彻底解耦 -->
 <link rel="preload" as="video" href="https://folio.neuepoor.com/FoColorWhite.webm" type="video/webm" media="(min-width: 769px) and (min-height: 501px) and (prefers-color-scheme: light), (min-width: 951px) and (prefers-color-scheme: light), (min-width: 769px) and (orientation: portrait) and (prefers-color-scheme: light)">
 <link rel="preload" as="video" href="https://folio.neuepoor.com/FoColorBlack.webm" type="video/webm" media="(min-width: 769px) and (min-height: 501px) and (prefers-color-scheme: dark), (min-width: 951px) and (prefers-color-scheme: dark), (min-width: 769px) and (orientation: portrait) and (prefers-color-scheme: dark)">
 <link rel="preload" as="image" href="https://folio.neuepoor.com/FoColorWhite.gif" media="(max-width: 768px) and (prefers-color-scheme: light), (max-width: 950px) and (max-height: 500px) and (orientation: landscape) and (prefers-color-scheme: light)">
@@ -80,8 +81,9 @@ body.is-loading { overflow: hidden; }
 }
 
 /* ==========================================================================
-   [2] 全局通用组件：HEADER & LOGO PANEL (全站复制粘贴区)
+   ⬇️⬇️⬇️ [2] 全局通用组件：HEADER & LOGO PANEL ⬇️⬇️⬇️
    ========================================================================== */
+
 .fl-header { 
     position: fixed; width: 100%; z-index: 3000; display: flex; 
     justify-content: space-between; align-items: center; padding: 0 4px; 
@@ -243,7 +245,6 @@ body.is-low-perf .fl-header__bg { backdrop-filter: none !important; background: 
 body.is-low-perf .fl-hero-special-text, body.is-low-perf .fl-contact-row, body.is-low-perf .fl-close-btn { filter: none !important; }
 body.is-low-perf .fl-wechat-overlay { backdrop-filter: none !important; background: rgba(0, 0, 0, 0.95) !important; }
 
-
 /* ==========================================================================
    [3] 当前页面专属 (PAGE SPECIFIC - HOME ONLY)
    ========================================================================== */
@@ -295,34 +296,34 @@ body.is-low-perf .fl-wechat-overlay { backdrop-filter: none !important; backgrou
 
 .fl-item-wrapper { min-width: 0; }
 
-/* 核心修改：移除下划线，转换为 inline-block 并注入平滑的小幅度呼吸弹跳动效 */
-@keyframes fl-bounce-soft {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-5px); }
-}
-.fl-inline-contact { 
-    display: inline-block; 
-    cursor: pointer; 
-    pointer-events: auto; 
-    animation: fl-bounce-soft 2s ease-in-out infinite; 
-}
-
 .fl-gallery-text { width: 100%; max-width: 850px; margin-bottom: 0; }
 
+/* 核心修改：段落仅调用无极折线流体变量 */
 .fl-paragraph {
-    font-size: var(--gallery-fluid-fs); 
+    font-size: var(--gallery-fluid-fs);
     font-weight: var(--gallery-fw); color: var(--fl-text); line-height: 1.35;
     margin: 0 0 var(--gallery-paragraph-spacing) 0; text-wrap: pretty; word-break: break-word; -webkit-hyphens: auto; hyphens: auto; 
 }
 .fl-paragraph:last-child { margin-bottom: 0; }
+
+/* 核心修改：内联弹跳按钮样式定义 */
+.fl-inline-contact {
+    display: inline-block;
+    color: inherit;
+    cursor: pointer;
+    text-decoration: none;
+    animation: fl-bounce-soft 2s ease-in-out infinite;
+}
+@keyframes fl-bounce-soft {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
 
 @media (min-width: 769px) and (min-height: 501px), (min-width: 951px), (min-width: 769px) and (orientation: portrait) {
     .fl-grid.is-intro { padding-top: calc(100vh - 280px); } 
     .fl-gallery-text { max-width: 100% !important; }
     .fl-reveal { --fl-reveal-dist: 100px; transition: opacity var(--fl-reveal-dur) var(--fl-ease), transform var(--fl-reveal-dur) var(--fl-ease), filter 0.6s var(--fl-ease) !important; }
     
-    /* 这里依然保留对 fl-reveal 被动模糊的逻辑，只是触发权在 JS 里被移除了 */
-    body.has-focus-hover .fl-reveal:not(.is-hovered-target) { opacity: 0.2; filter: blur(8px); }
     #ui-logo-panel.is-active ~ #ui-main-grid .fl-reveal { opacity: 0.2; filter: blur(8px); }
 }
 
@@ -333,12 +334,8 @@ body.is-low-perf .fl-wechat-overlay { backdrop-filter: none !important; backgrou
     
     .fl-grid { padding: 4px 0 160px !important; margin-top: 0 !important; min-height: 200vh !important; }
     .fl-gallery-text { width: 100% !important; max-width: 100% !important; }
-    
-    /* 核心修改：已删除针对 .fl-paragraph 的媒体查询强覆盖，因为 Fluid Variable 自带断点锁定 */
-    .fl-paragraph { margin-bottom: 1.8em !important; }
     .fl-paragraph:last-child { margin-bottom: 0 !important; }
 }
-
 </style>
 </head>
 <body class="is-loading">
@@ -348,19 +345,18 @@ body.is-low-perf .fl-wechat-overlay { backdrop-filter: none !important; backgrou
     <div class="fl-cursor__h" id="ui-cursor-h"></div>
 </div>
 
-
 <!-- ==========================================================================
      [3] 页面专属模块 (HOME ONLY)
      ========================================================================== -->
 <div class="fl-splash" id="ui-splash">
     <video class="fl-splash__bg" id="ui-splash-bg-pc" muted autoplay playsinline webkit-playsinline disablePictureInPicture></video>
     <img class="fl-splash__bg" id="ui-splash-bg-m" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" decoding="async" alt="">
+    
     <div class="fl-splash__text" id="ui-splash-text"></div>
 </div>
 
-
 <!-- ==========================================================================
-     [2] 全局通用组件：HEADER & LOGO PANEL (全站复制粘贴区)
+     ⬇️⬇️⬇️ [2] 全局通用组件：HEADER & LOGO PANEL ⬇️⬇️⬇️
      ========================================================================== -->
 <div class="fl-header__bg" id="ui-header-bg"></div>
 
@@ -395,19 +391,21 @@ body.is-low-perf .fl-wechat-overlay { backdrop-filter: none !important; backgrou
         <div class="fl-wechat-id" id="ui-wechat-id">WeChat: NeuePoor</div>
     </div>
 </div>
+<!-- ==========================================================================
+     ⬆️⬆️⬆️ 全局通用组件 结束 ⬆️⬆️⬆️
+     ========================================================================== -->
 
 <!-- ==========================================================================
      [3] 页面专属内容模块 (HOME ONLY)
      ========================================================================== -->
 <main class="fl-grid is-intro" id="ui-main-grid"></main>
 
-
 <script>
 /* ==========================================================================
-   [2] 全局通用 JS 配置与逻辑 (全站复制粘贴区)
+   ⬇️⬇️⬇️ [2] 全局通用 JS 配置与逻辑 ⬇️⬇️⬇️
    ========================================================================== */
 const CONFIG_GLOBAL = {
-    version: "4.14.76",
+    version: "4.14.77",
     seo: { title: "Foo", favicon: "https://folio.neuepoor.com/favicon.webp" },
     performance: { mode: "high" },
     header: {
@@ -442,7 +440,7 @@ const ENGINE = {
         return window.matchMedia('(max-width: 768px), (max-width: 950px) and (max-height: 500px) and (orientation: landscape)').matches; 
     },
 
-    // 核心新增：无极折线流体排版引擎 (Piecewise Fluid Typography Engine)，仅服务于 Gallery
+    /* 核心流体引擎：专属图文容器的折线自适应算子 */
     getFluidFont(min, pc) {
         const max = pc * 1.25; 
         const line1 = `calc(${min}px + ${pc - min} * (100vw - 320px) / 704)`;
@@ -568,19 +566,6 @@ const ENGINE = {
         if (p) { p.onclick = (e) => { if (e.target === p && p.classList.contains('is-panel-pinned')) ENGINE.hideHero(); }; }
         if (closeBtn) { closeBtn.onclick = (e) => { e.stopPropagation(); ENGINE.hideHero(); }; }
 
-        /* 核心修改：为 Gallery 中的内联 "Please contact me" 添加全局委托事件触发器，逻辑与 Logo Panel 完美闭环 */
-        document.addEventListener('click', (e) => {
-            const inlineBtn = e.target.closest('.fl-inline-contact');
-            if (inlineBtn) {
-                e.preventDefault(); e.stopPropagation();
-                if (ENGINE.isMobile()) {
-                    if (p && !p.classList.contains('is-active')) ENGINE.showHeroMobile();
-                } else {
-                    if (p && !(p.classList.contains('is-active') && p.classList.contains('is-panel-pinned'))) ENGINE.showHeroPC(true);
-                }
-            }
-        });
-
         if (navContainer) {
             navContainer.addEventListener('click', (e) => {
                 const link = e.target.closest('.fl-nav__link'); if (!link) return; 
@@ -590,12 +575,25 @@ const ENGINE = {
                 }
             });
         }
+        
+        // 核心修改：挂载全局事件委托监听弹跳联系按钮
+        document.addEventListener('click', (e) => {
+            const trigger = e.target.closest('#trigger-contact');
+            if (trigger) {
+                e.preventDefault();
+                if (ENGINE.isMobile()) {
+                    if (!p.classList.contains('is-active')) ENGINE.showHeroMobile();
+                } else {
+                    if (!p.classList.contains('is-active')) ENGINE.showHeroPC(true);
+                }
+            }
+        });
     },
     
     initGlobalFocusMode() {
         if (ENGINE.isMobile()) return;
         const b = document.body; const p = document.getElementById('ui-logo-panel');
-        /* 核心修改：在白名单中移除了 .fl-reveal，剥夺了 Gallery 自己作为悬停主动触发器的权利 */
+        // 核心修改：从 selA 中剔除了 .fl-reveal，废除了正文悬停引发全局模糊的权力
         const selA = '.fl-nav__link, .fl-logo__gif-wrap-pc, .fl-logo-text'; 
         const selB = '.fl-nav__link, .fl-logo__gif-wrap-pc, .fl-logo-text, #ui-hero-special-text, .fl-gallery-link, .fl-close-btn';
         document.addEventListener('mouseover', (e) => { 
@@ -673,17 +671,23 @@ const ENGINE = {
         const t = document.getElementById('trigger-wechat'); const o = document.getElementById('ui-wechat-overlay');
         if (t && o) { t.onclick = (e) => { e.preventDefault(); o.classList.add('is-active'); }; o.onclick = () => o.classList.remove('is-active'); }
     },
+    /* ==========================================================================
+       ⬆️⬆️ 全局通用 JS 结束 ⬆️⬆️
+       ========================================================================== */
 
+    /* ==========================================================================
+       [3] 页面专属 JS 逻辑 (PAGE SPECIFIC - HOME ONLY)
+       ========================================================================== */
     applyPageTypography() {
         if(typeof CONFIG_PAGE === 'undefined' || !CONFIG_PAGE.gallery) return;
         const r = document.documentElement; 
         
-        // 核心修改：仅对当前页面有效，局部挂载纯数字计算出来的无极折线流体变量
-        const c = CONFIG_PAGE.gallery.contentStyles;
-        const fluidFs = ENGINE.getFluidFont(c.sizeMobile, c.sizePC);
-
+        // 核心修改：利用 parseFloat 免除报错风险，专属生成画廊流体变量
+        const minVal = parseFloat(CONFIG_PAGE.gallery.contentStyles.sizeMobile) || 16;
+        const pcVal = parseFloat(CONFIG_PAGE.gallery.contentStyles.sizePC) || 48;
+        
         const p = { 
-            '--gallery-fluid-fs': fluidFs,
+            '--gallery-fluid-fs': ENGINE.getFluidFont(minVal, pcVal),
             '--gallery-font': CONFIG_PAGE.gallery.font, 
             '--gallery-fw': CONFIG_PAGE.gallery.weight, 
             '--gallery-paragraph-spacing': CONFIG_PAGE.gallery.paragraphSpacing,
@@ -846,6 +850,7 @@ const ENGINE = {
     }
 };
 
+/* 核心修改：专属的 gallery 字号配置，采用纯数字配置，并在最后一句话注入弹跳接触按钮 */
 const CONFIG_PAGE = {
     splash: { 
         text: "Folio", 
@@ -861,15 +866,13 @@ const CONFIG_PAGE = {
         font: "Arial, sans-serif", 
         weight: "700", 
         paragraphSpacing: "2.2em",
-        /* 核心修改：此处的参数仅为数字，专门服务于内部段落的局部流体计算 */
-        contentStyles: { sizePC: 42, sizeMobile: 21 },
+        contentStyles: { sizePC: 42, sizeMobile: 32 },
         items: [{ 
             span: 12, 
             paragraphs: [
                 "I'm a multi-disciplinary designer with focus on Graphic&Illustration,Creative Direction, Branding,Visual Identities, Packaging, Website, and Print& Editorial Design.",
                 "If you are looking for a designer who excles in BrandStrategy/Visual Direction/Print Works/Products/IP/Curatorial/Grid Layout/Website design/Typeface Customization.",
-                /* 核心修改：将该句式改造为了可唤醒 Logo Panel 的内联沉浸式按钮 */
-                "<a class=\"fl-inline-contact\">Please contact me.</a>"
+                "<a href=\"#\" class=\"fl-inline-contact\" id=\"trigger-contact\">Please contact me.</a>"
             ]
         }] 
     }
